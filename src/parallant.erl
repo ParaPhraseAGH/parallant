@@ -9,115 +9,154 @@
 -module(parallant).
 %% -compile(export_all).
 %% API
--export([start/3, start/0]).
+-export([start/3, start/0, start/4]).
 
 %% -define(debug, ok).
 
 -type dimension() :: pos_integer().
 -type onedir() :: -1 | 0 | 1.
 -type position() :: {dimension(), dimension()}.
--type direction() :: {onedir(),onedir()}.
+-type direction() :: {onedir(), onedir()}.
 -type cell() :: {dead} | {alive}.
 -type ant() :: {position(), direction()}.
 
 -spec start() -> ok.
 start() ->
-  start(50,52,1000).
+  start(50, 48, 1, 500).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
 start(Width, Height, Steps) ->
+  start(Width, Height, 1, Steps).
+
+-spec start(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
+start(Width, Height, PopulationSize, Steps) ->
   Board = create_board(Width, Height),
-  Ant = create_ant(Width, Height),
+  Ants = create_ants(PopulationSize, Width, Height),
+
+%%   io:format("Ants: ~p~n", [Ants]),
   io:format("Step 1:~n"),
-  display(Ant, Board, Width, Height),
+  display(Ants, Board, Width, Height),
   T1 = erlang:now(),
-  {EndBoard, EndAnt} = step(Board, Width, Height, Ant, 1, Steps),
+
+  {EndBoard, EndAnts} = step(Board, Width, Height, Ants, 1, Steps),
+
   T2 = erlang:now(),
-  io:format("Step ~p:~n",[Steps]),
-  display(EndAnt, EndBoard, Width, Height),
-  Time = timer:now_diff(T2,T1),
-  TimeInSecs = Time/1000000,
-  io:format("Time elapsed: ~p. Time per iteration: ~p s~n",[TimeInSecs, TimeInSecs/Steps]).
+
+  io:format("Step ~p:~n", [Steps]),
+  display(EndAnts, EndBoard, Width, Height),
+  Time = timer:now_diff(T2, T1),
+  TimeInSecs = Time / 1000000,
+  io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
+
+-spec step([cell()], dimension(), dimension(), [ant()], pos_integer(), pos_integer()) -> {[cell()],[ant()]}.
+step(Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
+step(Board, W, H, Ants, T, MaxT) ->
+  AntCells = [get_cell(APos, W, H, Board) || {APos, _} <- Ants],
+  NewAnts = lists:reverse(move_ants(AntCells, Ants, W, H, [])),
+  NewBoard = update_board(Board, W, H, Ants),
+
+  log(NewAnts, NewBoard, T+1, W, H),
+
+  step(NewBoard, W, H, NewAnts, T + 1, MaxT).
 
 
-step(Board, _W, _H, Ant, MaxT, MaxT) -> {Board, Ant};
-step(Board, W, H, {APos, ADir}, T, MaxT) ->
-  AntCell = get_cell(APos, W, H, Board),
-  {NewAPos, NewADir} = move_ant(AntCell, APos, ADir, W, H),
-  NewBoard = update_board(Board, W, H, APos, NewAPos),
+-ifdef(debug).
 
-%%   io:format("new ant dir ~p~n",[NewADir]),
+log(NewAnts, NewBoard, Step, Width, Height) ->
+  %%   lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
+  %%   lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
+  io:format("Step ~p:~n", [Step + 1]),
+  display(NewAnts, NewBoard, Width, Height),
+  timer:sleep(50),
+  io:format("\033[~pA", [Height + 2]).
 
-%%   io:format("new ant pos ~p~n",[NewAPos]),
-   if
-     T > 30000 ->
-      io:format("Step ~p:~n",[T+1]),
-      display({NewAPos, NewADir}, NewBoard, W, H),
-      timer:sleep(80)
-     ;
-     true -> ok
-   end
-  ,
+-else.
+log(_,_,_,_,_) ->
+  ok.
+-endif.
 
-  step(NewBoard, W, H, {NewAPos, NewADir}, T+1, MaxT).
+-spec move_ants([cell()], [ant()], dimension(), dimension(), position()) -> [ant()].
+move_ants([], [], _, _, _) -> [];
+move_ants([AntCell | TAntCells], [{AntPos, AntDir} | TAnts], W, H, Occuppied) ->
+  NewAnt = move_ant(AntCell, AntPos, AntDir, W, H, Occuppied),
+  {NewPos, _NewDir} = NewAnt,
+  [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewPos | Occuppied])].
 
-update_board(Board, W, H, APos, _NewAPos) ->
-  Idx = ant_pos_index(APos, W, H),
-  map_nth(Idx,Board,
+update_board(Board, _W, _H, []) -> Board;
+update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
+  % assertion: every Ant position is different
+  % TODO update board with all Ants in one pass
+  Idx = ant_pos_to_index(APos, W, H),
+  NewBoard = map_nth(Idx, Board,
     fun
       ({dead}) -> {alive};
-      ({alive})-> {dead}
-    end).
+      ({alive}) -> {dead}
+    end),
+  update_board(NewBoard, W, H, TAnts).
 
-map_nth(1, [Old|Rest], F) -> [F(Old)|Rest];
-map_nth(I, [E|Rest], F) -> [E|map_nth(I-1, Rest, F)].
+map_nth(1, [Old | Rest], F) -> [F(Old) | Rest];
+map_nth(I, [E | Rest], F) -> [E | map_nth(I - 1, Rest, F)].
 
-move_ant({AntCellState}, Pos, Dir, W, H) ->
+move_ant({AntCellState}, Pos, Dir, W, H, Occuppied) ->
   NewDir = turn(Dir, AntCellState),
-  NewPos = forward(Pos, NewDir, W, H),
+  NewPos = forward(Pos, NewDir, W, H, Occuppied),
   {NewPos, NewDir}.
 
-forward({X, Y}, {DX, DY}, W, H) ->
-  {
-    bounds(X + DX, W),
-    bounds(Y + DY, H)
-  }.
+forward({X, Y}, {DX, DY}, W, H, Occuppied) ->
+  NewX = torus_bounds(X + DX, W),
+  NewY = torus_bounds(Y + DY, H),
+  case lists:member({NewX, NewY}, Occuppied) of
+    true -> {X, Y};
+    _ -> {NewX, NewY}
+  end.
 
-bounds(Val, Max) when Val < 1 -> Max + Val;
-bounds(Val, Max) when Val > Max -> Val - Max;
-bounds(Val, _Max) -> Val.
+torus_bounds(Val, Max) when Val < 1 -> Max + Val;
+torus_bounds(Val, Max) when Val > Max -> Val - Max;
+torus_bounds(Val, _Max) -> Val.
 
-turn(Dir, dead)  -> turn_right(Dir);
+turn(Dir, dead) -> turn_right(Dir);
 turn(Dir, alive) -> turn_left(Dir).
 
-turn_right({0,  1}) -> {1,  0};
-turn_right({1,  0}) -> {0, -1};
+turn_right({0, 1}) -> {1, 0};
+turn_right({1, 0}) -> {0, -1};
 turn_right({0, -1}) -> {-1, 0};
-turn_right({-1, 0}) -> {0,  1}.
+turn_right({-1, 0}) -> {0, 1}.
 
-turn_left({0,  1}) -> {-1, 0};
-turn_left({1,  0}) -> {0,  1};
-turn_left({0, -1}) -> {1,  0};
+turn_left({0, 1}) -> {-1, 0};
+turn_left({1, 0}) -> {0, 1};
+turn_left({0, -1}) -> {1, 0};
 turn_left({-1, 0}) -> {0, -1}.
 
+-spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
+create_ants(PopulationSize, Width, Height) ->
+  ToAntPos = fun(I) -> {ant_index_to_pos(I, Width, Height), random_direction()} end,
+  ShuffledCellIndices = shuffle(lists:seq(1, Width * Height)),
+  AntIndices = lists:sublist(ShuffledCellIndices,1,PopulationSize),
+  lists:map(ToAntPos, AntIndices).
 
--spec create_ant(dimension(), dimension()) -> ant().
-create_ant(Width, Height) ->
-  {{(1+Width) div 2, (1+Height) div 2}, {0, -1}}.
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
+
+-spec random_direction() -> direction().
+random_direction() ->
+  Dirs = [{0, 1}, {1, 0}, {0, -1}, {-1, 0}],
+  Idx = random:uniform(length(Dirs)),
+  lists:nth(Idx, Dirs).
+
 
 -spec create_board(dimension(), dimension()) -> [cell()].
 create_board(Width, Height) ->
-  [{dead} || _I <- lists:seq(1,Width*Height)].
+  [{dead} || _I <- lists:seq(1, Width * Height)].
 %%   [{I} || I <- lists:seq(1,Width*Height)].
 
 
-%% -spec get_cell(dimension(), [cell()]) -> cell().
-%% get_cell(I, Board) ->
-%%   lists:nth(I, Board).
-
 -spec get_cell(position(), dimension(), dimension(), [cell()]) -> cell().
 get_cell({X, Y}, Width, _Height, Board) ->
-  lists:nth((Y-1)*Width+X, Board).
+%%   Idx = (Y - 1) * Width + X,
+  Idx = ant_pos_to_index({X, Y}, Width, _Height),
+%%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,Width,Idx]),
+  lists:nth(Idx, Board).
 
 -spec cell_char(cell()) -> char().
 cell_char({alive}) -> $o;
@@ -126,9 +165,9 @@ cell_char({I}) -> I.
 
 -spec ant_char(position()) -> char().
 ant_char({-1, 0}) -> $<;
-ant_char({1 , 0}) -> $>;
-ant_char({0 , 1}) -> $^;
-ant_char({0 ,-1}) -> $v.
+ant_char({1, 0}) -> $>;
+ant_char({0, 1}) -> $^;
+ant_char({0, -1}) -> $v.
 
 %% display(_, W, H, N) when N > W * H -> ok;
 %% display(Board, W, H, I) when I rem W == 0 ->
@@ -142,41 +181,51 @@ ant_char({0 ,-1}) -> $v.
 %%   io:format("~p",[cell_char(get_cell(X, Y, W, H,Board))]),
 %%   display(Board, _W, _H, I+1).
 
-flip_ant({{X,Y}, _Dir}, H) -> {{X, H-Y+1}, _Dir}.
 
-display_cell(I, Cell, W, H, {{X,Y}, ADir}) ->
-  AI = ant_pos_index({X,Y}, W, H),
-  C = if
-    I == AI -> ant_char(ADir);
-    true -> cell_char(Cell)
-  end,
-  io:format("~c ",[C]).
-%%   io:format("~p ",[C]).
+display_cell(I, Cell, _W, _H, AntsWithIndex) ->
+  Result = lists:keytake(I, 1, AntsWithIndex),
+  {C, RestOfAnts} = case Result of
+                      {value, {_I, {_APos, ADir}}, Rest} -> {ant_char(ADir), Rest};
+                      false ->
+                        {cell_char(Cell), AntsWithIndex}
+                    end,
+  io:format("~c ", [C]),
+  RestOfAnts.
 
-ant_pos_index({X, Y}, W, _H) ->
-  (Y - 1)*W+X.
+
+ant_pos_to_index({X, Y}, W, _H) ->
+  (Y - 1) * W + X.
+
+ant_index_to_pos(I, W, _H) when I rem W > 0 ->
+  {I rem W, (I - 1) div W + 1};
+ant_index_to_pos(I, W, _H) ->
+  {W, (I - 1) div W + 1}.
+
+flip_ant({{X, Y}, _Dir}, H) -> {{X, H - Y + 1}, _Dir}.
 
 flip_board(Board, Width) ->
   flip_board_acc(Board, [], [], Width, 1).
 
 flip_board_acc([], _Row, Rows, _, _) ->
-    lists:flatten(Rows);
+  lists:flatten(Rows);
 flip_board_acc([H | T], Row, Rows, Width, Width) ->
-  flip_board_acc(T, [], [lists:reverse([H|Row])| Rows], Width, 1);
+  flip_board_acc(T, [], [lists:reverse([H | Row]) | Rows], Width, 1);
 flip_board_acc([H | T], Row, Rows, Width, RI) ->
-  flip_board_acc(T, [H | Row], Rows, Width, RI+1).
+  flip_board_acc(T, [H | Row], Rows, Width, RI + 1).
 
-display(Ant, Board, W, H) ->
-  display(flip_ant(Ant, H), flip_board(Board, W), W, H, 1).
+display(Ants, Board, W, H) ->
+  FlippedAnts = [flip_ant(Ant, H) || Ant <- Ants],
+  FlippedAntsWithIndex = [{ant_pos_to_index({X, Y}, W, H), Ant} || Ant = {{X, Y}, _Dir} <- FlippedAnts],
+  display(lists:keysort(1, FlippedAntsWithIndex), flip_board(Board, W), W, H, 1).
 %%   display(Ant, Board, W, H, 1).
 
-display(_Ant, [], _W, _H, _N) ->
+display(_Ants, [], _W, _H, _N) ->
   io:format("~n");
-display(Ant, [HB|TB], W, H, I) when I rem W == 0 ->
-  display_cell(I, HB, W, H, Ant),
+display(Ants, [HB | TB], W, H, I) when I rem W == 0 ->
+  RestOfAnts = display_cell(I, HB, W, H, Ants),
   io:format("~n"),
-  display(Ant, TB, W, H, I+1);
-display(Ant, [HB|TB], W, H, I) ->
-  display_cell(I, HB, W, H, Ant),
-  display(Ant, TB, W, H, I+1).
+  display(RestOfAnts, TB, W, H, I + 1);
+display(Ants, [HB | TB], W, H, I) ->
+  RestOfAnts = display_cell(I, HB, W, H, Ants),
+  display(RestOfAnts, TB, W, H, I + 1).
 
