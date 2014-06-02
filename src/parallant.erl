@@ -11,7 +11,7 @@
 %% API
 -export([start/3, start/0]).
 
-%% -define(DEBUG,true).
+%% -define(debug, ok).
 
 -type dimension() :: pos_integer().
 -type onedir() :: -1 | 0 | 1.
@@ -22,7 +22,7 @@
 
 -spec start() -> ok.
 start() ->
-  start(65,45,10000).
+  start(50,52,1000).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
 start(Width, Height, Steps) ->
@@ -36,7 +36,8 @@ start(Width, Height, Steps) ->
   io:format("Step ~p:~n",[Steps]),
   display(EndAnt, EndBoard, Width, Height),
   Time = timer:now_diff(T2,T1),
-  io:format("Time elapsed: ~p s~n",[Time/1000000]).
+  TimeInSecs = Time/1000000,
+  io:format("Time elapsed: ~p. Time per iteration: ~p s~n",[TimeInSecs, TimeInSecs/Steps]).
 
 
 step(Board, _W, _H, Ant, MaxT, MaxT) -> {Board, Ant};
@@ -46,9 +47,17 @@ step(Board, W, H, {APos, ADir}, T, MaxT) ->
   NewBoard = update_board(Board, W, H, APos, NewAPos),
 
 %%   io:format("new ant dir ~p~n",[NewADir]),
-%%   io:format("Step ~p:~n",[T+1]),
+
 %%   io:format("new ant pos ~p~n",[NewAPos]),
-%%   display({NewAPos, NewADir}, NewBoard, W, H),
+   if
+     T > 30000 ->
+      io:format("Step ~p:~n",[T+1]),
+      display({NewAPos, NewADir}, NewBoard, W, H),
+      timer:sleep(80)
+     ;
+     true -> ok
+   end
+  ,
 
   step(NewBoard, W, H, {NewAPos, NewADir}, T+1, MaxT).
 
