@@ -7,18 +7,16 @@
 %%% Created : 30. May 2014 10:29 AM
 %%%-------------------------------------------------------------------
 -module(parallant).
-%% -compile(export_all).
 %% API
 -export([start/3, start/0, start/4]).
+-export([ant_char/1, cell_char/1, update_cell/1,
+  all_positions/2, shuffle/1, random_direction/0]).
 
 %% -define(debug, ok).
+-define(IMPL, list_based).
+%% -define(IMPL, gbtree_based).
 
--type dimension() :: pos_integer().
--type onedir() :: -1 | 0 | 1.
--type position() :: {dimension(), dimension()}.
--type direction() :: {onedir(), onedir()}.
--type cell() :: {dead} | {alive}.
--type ant() :: {position(), direction()}.
+-include("parallant.hrl").
 
 -spec start() -> ok.
 start() ->
@@ -35,7 +33,7 @@ start(Width, Height, PopulationSize, Steps) ->
 
 %%   io:format("Ants: ~p~n", [Ants]),
   io:format("Step 1:~n"),
-  display(Ants, Board, Width, Height),
+  ?IMPL:display(Ants, Board, Width, Height),
   T1 = erlang:now(),
 
   {EndBoard, EndAnts} = step(Board, Width, Height, Ants, 1, Steps),
@@ -43,7 +41,7 @@ start(Width, Height, PopulationSize, Steps) ->
   T2 = erlang:now(),
 
   io:format("Step ~p:~n", [Steps]),
-  display(EndAnts, EndBoard, Width, Height),
+  ?IMPL:display(EndAnts, EndBoard, Width, Height),
   Time = timer:now_diff(T2, T1),
   TimeInSecs = Time / 1000000,
   io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
@@ -63,12 +61,12 @@ step(Board, W, H, Ants, T, MaxT) ->
 -ifdef(debug).
 
 log(NewAnts, NewBoard, Step, Width, Height) ->
-  %%   lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
-  %%   lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
+    lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
+    lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
   io:format("Step ~p:~n", [Step + 1]),
-  display(NewAnts, NewBoard, Width, Height),
-  timer:sleep(50),
-  io:format("\033[~pA", [Height + 2]).
+  ?IMPL:display(NewAnts, NewBoard, Width, Height),
+  timer:sleep(500). %
+%%   ,io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
 
 -else.
 log(_,_,_,_,_) ->
@@ -82,20 +80,12 @@ move_ants([AntCell | TAntCells], [{AntPos, AntDir} | TAnts], W, H, Occuppied) ->
   {NewPos, _NewDir} = NewAnt,
   [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewPos | Occuppied])].
 
-update_board(Board, _W, _H, []) -> Board;
-update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
-  % assertion: every Ant position is different
-  % TODO update board with all Ants in one pass
-  Idx = ant_pos_to_index(APos, W, H),
-  NewBoard = map_nth(Idx, Board,
-    fun
-      ({dead}) -> {alive};
-      ({alive}) -> {dead}
-    end),
-  update_board(NewBoard, W, H, TAnts).
+update_board(Board, W, H, Ants) ->
+  ?IMPL:update_board(Board, W, H, Ants).
 
-map_nth(1, [Old | Rest], F) -> [F(Old) | Rest];
-map_nth(I, [E | Rest], F) -> [E | map_nth(I - 1, Rest, F)].
+-spec update_cell(cell()) -> cell().
+update_cell({dead}) -> {alive};
+update_cell({alive}) -> {dead}.
 
 move_ant({AntCellState}, Pos, Dir, W, H, Occuppied) ->
   NewDir = turn(Dir, AntCellState),
@@ -127,41 +117,22 @@ turn_left({1, 0}) -> {0, 1};
 turn_left({0, -1}) -> {1, 0};
 turn_left({-1, 0}) -> {0, -1}.
 
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-  ToAntPos = fun(I) -> {ant_index_to_pos(I, Width, Height), random_direction()} end,
-  ShuffledCellIndices = shuffle(lists:seq(1, Width * Height)),
-  AntIndices = lists:sublist(ShuffledCellIndices,1,PopulationSize),
-  lists:map(ToAntPos, AntIndices).
 
--spec shuffle(list()) -> list().
-shuffle(L) ->
-  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
+create_ants(PopSize, W, H) ->
+  ?IMPL:create_ants(PopSize, W, H).
 
--spec random_direction() -> direction().
-random_direction() ->
-  Dirs = [{0, 1}, {1, 0}, {0, -1}, {-1, 0}],
-  Idx = random:uniform(length(Dirs)),
-  lists:nth(Idx, Dirs).
+create_board(W, H)->
+  ?IMPL:create_board(W, H).
 
 
--spec create_board(dimension(), dimension()) -> [cell()].
-create_board(Width, Height) ->
-  [{dead} || _I <- lists:seq(1, Width * Height)].
-%%   [{I} || I <- lists:seq(1,Width*Height)].
-
-
--spec get_cell(position(), dimension(), dimension(), [cell()]) -> cell().
-get_cell({X, Y}, Width, _Height, Board) ->
-%%   Idx = (Y - 1) * Width + X,
-  Idx = ant_pos_to_index({X, Y}, Width, _Height),
-%%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,Width,Idx]),
-  lists:nth(Idx, Board).
+get_cell({X,Y}, Width, Height, Board) ->
+  ?IMPL:get_cell({X,Y}, Width, Height, Board).
 
 -spec cell_char(cell()) -> char().
 cell_char({alive}) -> $o;
 cell_char({dead}) -> $.;
-cell_char({I}) -> I.
+cell_char({I}) -> I;
+cell_char(_V) -> _V.
 
 -spec ant_char(position()) -> char().
 ant_char({-1, 0}) -> $<;
@@ -181,51 +152,16 @@ ant_char({0, -1}) -> $v.
 %%   io:format("~p",[cell_char(get_cell(X, Y, W, H,Board))]),
 %%   display(Board, _W, _H, I+1).
 
-
-display_cell(I, Cell, _W, _H, AntsWithIndex) ->
-  Result = lists:keytake(I, 1, AntsWithIndex),
-  {C, RestOfAnts} = case Result of
-                      {value, {_I, {_APos, ADir}}, Rest} -> {ant_char(ADir), Rest};
-                      false ->
-                        {cell_char(Cell), AntsWithIndex}
-                    end,
-  io:format("~c ", [C]),
-  RestOfAnts.
+-spec all_positions(dimension(), dimension()) -> [{dimension(),dimension()}].
+all_positions(Width, Height) ->
+  [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)].
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 
-ant_pos_to_index({X, Y}, W, _H) ->
-  (Y - 1) * W + X.
-
-ant_index_to_pos(I, W, _H) when I rem W > 0 ->
-  {I rem W, (I - 1) div W + 1};
-ant_index_to_pos(I, W, _H) ->
-  {W, (I - 1) div W + 1}.
-
-flip_ant({{X, Y}, _Dir}, H) -> {{X, H - Y + 1}, _Dir}.
-
-flip_board(Board, Width) ->
-  flip_board_acc(Board, [], [], Width, 1).
-
-flip_board_acc([], _Row, Rows, _, _) ->
-  lists:flatten(Rows);
-flip_board_acc([H | T], Row, Rows, Width, Width) ->
-  flip_board_acc(T, [], [lists:reverse([H | Row]) | Rows], Width, 1);
-flip_board_acc([H | T], Row, Rows, Width, RI) ->
-  flip_board_acc(T, [H | Row], Rows, Width, RI + 1).
-
-display(Ants, Board, W, H) ->
-  FlippedAnts = [flip_ant(Ant, H) || Ant <- Ants],
-  FlippedAntsWithIndex = [{ant_pos_to_index({X, Y}, W, H), Ant} || Ant = {{X, Y}, _Dir} <- FlippedAnts],
-  display(lists:keysort(1, FlippedAntsWithIndex), flip_board(Board, W), W, H, 1).
-%%   display(Ant, Board, W, H, 1).
-
-display(_Ants, [], _W, _H, _N) ->
-  io:format("~n");
-display(Ants, [HB | TB], W, H, I) when I rem W == 0 ->
-  RestOfAnts = display_cell(I, HB, W, H, Ants),
-  io:format("~n"),
-  display(RestOfAnts, TB, W, H, I + 1);
-display(Ants, [HB | TB], W, H, I) ->
-  RestOfAnts = display_cell(I, HB, W, H, Ants),
-  display(RestOfAnts, TB, W, H, I + 1).
-
+-spec random_direction() -> direction().
+random_direction() ->
+  Dirs = [{0, 1}, {1, 0}, {0, -1}, {-1, 0}],
+  Idx = random:uniform(length(Dirs)),
+  lists:nth(Idx, Dirs).
