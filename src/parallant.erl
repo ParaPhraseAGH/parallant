@@ -8,15 +8,18 @@
 %%%-------------------------------------------------------------------
 -module(parallant).
 %% API
--export([start/4, start/0, start/5]).
+-export([start/4, test/0, start/5]).
 -export([update_cell/1]).
 
 -include("parallant.hrl").
 -define(MAX_WIDTH_TO_SHOW, 65).
 
--spec start() -> ok.
-start() ->
-  start(list_based, 50, 48, 1, 500).
+-spec test() -> ok.
+test() ->
+  io:format("ListBased:~n"),
+  start(list_based, 50, 30, 5, 500),
+  io:format("Gb_treeBased:~n"),
+  start(gbtree_based, 50, 30, 5, 500).
 
 -spec start(model(), dimension(), dimension(), pos_integer()) -> ok.
 start(Model, Width, Height, Steps) ->
