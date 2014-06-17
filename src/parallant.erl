@@ -8,65 +8,66 @@
 %%%-------------------------------------------------------------------
 -module(parallant).
 %% API
--export([start/3, start/0, start/4]).
+-export([start/4, start/0, start/5]).
 -export([ant_char/1, cell_char/1, update_cell/1,
   all_positions/2, shuffle/1, random_direction/0]).
 
 %% -define(debug, ok).
--define(IMPL, list_based).
+%% -define(IMPL, list_based).
 %% -define(IMPL, gbtree_based).
 
 -include("parallant.hrl").
 
 -spec start() -> ok.
 start() ->
-  start(50, 48, 1, 500).
+  start(list_based, 50, 48, 1, 500).
 
--spec start(dimension(), dimension(), pos_integer()) -> ok.
-start(Width, Height, Steps) ->
-  start(Width, Height, 1, Steps).
+-spec start(model(), dimension(), dimension(), pos_integer()) -> ok.
+start(Model, Width, Height, Steps) ->
+  start(Model, Width, Height, 1, Steps).
 
--spec start(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
-start(Width, Height, PopulationSize, Steps) ->
-  Board = create_board(Width, Height),
-  Ants = create_ants(PopulationSize, Width, Height),
+-spec start(model(), dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
+start(Model, Width, Height, PopulationSize, Steps) ->
+  Board = create_board(Model, Width, Height),
+  Ants = create_ants(Model, PopulationSize, Width, Height),
 
-%%   io:format("Ants: ~p~n", [Ants]),
+  io:format("Ants: ~p~n", [Ants]),
   io:format("Step 1:~n"),
-  ?IMPL:display(Ants, Board, Width, Height),
+  Model:display(Ants, Board, Width, Height),
   T1 = erlang:now(),
 
-  {EndBoard, EndAnts} = step(Board, Width, Height, Ants, 1, Steps),
+  {EndBoard, EndAnts} = step(Model, Board, Width, Height, Ants, 1, Steps),
 
   T2 = erlang:now(),
 
   io:format("Step ~p:~n", [Steps]),
-  ?IMPL:display(EndAnts, EndBoard, Width, Height),
+  Model:display(EndAnts, EndBoard, Width, Height),
   Time = timer:now_diff(T2, T1),
   TimeInSecs = Time / 1000000,
   io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
 
--spec step([cell()], dimension(), dimension(), [ant()], pos_integer(), pos_integer()) -> {[cell()],[ant()]}.
-step(Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
-step(Board, W, H, Ants, T, MaxT) ->
-  AntCells = [get_cell(APos, W, H, Board) || {APos, _} <- Ants],
+-spec step(model(), [cell()], dimension(), dimension(), [ant()], pos_integer(), pos_integer()) -> {[cell()],[ant()]}.
+step(_Model, Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
+step(Model, Board, W, H, Ants, T, MaxT) ->
+  AntCells = [get_cell(Model, APos, W, H, Board) || {APos, _} <- Ants],
+%%   io:format("AntCells: ~p~n", [AntCells]),
   NewAnts = lists:reverse(move_ants(AntCells, Ants, W, H, [])),
-  NewBoard = update_board(Board, W, H, Ants),
+  NewBoard = update_board(Model, Board, W, H, Ants),
 
-  log(NewAnts, NewBoard, T+1, W, H),
+  log(Model, NewAnts, NewBoard, T+1, W, H),
 
-  step(NewBoard, W, H, NewAnts, T + 1, MaxT).
+  step(Model, NewBoard, W, H, NewAnts, T + 1, MaxT).
 
 
 -ifdef(debug).
 
-log(NewAnts, NewBoard, Step, Width, Height) ->
-    lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
-    lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
+log(Model, NewAnts, NewBoard, Step, Width, Height) ->
+%%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
+%%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
   io:format("Step ~p:~n", [Step + 1]),
-  ?IMPL:display(NewAnts, NewBoard, Width, Height),
-  timer:sleep(500). %
-%%   ,io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
+  Model:display(NewAnts, NewBoard, Width, Height),
+  timer:sleep(150),
+  io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
 
 -else.
 log(_,_,_,_,_) ->
@@ -80,8 +81,8 @@ move_ants([AntCell | TAntCells], [{AntPos, AntDir} | TAnts], W, H, Occuppied) ->
   {NewPos, _NewDir} = NewAnt,
   [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewPos | Occuppied])].
 
-update_board(Board, W, H, Ants) ->
-  ?IMPL:update_board(Board, W, H, Ants).
+update_board(Model, Board, W, H, Ants) ->
+  Model:update_board(Board, W, H, Ants).
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
@@ -118,15 +119,15 @@ turn_left({0, -1}) -> {1, 0};
 turn_left({-1, 0}) -> {0, -1}.
 
 
-create_ants(PopSize, W, H) ->
-  ?IMPL:create_ants(PopSize, W, H).
+create_ants(Model, PopSize, W, H) ->
+  Model:create_ants(PopSize, W, H).
 
-create_board(W, H)->
-  ?IMPL:create_board(W, H).
+create_board(Model, W, H)->
+  Model:create_board(W, H).
 
 
-get_cell({X,Y}, Width, Height, Board) ->
-  ?IMPL:get_cell({X,Y}, Width, Height, Board).
+get_cell(Model, {X,Y}, Width, Height, Board) ->
+  Model:get_cell({X,Y}, Width, Height, Board).
 
 -spec cell_char(cell()) -> char().
 cell_char({alive}) -> $o;

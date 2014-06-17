@@ -16,3 +16,4 @@
 -type ant() :: {position(), direction()}.
 -type board() :: [cell()].
 -type tree() :: term().
+-type model() :: list_based | gbtree_based.

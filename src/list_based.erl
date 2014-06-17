@@ -38,12 +38,14 @@ map_nth(I, [E | Rest], F) -> [E | map_nth(I - 1, Rest, F)].
 -spec get_cell(position(), dimension(), dimension(), [cell()]) -> cell().
 get_cell({X, Y}, Width, _Height, Board) ->
 %%   Idx = (Y - 1) * Width + X,
+
   Idx = ant_pos_to_index({X, Y}, Width, _Height),
 %%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,Width,Idx]),
   lists:nth(Idx, Board).
 
-ant_pos_to_index({X, Y}, W, _H) ->
-  (Y - 1) * W + X.
+ant_pos_to_index({X, Y}, _W, H) ->
+%%   (Y - 1) * W + X.
+  (X - 1) * H + Y.
 
 -spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
 create_ants(PopulationSize, Width, Height) ->

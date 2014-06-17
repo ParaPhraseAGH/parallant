@@ -20,7 +20,9 @@
 %%   {W, (I - 1) div W + 1}.
 
 ant_pos_to_index({X, Y}, W, _H) ->
-  (Y - 1) * W + X.
+  I = (Y - 1) * W + X,
+%%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,W,I]),
+  I.
 
 flip_ant({{X, Y}, _Dir}, H) -> {{X, H - Y + 1}, _Dir}.
 
@@ -50,7 +52,7 @@ display_cell(I, Cell, _W, _H, AntsWithIndex) ->
 display(Ants, Board, W, H) ->
 %%   io:format("RawBoard: ~p~n",[Board]),
   FlippedAnts = [flip_ant(Ant, H) || Ant <- Ants],
-  FlippedAntsWithIndex = [{ant_pos_to_index({X, Y}, W, H), Ant} || Ant = {{X, Y}, _Dir} <- FlippedAnts],
+  FlippedAntsWithIndex = [{ant_pos_to_index(APos, W, H), Ant} || Ant = {APos, _Dir} <- FlippedAnts],
   FlippedBoard = lists:reverse(flip_board(Board, H)),
 %%   io:format("FlippedBoard: ~p~n",[FlippedBoard]),
   TransposedBoard = lists:reverse(transpose_board(FlippedBoard)),
