@@ -11,10 +11,11 @@
 
 -include("parallant.hrl").
 %% API
-%% -export([]).
--compile(export_all).
+
 
 -spec create_board(dimension(), dimension()) -> [cell()].
+-export([create_board/2, update_board/4, get_cell/4, create_ants/3, display/4]).
+
 create_board(Width, Height) ->
   [{dead} || _I <- lists:seq(1,Width), _J <- lists:seq(1,Height)].
 %%   [{I,J} || I <- lists:seq(1,Width), J <- lists:seq(1,Height)].
@@ -50,16 +51,6 @@ create_ants(PopulationSize, Width, Height) ->
   AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
   [{Pos, parallant:random_direction()} || Pos <- AntPositions].
 
--spec shuffle(list()) -> list().
-shuffle(L) ->
-  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
-
-
--spec random_direction() -> direction().
-random_direction() ->
-  Dirs = [{0, 1}, {1, 0}, {0, -1}, {-1, 0}],
-  Idx = random:uniform(length(Dirs)),
-  lists:nth(Idx, Dirs).
-
+-spec display(ant(), board(), dimension(), dimension()) -> ok.
 display(Ants, Board, Width, Height) ->
   graphics:display(Ants, Board, Width, Height).

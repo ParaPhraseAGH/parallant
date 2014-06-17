@@ -41,9 +41,9 @@ display_cell(I, Cell, _W, _H, AntsWithIndex) ->
   Result = lists:keytake(I, 1, AntsWithIndex),
   {C, RestOfAnts} = case Result of
                       {value, {_I, {_APos, ADir}}, Rest} ->
-                        {parallant:ant_char(ADir), Rest};
+                        {ant_char(ADir), Rest};
                       false ->
-                        {parallant:cell_char(Cell), AntsWithIndex}
+                        {cell_char(Cell), AntsWithIndex}
                     end,
   io:format("~c ", [C]),
   RestOfAnts.
@@ -72,3 +72,29 @@ display(Ants, [HB | TB], W, H, I) when I rem W == 0 ->
 display(Ants, [HB | TB], W, H, I) ->
   RestOfAnts = display_cell(I, HB, W, H, Ants),
   display(RestOfAnts, TB, W, H, I + 1).
+
+-spec ant_char(position()) -> char().
+ant_char({-1, 0}) -> $<;
+ant_char({1, 0}) -> $>;
+ant_char({0, 1}) -> $^;
+ant_char({0, -1}) -> $v.
+
+-spec cell_char(cell()) -> char().
+cell_char({alive}) -> $o;
+cell_char({dead}) -> $.;
+cell_char({I}) -> I;
+cell_char(_V) -> _V.
+
+
+%% display(_, W, H, N) when N > W * H -> ok;
+%% display(Board, W, H, I) when I rem W == 0 ->
+%%   X = (I-1) div W + 1,
+%%   Y = I rem W if I%W >0 else W,
+%%   io:format("~p~n",[cell_char(get_cell(X, Y, W, H, Board))]),
+%%   display(Board, W, H, I+1);
+%% display(Board, _W, _H, I) ->
+%%   X = (I-1) div W + 1,
+%%   Y = I rem W if I%W >0 else W,
+%%   io:format("~p",[cell_char(get_cell(X, Y, W, H,Board))]),
+%%   display(Board, _W, _H, I+1).
+

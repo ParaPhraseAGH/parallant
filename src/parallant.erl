@@ -9,8 +9,7 @@
 -module(parallant).
 %% API
 -export([start/4, start/0, start/5]).
--export([ant_char/1, cell_char/1, update_cell/1,
-  all_positions/2, shuffle/1, random_direction/0]).
+-export([update_cell/1]).
 
 -include("parallant.hrl").
 
@@ -130,44 +129,5 @@ create_ants(Model, PopSize, W, H) ->
 create_board(Model, W, H)->
   Model:create_board(W, H).
 
-
 get_cell(Model, {X,Y}, Width, Height, Board) ->
   Model:get_cell({X,Y}, Width, Height, Board).
-
--spec cell_char(cell()) -> char().
-cell_char({alive}) -> $o;
-cell_char({dead}) -> $.;
-cell_char({I}) -> I;
-cell_char(_V) -> _V.
-
--spec ant_char(position()) -> char().
-ant_char({-1, 0}) -> $<;
-ant_char({1, 0}) -> $>;
-ant_char({0, 1}) -> $^;
-ant_char({0, -1}) -> $v.
-
-%% display(_, W, H, N) when N > W * H -> ok;
-%% display(Board, W, H, I) when I rem W == 0 ->
-%%   X = (I-1) div W + 1,
-%%   Y = I rem W if I%W >0 else W,
-%%   io:format("~p~n",[cell_char(get_cell(X, Y, W, H, Board))]),
-%%   display(Board, W, H, I+1);
-%% display(Board, _W, _H, I) ->
-%%   X = (I-1) div W + 1,
-%%   Y = I rem W if I%W >0 else W,
-%%   io:format("~p",[cell_char(get_cell(X, Y, W, H,Board))]),
-%%   display(Board, _W, _H, I+1).
-
--spec all_positions(dimension(), dimension()) -> [{dimension(),dimension()}].
-all_positions(Width, Height) ->
-  [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)].
--spec shuffle(list()) -> list().
-shuffle(L) ->
-  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
-
-
--spec random_direction() -> direction().
-random_direction() ->
-  Dirs = [{0, 1}, {1, 0}, {0, -1}, {-1, 0}],
-  Idx = random:uniform(length(Dirs)),
-  lists:nth(Idx, Dirs).
