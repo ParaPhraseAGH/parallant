@@ -25,11 +25,8 @@ update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
   % assertion: every Ant position is different
   % TODO update board with all Ants in one pass
 
-  % FIXME updating ant positions
-
   Idx = ant_pos_to_index(APos, W, H),
-  NewBoard = map_nth(Idx, Board,
-    fun parallant:update_cell/1),
+  NewBoard = map_nth(Idx, Board, fun parallant:update_cell/1),
   update_board(NewBoard, W, H, TAnts).
 
 map_nth(1, [Old | Rest], F) -> [F(Old) | Rest];

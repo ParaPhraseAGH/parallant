@@ -22,7 +22,7 @@ create_board(Width, Height) ->
   Indices = parallant:all_positions(Width, Height),
   populateTree({dead}, Indices, Tree).
 
--spec populateTree(cell(), [position()], tree()) -> tree().
+-spec populateTree(cell(), [position()], gb_trees:tree()) -> gb_trees:tree().
 populateTree(_, [], Tree) -> Tree;
 populateTree(Val, [HI | TI], Tree) ->
   populateTree(Val, TI, gb_trees:insert(HI, Val, Tree)).

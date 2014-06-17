@@ -14,6 +14,5 @@
 -type direction() :: {onedir(), onedir()}.
 -type cell() :: {dead} | {alive}.
 -type ant() :: {position(), direction()}.
--type board() :: [cell()].
--type tree() :: term().
+-type board() :: [cell()] | gb_trees:tree().
 -type model() :: list_based | gbtree_based.

@@ -12,10 +12,6 @@
 -export([ant_char/1, cell_char/1, update_cell/1,
   all_positions/2, shuffle/1, random_direction/0]).
 
-%% -define(debug, ok).
-%% -define(IMPL, list_based).
-%% -define(IMPL, gbtree_based).
-
 -include("parallant.hrl").
 
 -spec start() -> ok.
@@ -31,17 +27,26 @@ start(Model, Width, Height, PopulationSize, Steps) ->
   Board = create_board(Model, Width, Height),
   Ants = create_ants(Model, PopulationSize, Width, Height),
 
-  io:format("Ants: ~p~n", [Ants]),
-  io:format("Step 1:~n"),
-  Model:display(Ants, Board, Width, Height),
+  if
+    Width < 65 ->
+      io:format("Ants: ~p~n", [Ants]),
+      io:format("Step 1:~n"),
+      Model:display(Ants, Board, Width, Height);
+    true -> ok
+  end,
   T1 = erlang:now(),
 
   {EndBoard, EndAnts} = step(Model, Board, Width, Height, Ants, 1, Steps),
 
   T2 = erlang:now(),
 
-  io:format("Step ~p:~n", [Steps]),
-  Model:display(EndAnts, EndBoard, Width, Height),
+  if
+    Width < 65 ->
+      io:format("Step ~p:~n", [Steps]),
+      Model:display(EndAnts, EndBoard, Width, Height);
+    true -> ok
+  end,
+
   Time = timer:now_diff(T2, T1),
   TimeInSecs = Time / 1000000,
   io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
@@ -70,7 +75,7 @@ log(Model, NewAnts, NewBoard, Step, Width, Height) ->
   io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
 
 -else.
-log(_,_,_,_,_) ->
+log(_,_,_,_,_,_) ->
   ok.
 -endif.
 
