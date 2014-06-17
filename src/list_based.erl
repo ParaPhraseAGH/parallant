@@ -10,12 +10,11 @@
 -author("piotr").
 
 -include("parallant.hrl").
-%% API
 
+%% API
+-export([create_board/2, update_board/4, get_cell/4, display/4]).
 
 -spec create_board(dimension(), dimension()) -> [cell()].
--export([create_board/2, update_board/4, get_cell/4, create_ants/3, display/4]).
-
 create_board(Width, Height) ->
   [{dead} || _I <- lists:seq(1,Width), _J <- lists:seq(1,Height)].
 %%   [{I,J} || I <- lists:seq(1,Width), J <- lists:seq(1,Height)].
@@ -44,12 +43,6 @@ get_cell({X, Y}, Width, _Height, Board) ->
 ant_pos_to_index({X, Y}, _W, H) ->
 %%   (Y - 1) * W + X.
   (X - 1) * H + Y.
-
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-  ShuffledCellPositions = parallant:shuffle(parallant:all_positions(Width, Height)),
-  AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  [{Pos, parallant:random_direction()} || Pos <- AntPositions].
 
 -spec display(ant(), board(), dimension(), dimension()) -> ok.
 display(Ants, Board, Width, Height) ->

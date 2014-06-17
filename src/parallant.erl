@@ -12,6 +12,7 @@
 -export([update_cell/1]).
 
 -include("parallant.hrl").
+-define(MAX_WIDTH_TO_SHOW, 65).
 
 -spec start() -> ok.
 start() ->
@@ -27,7 +28,7 @@ start(Model, Width, Height, PopulationSize, Steps) ->
   Ants = create_ants(Model, PopulationSize, Width, Height),
 
   if
-    Width < 65 ->
+    Width < ?MAX_WIDTH_TO_SHOW ->
       io:format("Ants: ~p~n", [Ants]),
       io:format("Step 1:~n"),
       Model:display(Ants, Board, Width, Height);
@@ -40,7 +41,7 @@ start(Model, Width, Height, PopulationSize, Steps) ->
   T2 = erlang:now(),
 
   if
-    Width < 65 ->
+    Width < ?MAX_WIDTH_TO_SHOW ->
       io:format("Step ~p:~n", [Steps]),
       Model:display(EndAnts, EndBoard, Width, Height);
     true -> ok
@@ -77,6 +78,12 @@ log(Model, NewAnts, NewBoard, Step, Width, Height) ->
 log(_,_,_,_,_,_) ->
   ok.
 -endif.
+
+-spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
+create_ants(PopulationSize, Width, Height) ->
+  ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
+  AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
+  [{Pos, util:random_direction()} || Pos <- AntPositions].
 
 -spec move_ants([cell()], [ant()], dimension(), dimension(), position()) -> [ant()].
 move_ants([], [], _, _, _) -> [];
@@ -123,8 +130,8 @@ turn_left({0, -1}) -> {1, 0};
 turn_left({-1, 0}) -> {0, -1}.
 
 
-create_ants(Model, PopSize, W, H) ->
-  Model:create_ants(PopSize, W, H).
+create_ants(_Model, PopSize, W, H) ->
+  create_ants(PopSize, W, H).
 
 create_board(Model, W, H)->
   Model:create_board(W, H).

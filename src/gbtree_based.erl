@@ -12,9 +12,9 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/4, get_cell/4, create_ants/3, display/4]).
+-export([create_board/2, update_board/4, get_cell/4, display/4]).
 
--spec create_board(dimension(), dimension()) -> [cell()].
+-spec create_board(dimension(), dimension()) -> [gb_trees:tree(position(), cell())].
 create_board(Width, Height) ->
   Tree = gb_trees:empty(),
   Indices = util:all_positions(Width, Height),
@@ -25,7 +25,7 @@ populateTree(_, [], Tree) -> Tree;
 populateTree(Val, [HI | TI], Tree) ->
   populateTree(Val, TI, gb_trees:insert(HI, Val, Tree)).
 
--spec update_board(board(), dimension(), dimension(), [ant()]) -> board().
+-spec update_board(gb_trees:tree(position(), cell()), dimension(), dimension(), [ant()]) -> gb_trees:tree(position(), cell()).
 update_board(Board, _W, _H, []) -> Board;
 update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
   % assertion: every Ant position is different
@@ -33,16 +33,9 @@ update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
   NewBoard = gb_trees:update(APos, parallant:update_cell(ACell), Board),
   update_board(NewBoard, W, H, TAnts).
 
--spec get_cell(position(), dimension(), dimension(), [cell()]) -> cell().
+-spec get_cell(position(), dimension(), dimension(), gb_trees:tree(position(), cell())) -> cell().
 get_cell(Pos, _Width, _Height, Board) ->
   gb_trees:get(Pos, Board).
-
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-  ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
-  AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  [{Pos, util:random_direction()} || Pos <- AntPositions].
-
 
 -spec display([ant()], board(), dimension(), dimension()) -> ok.
 display(Ants, Board, Width, Height) ->
