@@ -9,9 +9,8 @@
 -author("piotr").
 
 -type dimension() :: pos_integer().
--type onedir() :: -1 | 0 | 1.
 -type position() :: {dimension(), dimension()}.
--type direction() :: {onedir(), onedir()}.
+-type direction() :: north | south | east | west.
 -type cell() :: {dead} | {alive}.
 -type ant() :: {position(), direction()}.
 -type board() :: [cell()] | gb_trees:tree().

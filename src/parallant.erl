@@ -124,7 +124,8 @@ move_ant({AntCellState}, Pos, Dir, W, H, Occuppied) ->
   NewPos = forward(Pos, NewDir, W, H, Occuppied),
   {NewPos, NewDir}.
 
-forward({X, Y}, {DX, DY}, W, H, Occuppied) ->
+forward({X, Y}, Dir, W, H, Occuppied) ->
+  {DX, DY} = heading(Dir),
   NewX = torus_bounds(X + DX, W),
   NewY = torus_bounds(Y + DY, H),
   case lists:member({NewX, NewY}, Occuppied) of
@@ -139,16 +140,20 @@ torus_bounds(Val, _Max) -> Val.
 turn(Dir, dead) -> turn_right(Dir);
 turn(Dir, alive) -> turn_left(Dir).
 
-turn_right({0, 1}) -> {1, 0};
-turn_right({1, 0}) -> {0, -1};
-turn_right({0, -1}) -> {-1, 0};
-turn_right({-1, 0}) -> {0, 1}.
+turn_right(north) -> east;
+turn_right(east) -> south;
+turn_right(south) -> west;
+turn_right(west) -> north.
 
-turn_left({0, 1}) -> {-1, 0};
-turn_left({1, 0}) -> {0, 1};
-turn_left({0, -1}) -> {1, 0};
-turn_left({-1, 0}) -> {0, -1}.
+turn_left(north) -> west;
+turn_left(east) -> north;
+turn_left(south) -> east;
+turn_left(west) -> south.
 
+heading(north) -> {0, 1};
+heading(south) -> {0, -1};
+heading(east) -> {1, 0};
+heading(west) -> {-1, 0}.
 
 create_ants(_Model, PopSize, W, H) ->
   create_ants(PopSize, W, H).

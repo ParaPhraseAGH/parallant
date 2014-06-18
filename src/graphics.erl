@@ -71,10 +71,10 @@ display(Ants, [HB | TB], W, H, I) ->
   display(RestOfAnts, TB, W, H, I + 1).
 
 -spec ant_char(position()) -> char().
-ant_char({-1, 0}) -> $<;
-ant_char({1, 0}) -> $>;
-ant_char({0, 1}) -> $^;
-ant_char({0, -1}) -> $v.
+ant_char(west) -> $<;
+ant_char(east) -> $>;
+ant_char(north) -> $^;
+ant_char(south) -> $v.
 
 -spec cell_char(cell()) -> char().
 cell_char({alive}) -> $o;

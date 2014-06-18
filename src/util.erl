@@ -25,6 +25,6 @@ shuffle(L) ->
 
 -spec random_direction() -> direction().
 random_direction() ->
-  Dirs = [{0, 1}, {1, 0}, {0, -1}, {-1, 0}],
+  Dirs = [north, south, east, west],
   Idx = random:uniform(length(Dirs)),
   lists:nth(Idx, Dirs).
