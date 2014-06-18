@@ -13,29 +13,19 @@
 %% API
 -export([display/4]).
 
-
-%% ant_index_to_pos(I, W, _H) when I rem W > 0 ->
-%%   {I rem W, (I - 1) div W + 1};
-%% ant_index_to_pos(I, W, _H) ->
-%%   {W, (I - 1) div W + 1}.
-
-ant_pos_to_index({X, Y}, W, _H) ->
-  I = (Y - 1) * W + X,
+pos_to_index({X, Y}, W, H) ->
+  (H - Y) * W + X.
 %%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,W,I]),
-  I.
 
-flip_ant({{X, Y}, _Dir}, H) -> {{X, H - Y + 1}, _Dir}.
+split_into_chunks(List, ChunkLen) ->
+  split_into_chunks(List, [], ChunkLen, 1).
 
-flip_board(Board, Width) ->
-  flip_board_acc(Board, [], [], Width, 1).
-
-flip_board_acc([], _Row, Rows, _, _) ->
-%%   lists:flatten(Rows);
-  Rows;
-flip_board_acc([H | T], Row, Rows, Width, Width) ->
-  flip_board_acc(T, [], [lists:reverse([H | Row]) | Rows], Width, 1);
-flip_board_acc([H | T], Row, Rows, Width, RI) ->
-  flip_board_acc(T, [H | Row], Rows, Width, RI + 1).
+split_into_chunks([], _ChunkAcc, _, _) ->
+  [];
+split_into_chunks([H | T], ChunkAcc, ChunkLen, ChunkLen) ->
+  [lists:reverse([H | ChunkAcc]) | split_into_chunks(T, [], ChunkLen, 1)];
+split_into_chunks([H | T], ChunkAcc, ChunkLen, CurrIndex) ->
+  split_into_chunks(T, [H | ChunkAcc], ChunkLen, CurrIndex + 1).
 
 display_cell(I, Cell, _W, _H, AntsWithIndex) ->
   Result = lists:keytake(I, 1, AntsWithIndex),
@@ -48,16 +38,23 @@ display_cell(I, Cell, _W, _H, AntsWithIndex) ->
   io:format("~c ", [C]),
   RestOfAnts.
 
--spec display([ant()], board(), dimension(), dimension()) -> ok.
+%% @doc display/4 expects list of cells in the following (lexicographic) order:
+%% [{1,1}, {1,2}, {1,3}, {1,4}, ... {1, H}, {2,1}, {2,2} ... {W,1}, {W,2}, ..., {W, H}]
+%% and displays the board in a natural way:
+%% ^ y (up to max=H)
+%% |
+%% |
+%% *------> x (up to max=W)
+%%
+-spec display([ant()], [cell()], dimension(), dimension()) -> ok.
 display(Ants, Board, W, H) ->
+  AntsWithIndex = [{pos_to_index(APos, W, H), Ant} || Ant = {APos, _Dir} <- Ants],
+  ChunkedBoard = split_into_chunks(Board, H),
+  TransposedBoard = lists:reverse(transpose_board(ChunkedBoard)),
 %%   io:format("RawBoard: ~p~n",[Board]),
-  FlippedAnts = [flip_ant(Ant, H) || Ant <- Ants],
-  FlippedAntsWithIndex = [{ant_pos_to_index(APos, W, H), Ant} || Ant = {APos, _Dir} <- FlippedAnts],
-  FlippedBoard = lists:reverse(flip_board(Board, H)),
-%%   io:format("FlippedBoard: ~p~n",[FlippedBoard]),
-  TransposedBoard = lists:reverse(transpose_board(FlippedBoard)),
+%%   io:format("ChunkedBoard: ~p~n",[ChunkedBoard]),
 %%   io:format("TransposedBoard: ~p~n",[TransposedBoard]),
-  display(lists:keysort(1, FlippedAntsWithIndex), lists:flatten(TransposedBoard), W, H, 1).
+  display(lists:keysort(1, AntsWithIndex), lists:flatten(TransposedBoard), W, H, 1).
 
 transpose_board([[]|_]) -> [];
 transpose_board(M) ->
@@ -84,17 +81,3 @@ cell_char({alive}) -> $o;
 cell_char({dead}) -> $.;
 cell_char({I}) -> I;
 cell_char(_V) -> _V.
-
-
-%% display(_, W, H, N) when N > W * H -> ok;
-%% display(Board, W, H, I) when I rem W == 0 ->
-%%   X = (I-1) div W + 1,
-%%   Y = I rem W if I%W >0 else W,
-%%   io:format("~p~n",[cell_char(get_cell(X, Y, W, H, Board))]),
-%%   display(Board, W, H, I+1);
-%% display(Board, _W, _H, I) ->
-%%   X = (I-1) div W + 1,
-%%   Y = I rem W if I%W >0 else W,
-%%   io:format("~p",[cell_char(get_cell(X, Y, W, H,Board))]),
-%%   display(Board, _W, _H, I+1).
-

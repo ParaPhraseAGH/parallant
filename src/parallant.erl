@@ -16,10 +16,14 @@
 
 -spec test() -> ok.
 test() ->
+  Seed = erlang:now(),
+  {Width, Height, NAnts, Steps} = {50, 30, 5, 500},
   io:format("ListBased:~n"),
-  start(list_based, 50, 30, 5, 500),
+  random:seed(Seed),
+  start(list_based, Width, Height, NAnts, Steps),
   io:format("Gb_treeBased:~n"),
-  start(gbtree_based, 50, 30, 5, 500).
+  random:seed(Seed),
+  start(gbtree_based, Width, Height, NAnts, Steps).
 
 -spec start(model(), dimension(), dimension(), pos_integer()) -> ok.
 start(Model, Width, Height, Steps) ->
@@ -59,13 +63,26 @@ step(_Model, Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
 step(Model, Board, W, H, Ants, T, MaxT) ->
   AntCells = [get_cell(Model, APos, W, H, Board) || {APos, _} <- Ants],
 %%   io:format("AntCells: ~p~n", [AntCells]),
-  NewAnts = lists:reverse(move_ants(AntCells, Ants, W, H, [])),
+%%   io:format("Ants:    ~p~n", [Ants]),
+  NewAnts = move_ants(AntCells, Ants, W, H, []),
+%%   io:format("NewAnts: ~p~n", [NewAnts]),
   NewBoard = update_board(Model, Board, W, H, Ants),
 
   log(Model, NewAnts, NewBoard, T+1, W, H),
 
   step(Model, NewBoard, W, H, NewAnts, T + 1, MaxT).
 
+-ifdef(dont_override_disp).
+
+override_display(_) ->
+  ok.
+
+-else.
+
+override_display(Height) ->
+  io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
+
+-endif.
 
 -ifdef(debug).
 
@@ -75,7 +92,7 @@ log(Model, NewAnts, NewBoard, Step, Width, Height) ->
   io:format("Step ~p:~n", [Step + 1]),
   Model:display(NewAnts, NewBoard, Width, Height),
   timer:sleep(150),
-  io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
+  override_display(Height).
 
 -else.
 log(_,_,_,_,_,_) ->

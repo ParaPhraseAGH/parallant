@@ -15,7 +15,7 @@
 -export([random_direction/0, shuffle/1, all_positions/2]).
 
 
--spec all_positions(dimension(), dimension()) -> [{dimension(),dimension()}].
+-spec all_positions(dimension(), dimension()) -> [position()].
 all_positions(Width, Height) ->
   [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)].
 

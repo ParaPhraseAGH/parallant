@@ -25,7 +25,7 @@ update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
   % assertion: every Ant position is different
   % TODO update board with all Ants in one pass
 
-  Idx = ant_pos_to_index(APos, W, H),
+  Idx = pos_to_index(APos, W, H),
   NewBoard = map_nth(Idx, Board, fun parallant:update_cell/1),
   update_board(NewBoard, W, H, TAnts).
 
@@ -34,14 +34,11 @@ map_nth(I, [E | Rest], F) -> [E | map_nth(I - 1, Rest, F)].
 
 -spec get_cell(position(), dimension(), dimension(), [cell()]) -> cell().
 get_cell({X, Y}, Width, _Height, Board) ->
-%%   Idx = (Y - 1) * Width + X,
-
-  Idx = ant_pos_to_index({X, Y}, Width, _Height),
+  Idx = pos_to_index({X, Y}, Width, _Height),
 %%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,Width,Idx]),
   lists:nth(Idx, Board).
 
-ant_pos_to_index({X, Y}, _W, H) ->
-%%   (Y - 1) * W + X.
+pos_to_index({X, Y}, _W, H) ->
   (X - 1) * H + Y.
 
 -spec display(ant(), board(), dimension(), dimension()) -> ok.
