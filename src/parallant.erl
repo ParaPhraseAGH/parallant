@@ -12,6 +12,7 @@
 -export([update_cell/1]).
 
 -include("parallant.hrl").
+-define(LOG_DELAY, 50). % ms
 -define(MAX_WIDTH_TO_SHOW, 65).
 
 -spec test() -> ok.
@@ -91,7 +92,7 @@ log(Model, NewAnts, NewBoard, Step, Width, Height) ->
 %%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
   io:format("Step ~p:~n", [Step + 1]),
   Model:display(NewAnts, NewBoard, Width, Height),
-  timer:sleep(150),
+  timer:sleep(?LOG_DELAY),
   override_display(Height).
 
 -else.
