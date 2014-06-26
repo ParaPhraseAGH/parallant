@@ -21,7 +21,7 @@ create_board(Width, Height) ->
 
 -spec update_board(board(), dimension(), dimension(), [ant()]) -> board().
 update_board(Board, _W, _H, []) -> Board;
-update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
+update_board(Board, W, H, [#ant{pos = APos} | TAnts]) ->
   % assertion: every Ant position is different
   % TODO update board with all Ants in one pass
 

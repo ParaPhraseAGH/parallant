@@ -27,10 +27,10 @@ split_into_chunks([H | T], ChunkAcc, ChunkLen, ChunkLen) ->
 split_into_chunks([H | T], ChunkAcc, ChunkLen, CurrIndex) ->
   split_into_chunks(T, [H | ChunkAcc], ChunkLen, CurrIndex + 1).
 
-display_cell(I, Cell, _W, _H, AntsWithIndex) ->
+display_cell(I, Cell, AntsWithIndex) ->
   Result = lists:keytake(I, 1, AntsWithIndex),
   {C, RestOfAnts} = case Result of
-                      {value, {_I, {_APos, ADir}}, Rest} ->
+                      {value, {_I, #ant{dir = ADir}}, Rest} ->
                         {ant_char(ADir), Rest};
                       false ->
                         {cell_char(Cell), AntsWithIndex}
@@ -48,7 +48,7 @@ display_cell(I, Cell, _W, _H, AntsWithIndex) ->
 %%
 -spec display([ant()], [cell()], dimension(), dimension()) -> ok.
 display(Ants, Board, W, H) ->
-  AntsWithIndex = [{pos_to_index(APos, W, H), Ant} || Ant = {APos, _Dir} <- Ants],
+  AntsWithIndex = [{pos_to_index(A#ant.pos, W, H), A} || A <- Ants],
   ChunkedBoard = split_into_chunks(Board, H),
   TransposedBoard = lists:reverse(transpose_board(ChunkedBoard)),
 %%   io:format("RawBoard: ~p~n",[Board]),
@@ -63,11 +63,11 @@ transpose_board(M) ->
 display(_Ants, [], _W, _H, _N) ->
   io:format("~n");
 display(Ants, [HB | TB], W, H, I) when I rem W == 0 ->
-  RestOfAnts = display_cell(I, HB, W, H, Ants),
+  RestOfAnts = display_cell(I, HB, Ants),
   io:format("~n"),
   display(RestOfAnts, TB, W, H, I + 1);
 display(Ants, [HB | TB], W, H, I) ->
-  RestOfAnts = display_cell(I, HB, W, H, Ants),
+  RestOfAnts = display_cell(I, HB, Ants),
   display(RestOfAnts, TB, W, H, I + 1).
 
 -spec ant_char(position()) -> char().

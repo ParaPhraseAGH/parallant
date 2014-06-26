@@ -62,7 +62,7 @@ start(Model, Width, Height, PopulationSize, Steps) ->
 -spec step(model(), [cell()], dimension(), dimension(), [ant()], pos_integer(), pos_integer()) -> {[cell()],[ant()]}.
 step(_Model, Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
 step(Model, Board, W, H, Ants, T, MaxT) ->
-  AntCells = [get_cell(Model, APos, W, H, Board) || {APos, _} <- Ants],
+  AntCells = [get_cell(Model, APos, W, H, Board) || #ant{pos = APos} <- Ants],
 %%   io:format("AntCells: ~p~n", [AntCells]),
 %%   io:format("Ants:    ~p~n", [Ants]),
   NewAnts = move_ants(AntCells, Ants, W, H, []),
@@ -104,14 +104,13 @@ log(_,_,_,_,_,_) ->
 create_ants(PopulationSize, Width, Height) ->
   ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
   AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  [{Pos, util:random_direction()} || Pos <- AntPositions].
+  [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
 
 -spec move_ants([cell()], [ant()], dimension(), dimension(), position()) -> [ant()].
 move_ants([], [], _, _, _) -> [];
-move_ants([AntCell | TAntCells], [{AntPos, AntDir} | TAnts], W, H, Occuppied) ->
-  NewAnt = move_ant(AntCell, AntPos, AntDir, W, H, Occuppied),
-  {NewPos, _NewDir} = NewAnt,
-  [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewPos | Occuppied])].
+move_ants([AntCell | TAntCells], [Ant | TAnts], W, H, Occuppied) ->
+  NewAnt = move_ant(AntCell, Ant, W, H, Occuppied),
+  [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewAnt#ant.pos | Occuppied])].
 
 update_board(Model, Board, W, H, Ants) ->
   Model:update_board(Board, W, H, Ants).
@@ -120,10 +119,10 @@ update_board(Model, Board, W, H, Ants) ->
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
-move_ant({AntCellState}, Pos, Dir, W, H, Occuppied) ->
+move_ant({AntCellState}, #ant{pos = Pos, dir = Dir}, W, H, Occuppied) ->
   NewDir = turn(Dir, AntCellState),
   NewPos = forward(Pos, NewDir, W, H, Occuppied),
-  {NewPos, NewDir}.
+  #ant{pos = NewPos, dir = NewDir}.
 
 forward({X, Y}, Dir, W, H, Occuppied) ->
   {DX, DY} = heading(Dir),

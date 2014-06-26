@@ -8,10 +8,18 @@
 %%%-------------------------------------------------------------------
 -author("piotr").
 
+-record(ant, {pos :: position(),
+              dir :: direction()}).
+
+-record(world, {board :: board_state(),
+                w :: dimension(),
+                h :: dimension()}).
+
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
 -type cell() :: {dead} | {alive}.
--type ant() :: {position(), direction()}.
--type board() :: [cell()] | gb_trees:tree().
+-type ant() :: #ant{}.
+-type board_state() :: [cell()] | gb_trees:tree().
+-type board() :: #world{}.
 -type model() :: list_based | gbtree_based.

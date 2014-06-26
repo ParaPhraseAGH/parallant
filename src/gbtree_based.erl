@@ -27,7 +27,7 @@ populateTree(Val, [HI | TI], Tree) ->
 
 -spec update_board(gb_trees:tree(position(), cell()), dimension(), dimension(), [ant()]) -> gb_trees:tree(position(), cell()).
 update_board(Board, _W, _H, []) -> Board;
-update_board(Board, W, H, [{APos, _ADir} | TAnts]) ->
+update_board(Board, W, H, [#ant{pos = APos} | TAnts]) ->
   % assertion: every Ant position is different
   ACell = gb_trees:get(APos, Board),
   NewBoard = gb_trees:update(APos, parallant:update_cell(ACell), Board),
