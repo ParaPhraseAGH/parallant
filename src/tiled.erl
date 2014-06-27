@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 25. Jun 2014 1:40 PM
 %%%-------------------------------------------------------------------
--module(topo).
+-module(tiled).
 -author("piotr").
 
 -include("parallant.hrl").
@@ -213,7 +213,7 @@ update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boar
   MovedToLeftAnts :: [ant()],
   MovedToRightAnts :: [ant()].
 
-update_tile([], _Tiles, _MovedToTileAnts, _Neighbours, _Width, _Height, _Board, Impl) ->
+update_tile([], _Tiles, _MovedToTileAnts, _Neighbours, _Width, _Height, _Board, _Impl) ->
   [[], [], []];
 update_tile(TileAnts, Tiles, MovedToTileAnts, {LeftAnts, RightAnts}, Width, Height, Board, Impl) ->
   % turn and move every ant if relevant cell is not occupied by ants from MoveToTile, Left or Right
