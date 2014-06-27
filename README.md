@@ -23,6 +23,12 @@
 
 ### Running ###
 
+There is a script that runs gbtree_based skel and no skel versions:
+
+`./test.sh Width Height PopulationSize Iterations`
+
+
+or
 
 
 ```

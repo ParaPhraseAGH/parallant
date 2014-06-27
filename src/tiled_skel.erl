@@ -171,23 +171,8 @@ update_ants(Processed, Ants) ->
 update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Impl) ->
   % FIXME this part can be parallelized
   MaxI = dict:size(Ants),
-%%   io:format("MAXI = ~p = SIZE(ANTS = ~p)~n",[MaxI, dict:to_list(Ants)]),
   IndexTriplets = [[I, neighbour(left, I, MaxI), neighbour(right, I, MaxI)]
     || I <- lists:seq(IColour, MaxI, KColours)],
-%%   MovedTuples = [
-%%     {T, update_tile(
-%%           dict:fetch(I, Ants),
-%%           { dict:fetch(I, TilesDict),
-%%             dict:fetch(ILeft, TilesDict)},
-%%           dict:fetch(I, MovedAnts),
-%%           merge_neighbourhood(ILeft, IRight, Ants, MovedAnts),
-%%           Width,
-%%           Height,
-%%           Board,
-%%           Impl)
-%%     } ||
-%%     T = [I, ILeft, IRight] <- IndexTriplets
-%%   ],
   UpdateTileFun =  fun (T = [I, ILeft, IRight]) ->
                   {T, update_tile(
                     dict:fetch(I, Ants),
@@ -201,8 +186,7 @@ update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boar
                     Impl)}
                 end,
   UpdateTile = {seq, UpdateTileFun},
-  ZipFun = fun({Indices, MovedTiles}) -> lists:zip(Indices, MovedTiles) end,
-  Zip = {seq, ZipFun},
+  Zip = {seq, fun({Indices, MovedTiles}) -> lists:zip(Indices, MovedTiles) end},
   Pipe = {pipe, [UpdateTile, Zip]},
   TileFlow = {map,
                 [Pipe],
@@ -212,19 +196,8 @@ update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boar
   Workflow = {pipe, [TileFlow,
                      Flatten,
                      GroupByConcat]},
-%%   [MovedTuples2] = skel:do([Workflow], [IndexTriplets]),
   [GrouppedMovedAntsWithIndices] = skel:do([Workflow], [IndexTriplets]),
-%%   io:format("MovedTuples1: ~p~n",[MovedTuples]),
-%%   io:format("MovedTuples2: ~p~n",[MovedTuples2]),
-%%   io:format("EQUAL: ~p~n",[MovedTuples == MovedTuples2]),
-  % merge results and return
-%%   MovedAntsWithIndices = lists:flatten([lists:zip(Indices, MovedTiles) || {Indices, MovedTiles} <- MovedTuples]),
-%%   io:format("MovedAntsWithIndices1: ~p~n",[MovedAntsWithIndices]),
-%%   io:format("MovedAntsWithIndices2: ~p~n",[MovedAntsWithIndices2]),
-%%   io:format("EQUAL: ~p~n",[MovedAntsWithIndices == MovedAntsWithIndices2]),
   Processed = [hd(Triplet) || Triplet <- IndexTriplets],
-%%   {Processed, MovedAntsWithIndices}.
-%%   {Processed, group_by_concat(MovedAntsWithIndices)}.
   {Processed, GrouppedMovedAntsWithIndices}.
 
 -spec update_tile(TileAnts, Tiles, MovedToTileAnts, NeighbourAnts, Width, Height, Board, Impl) ->

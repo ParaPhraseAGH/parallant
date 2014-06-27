@@ -12,7 +12,12 @@
 
 -include("parallant.hrl").
 
+-ifdef(skel).
 -define(TILED_MODULE, tiled_skel).
+-else.
+-define(TILED_MODULE, tiled).
+-endif.
+-define(N_WORKERS, 2).
 
 -spec test() -> ok.
 test() ->
@@ -21,15 +26,15 @@ test() ->
 -spec run(world_impl(), [cell()], dimension(), dimension(), dict:dict(pos_integer(),[ant()]), pos_integer()) -> {[cell()],[ant()]}.
 run(Impl, Board, Width, Height, Ants, Steps) ->
   KColours = 2,
-  NWorkers = 2,
-  NParts = NWorkers * KColours,
+%%   NWorkers = 2,
+  NParts = ?N_WORKERS * KColours,
   {TiledAnts, TilesDict} = ?TILED_MODULE:split_ants_to_tiles(Ants, Width, Height, NParts),
   {EndBoard,EndTiledAnts} = step(Impl, Board, Width, Height, TiledAnts, TilesDict, 1, Steps),
   EndAnts = ?TILED_MODULE:flatten_tiles(EndTiledAnts),
   {EndBoard, EndAnts}.
 
 -spec display(world_impl(), ant(), board(), dimension(), dimension()) -> ok.
-display(Impl, Ants, Board, Width, Height) when is_list(Ants)->
+display(Impl, Ants, Board, Width, Height) when is_list(Ants) ->
   Impl:display(Ants, Board, Width, Height);
 display(Impl, Ants, Board, Width, Height) ->
   FlattenedAnts = ?TILED_MODULE:flatten_tiles(Ants),
