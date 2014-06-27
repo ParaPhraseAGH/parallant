@@ -17,7 +17,7 @@
 -else.
 -define(TILED_MODULE, tiled).
 -endif.
--define(N_WORKERS, 2).
+-define(N_WORKERS, 4).
 
 -spec test() -> ok.
 test() ->

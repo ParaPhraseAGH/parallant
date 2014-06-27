@@ -20,12 +20,23 @@
   ./rebar clean compile -D debug
 ```
 
+  Tiled version uses `skel` library
+#!bash
+  
+  ./rebar clean compile -D skel
+```
+
 
 ### Running ###
 
-There is a script that runs gbtree_based skel and no skel versions:
+There is a script that runs `gbtree_based`: `seq`, `skel` and `not skel` versions:
 
-`./test.sh Width Height PopulationSize Iterations`
+```
+#!bash
+
+./test.sh Width Height PopulationSize Iterations
+
+```
 
 
 or
