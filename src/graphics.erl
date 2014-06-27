@@ -70,7 +70,7 @@ display(Ants, [HB | TB], W, H, I) ->
   RestOfAnts = display_cell(I, HB, Ants),
   display(RestOfAnts, TB, W, H, I + 1).
 
--spec ant_char(position()) -> char().
+-spec ant_char(direction()) -> char().
 ant_char(west) -> $<;
 ant_char(east) -> $>;
 ant_char(north) -> $^;
