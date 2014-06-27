@@ -8,27 +8,32 @@
 %%%-------------------------------------------------------------------
 -module(parallant).
 %% API
--export([start/5, test/0, start/6, test/1, get_cell/5, update_board/5, move_ants/5, log/7, update_cell/1]).
+-export([test/0, test/1, test/4, start/5, start/6]).
+-export([get_cell/5, update_board/5, move_ants/5, log/7, update_cell/1]).
 
 -include("parallant.hrl").
 -define(LOG_DELAY, 50). % ms
 -define(MAX_WIDTH_TO_SHOW, 65).
 
-test() ->
+-spec test(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
+test(Width, Height, NAnts, Steps) ->
   Seed = erlang:now(),
   io:format("Parallant_seq:~n"),
-  test(parallant_seq, Seed),
+  test(parallant_seq, Seed, Width, Height, NAnts, Steps),
   io:format("Parallant_tiled:~n"),
-  test(parallant_tiled, Seed).
+  test(parallant_tiled, Seed, Width, Height, NAnts, Steps).
+
+-spec test() -> ok.
+test() ->
+  test(50, 30, 5, 500).
 
 -spec test(model()) -> ok.
 test(Model) ->
   Seed = erlang:now(),
-  test(Model, Seed).
+  test(Model, Seed,50, 30, 5, 500).
 
--spec test(model(), any()) -> ok.
-test(Model, Seed) ->
-  {Width, Height, NAnts, Steps} = {50, 30, 5, 500},
+-spec test(model(), any(), dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
+test(Model, Seed, Width, Height, NAnts, Steps) ->
   io:format("ListBased:~n"),
   random:seed(Seed),
   start(Model, list_based, Width, Height, NAnts, Steps),
@@ -70,29 +75,32 @@ start(Model, Impl, Width, Height, PopulationSize, Steps) ->
   io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
 
 
--ifdef(dont_override_disp).
+-ifdef(dont_overwrite_disp).
 
-override_display(_) ->
+overwrite_display(_) ->
   ok.
 
 -else.
 
-override_display(Height) ->
+overwrite_display(Height) ->
   io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
 
 -endif.
 
 -ifdef(debug).
 
+-spec log(model(), world_impl(), [ant()], board(), pos_integer(), dimension(), dimension()) -> ok.
 log(Model, Impl, NewAnts, NewBoard, Step, Width, Height) ->
 %%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
 %%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
   io:format("Step ~p:~n", [Step + 1]),
   Model:display(Impl, NewAnts, NewBoard, Width, Height),
   timer:sleep(?LOG_DELAY),
-  override_display(Height).
+  overwrite_display(Height).
 
 -else.
+
+-spec log(any(), any(), any(), any(), any(), any(), any()) -> ok.
 log(_,_,_,_,_,_,_) ->
   ok.
 -endif.
@@ -109,6 +117,7 @@ move_ants([AntCell | TAntCells], [Ant | TAnts], W, H, Occuppied) ->
   NewAnt = move_ant(AntCell, Ant, W, H, Occuppied),
   [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewAnt#ant.pos | Occuppied])].
 
+-spec update_board(world_impl(), board(), dimension(), dimension(), [ant()]) -> board().
 update_board(Impl, Board, W, H, Ants) ->
   Impl:update_board(Board, W, H, Ants).
 
@@ -158,5 +167,6 @@ create_ants(_Impl, PopSize, W, H) ->
 create_board(Impl, W, H)->
   Impl:create_board(W, H).
 
+-spec get_cell(world_impl(), position(), dimension(), dimension(), board()) -> cell().
 get_cell(Impl, {X,Y}, Width, Height, Board) ->
   Impl:get_cell({X,Y}, Width, Height, Board).

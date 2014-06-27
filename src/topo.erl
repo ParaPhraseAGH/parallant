@@ -31,9 +31,9 @@ split_ants_to_tiles(Ants, Width, Height, NParts) ->
                   max_x = I + D - 1,
                   min_y = 1,
                   max_y = Height} || I <- lists:seq(1,Width, D)],
-  io:format("Tiles: ~p ~n", [Tiles]),
+%%   io:format("Tiles: ~p ~n", [Tiles]),
   IndexedTiles = lists:zip(lists:seq(1, length(Tiles)), Tiles),
-  io:format("IndexedTiles: ~p ~n", [IndexedTiles]),
+%%   io:format("IndexedTiles: ~p ~n", [IndexedTiles]),
   TilesDict = dict:from_list(IndexedTiles),
 %%   io:format("TilesDict: ~p ~n", [TilesDict]),
   % map ants to indices of tiles
@@ -45,7 +45,7 @@ split_ants_to_tiles(Ants, Width, Height, NParts) ->
   Concat = fun(_Key, Val1, Val2) -> Val1 ++ Val2 end,
   AntDictWithEmptyTiles =
     dict:merge(Concat, dict:from_list(EmptyTiles), AntDict),
-  io:format("AntDictWithEmpty: ~p ~n", [dict:to_list(AntDictWithEmptyTiles)]),
+%%   io:format("AntDictWithEmpty: ~p ~n", [dict:to_list(AntDictWithEmptyTiles)]),
   {AntDictWithEmptyTiles, TilesDict}.
 
 
