@@ -11,6 +11,8 @@
 -export([start/4, test/0, start/5]).
 -export([update_cell/1]).
 
+-compile(export_all).
+
 -include("parallant.hrl").
 -define(LOG_DELAY, 50). % ms
 -define(MAX_WIDTH_TO_SHOW, 65).
@@ -44,9 +46,18 @@ start(Model, Width, Height, PopulationSize, Steps) ->
   end,
   T1 = erlang:now(),
 
-  {EndBoard, EndAnts} = step(Model, Board, Width, Height, Ants, 1, Steps),
+  KColours = 2,
+  NWorkers = 2,
+  NParts = NWorkers * KColours,
+  {TiledAnts, TilesDict} = topo:split_ants_to_tiles(Ants, Width, Height, NParts),
+
+  {EndTiledAnts,EndBoard} = topo:step(Model, Board, Width, Height, TiledAnts, TilesDict, 1, Steps),
 
   T2 = erlang:now(),
+
+%%   io:format("EndAnts: ~p~n", [EndTiledAnts]),
+
+  EndAnts = topo:flatten_tiles(EndTiledAnts),
 
   if
     Width < ?MAX_WIDTH_TO_SHOW ->
@@ -59,19 +70,11 @@ start(Model, Width, Height, PopulationSize, Steps) ->
   TimeInSecs = Time / 1000000,
   io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
 
--spec step(model(), [cell()], dimension(), dimension(), [ant()], pos_integer(), pos_integer()) -> {[cell()],[ant()]}.
-step(_Model, Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
-step(Model, Board, W, H, Ants, T, MaxT) ->
-  AntCells = [get_cell(Model, APos, W, H, Board) || #ant{pos = APos} <- Ants],
-%%   io:format("AntCells: ~p~n", [AntCells]),
-%%   io:format("Ants:    ~p~n", [Ants]),
-  NewAnts = move_ants(AntCells, Ants, W, H, []),
-%%   io:format("NewAnts: ~p~n", [NewAnts]),
-  NewBoard = update_board(Model, Board, W, H, Ants),
-
-  log(Model, NewAnts, NewBoard, T+1, W, H),
-
-  step(Model, NewBoard, W, H, NewAnts, T + 1, MaxT).
+%% -spec step(model(), [cell()], dimension(), dimension(), dict:dict(pos_integer(),[ant()]), pos_integer(), pos_integer()) -> {[cell()],[ant()]}.
+%% step(_Model, Board, _W, _H, Ants, MaxT, MaxT) -> {Board, Ants};
+%% step(Model, Board, W, H, Ants, T, MaxT) ->
+%%   % FIXME co tu jest potrzebne do move_ants
+%%   step(Model, NewBoard, W, H, NewAnts, T + 1, MaxT).
 
 -ifdef(dont_override_disp).
 
@@ -91,7 +94,8 @@ log(Model, NewAnts, NewBoard, Step, Width, Height) ->
 %%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
 %%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
   io:format("Step ~p:~n", [Step + 1]),
-  Model:display(NewAnts, NewBoard, Width, Height),
+  NewFlattenedAnts = topo:flatten_tiles(NewAnts),
+  Model:display(NewFlattenedAnts, NewBoard, Width, Height),
   timer:sleep(?LOG_DELAY),
   override_display(Height).
 
@@ -113,7 +117,8 @@ move_ants([AntCell | TAntCells], [Ant | TAnts], W, H, Occuppied) ->
   [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewAnt#ant.pos | Occuppied])].
 
 update_board(Model, Board, W, H, Ants) ->
-  Model:update_board(Board, W, H, Ants).
+  Flattened = topo:flatten_tiles(Ants),
+  Model:update_board(Board, W, H, Flattened).
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
@@ -130,7 +135,7 @@ forward({X, Y}, Dir, W, H, Occuppied) ->
   NewY = torus_bounds(Y + DY, H),
   case lists:member({NewX, NewY}, Occuppied) of
     true -> {X, Y};
-    _ -> {NewX, NewY}
+    false -> {NewX, NewY}
   end.
 
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;

@@ -15,10 +15,16 @@
                 w :: dimension(),
                 h :: dimension()}).
 
+-record(tile, {min_x :: dimension(),
+               max_x :: dimension(),
+               min_y :: dimension(),
+               max_y :: dimension()}).
+
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
 -type cell() :: {dead} | {alive}.
+-type tile() :: #tile{}.
 -type ant() :: #ant{}.
 -type board_state() :: [cell()] | gb_trees:tree().
 -type board() :: #world{}.
