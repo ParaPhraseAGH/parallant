@@ -12,6 +12,8 @@
 
 -include("parallant.hrl").
 
+-define(TILED_MODULE, tiled_skel).
+
 -spec test() -> ok.
 test() ->
   parallant:test(?MODULE).
@@ -21,16 +23,16 @@ run(Impl, Board, Width, Height, Ants, Steps) ->
   KColours = 2,
   NWorkers = 2,
   NParts = NWorkers * KColours,
-  {TiledAnts, TilesDict} = tiled:split_ants_to_tiles(Ants, Width, Height, NParts),
+  {TiledAnts, TilesDict} = ?TILED_MODULE:split_ants_to_tiles(Ants, Width, Height, NParts),
   {EndBoard,EndTiledAnts} = step(Impl, Board, Width, Height, TiledAnts, TilesDict, 1, Steps),
-  EndAnts = tiled:flatten_tiles(EndTiledAnts),
+  EndAnts = ?TILED_MODULE:flatten_tiles(EndTiledAnts),
   {EndBoard, EndAnts}.
 
 -spec display(world_impl(), ant(), board(), dimension(), dimension()) -> ok.
 display(Impl, Ants, Board, Width, Height) when is_list(Ants)->
   Impl:display(Ants, Board, Width, Height);
 display(Impl, Ants, Board, Width, Height) ->
-  FlattenedAnts = tiled:flatten_tiles(Ants),
+  FlattenedAnts = ?TILED_MODULE:flatten_tiles(Ants),
   Impl:display(FlattenedAnts, Board, Width, Height).
 
 -spec step(Impl, Board, Width, Height, TiledAnts, TilesDict, CurrentStep, MaxStep) -> {EndAnts, EndBoard} when
@@ -49,8 +51,8 @@ step(_Impl, Board, _Width, _Height, TiledAnts, _TilesDict, MaxStep, MaxStep) ->
   {Board, TiledAnts};
 step(Impl, Board, Width, Height, Ants, TilesDict, Step, MaxStep) ->
   KColours = 2,
-  NewAnts = tiled:update_colours(KColours, Ants, TilesDict, Width, Height, Board, Impl),
-  AntList = tiled:flatten_tiles(Ants),
+  NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, Width, Height, Board, Impl),
+  AntList = ?TILED_MODULE:flatten_tiles(Ants),
   NewBoard = parallant:update_board(Impl, Board, Width, Height, AntList),
   parallant:log(?MODULE, Impl, NewAnts, NewBoard, Step, Width, Height),
   step(Impl, NewBoard, Width, Height, NewAnts, TilesDict, Step+1, MaxStep).
