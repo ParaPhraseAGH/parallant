@@ -10,9 +10,9 @@
 -author("piotr").
 
 -include("parallant.hrl").
--compile(export_all).
+
 %% API
--export([split_ants_to_tiles/4, flatten_tiles/1, step/8]).
+-export([split_ants_to_tiles/4, flatten_tiles/1, update_colours/7]).
 
 % NParts = NWorkers * NColors
 -spec split_ants_to_tiles(Ants, Width, Height, NParts) -> {TiledAnts, TilesDict} when
@@ -34,8 +34,6 @@ split_ants_to_tiles(Ants, Width, Height, NParts) ->
   io:format("Tiles: ~p ~n", [Tiles]),
   IndexedTiles = lists:zip(lists:seq(1, length(Tiles)), Tiles),
   io:format("IndexedTiles: ~p ~n", [IndexedTiles]),
-%%   Groupped = group_by(IndexedTiles),
-%%   io:format("Groupped: ~p ~n", [Groupped]),
   TilesDict = dict:from_list(IndexedTiles),
 %%   io:format("TilesDict: ~p ~n", [TilesDict]),
   % map ants to indices of tiles
@@ -50,9 +48,7 @@ split_ants_to_tiles(Ants, Width, Height, NParts) ->
   io:format("AntDictWithEmpty: ~p ~n", [dict:to_list(AntDictWithEmptyTiles)]),
   {AntDictWithEmptyTiles, TilesDict}.
 
-find_ant_tile(_Ant, []) ->
-%%   io:format("Ant: ~p couldnt find its tile~n",[_Ant]),
-  undefined;
+
 find_ant_tile(Ant, [{I, Tile} | Tiles]) ->
   case is_ant_on_tile(Ant, Tile) of
     true ->
@@ -86,49 +82,22 @@ is_ant_on_tile(_Ant, _Tile) ->
   false.
 
 
--spec step(Model, Board, Width, Height, TiledAnts, TilesDict, CurrentStep, MaxStep) -> {EndAnts, EndBoard} when
-  Model :: model(),
-  Board :: board(),
-  Width :: dimension(),
-  Height :: dimension(),
-  TiledAnts :: dict:dict(pos_integer(), [ant()]),
-  TilesDict :: dict:dict(pos_integer(), tile()),
-  CurrentStep :: pos_integer(),
-  MaxStep :: pos_integer(),
-  EndAnts :: dict:dict(pos_integer(), [ant()]),
-  EndBoard :: board().
-
-step(_Model, Board, _Width, _Height, TiledAnts, _TilesDict, MaxStep, MaxStep) ->
-  {TiledAnts, Board};
-step(Model, Board, Width, Height, Ants, TilesDict, Step, MaxStep) ->
-  KColours = 2,
-%%   io:format("step(~p): Ants: ~p ~n", [Step, dict:to_list(Ants)]),
-  NewAnts = update_colours(KColours, Ants, TilesDict, Width, Height, Board, Model),
-%%   io:format("step(~p): NewAnts: ~p ~n", [Step, dict:to_list(NewAnts)]),
-  NewBoard = update_board(Model, Board, Width, Height, Ants),
-  parallant_tiled:log(Model, NewAnts, NewBoard, Step, Width, Height),
-  step(Model, NewBoard, Width, Height, NewAnts, TilesDict, Step+1, MaxStep).
-
-update_board(Model, Board, W, H, Ants) ->
-  parallant_tiled:update_board(Model, Board, W, H, Ants).
-
-
--spec update_colours(KColours, Ants, TilesDict, Width, Height, Board, Model) -> Ants when
+-spec update_colours(KColours, Ants, TilesDict, Width, Height, Board, Impl) -> Ants when
   KColours :: pos_integer(),
   Ants :: dict:dict(pos_integer(), [ant()]),
   TilesDict :: dict:dict(pos_integer(), tile()),
   Width :: dimension(),
   Height :: dimension(),
   Board :: board(),
-  Model :: model().
+  Impl :: world_impl().
 
-update_colours(KColours, Ants, TilesDict, Width, Height, Board, Model) ->
+update_colours(KColours, Ants, TilesDict, Width, Height, Board, Impl) ->
   % new dict with empty lists for every key in ants
   EmptyMovedAnts = dict:map(fun(_K, _V) -> [] end, Ants),
-  update_colours(1, KColours, Ants, EmptyMovedAnts, TilesDict, Width, Height, Board, Model).
+  update_colours(1, KColours, Ants, EmptyMovedAnts, TilesDict, Width, Height, Board, Impl).
 
 
--spec update_colours(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Model) -> NewAnts when
+-spec update_colours(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Impl) -> NewAnts when
   IColour :: pos_integer(),
   KColours :: pos_integer(),
   Ants :: dict:dict(pos_integer(), [ant()]),
@@ -137,15 +106,15 @@ update_colours(KColours, Ants, TilesDict, Width, Height, Board, Model) ->
   Width :: dimension(),
   Height ::dimension(),
   Board :: board(),
-  Model :: model(),
+  Impl :: world_impl(),
   NewAnts :: dict:dict(pos_integer(), [ant()]).
 
-update_colours(IColour, KColours, _Ants, MovedAnts, _TilesDict, _Width, _Height, _Board, _Model) when IColour == KColours + 1 ->
+update_colours(IColour, KColours, _Ants, MovedAnts, _TilesDict, _Width, _Height, _Board, _Impl) when IColour == KColours + 1 ->
 %%   io:format("colours(IC:~p, KC:~p): MovedAnts: ~p ~n", [IColour, KColours, dict:to_list(MovedAnts)]),
   MovedAnts;
-update_colours(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Model) ->
+update_colours(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Impl) ->
 %%   io:format("Colour: ~p~n",[IColour]),
-  {Processed, JustMoved} = update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Model),
+  {Processed, JustMoved} = update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Impl),
 %%   io:format("colours(): Processed : ~p, Ants: ~p ~n", [Processed, dict:to_list(Ants)]),
 %%   io:format("colours(): JustMoved: ~p ~n", [JustMoved]),
   NewAnts = update_ants(Processed, Ants), % clear ants tile if tile processed,
@@ -153,7 +122,7 @@ update_colours(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boa
   NewMovedAnts = update_moved_ants(JustMoved, MovedAnts),
 %%   io:format("colours(): MovedAnts: ~p ~n", [dict:to_list(MovedAnts)]),
 %%   io:format("colours(): NewMovedAnts: ~p ~n", [dict:to_list(NewMovedAnts)]),
-  update_colours(IColour + 1, KColours, NewAnts, NewMovedAnts, TilesDict, Width, Height, Board, Model).
+  update_colours(IColour + 1, KColours, NewAnts, NewMovedAnts, TilesDict, Width, Height, Board, Impl).
 
 
 -spec update_moved_ants(JustMoved, MovedAnts) -> NewMovedAnts when
@@ -186,7 +155,7 @@ update_ants(Processed, Ants) ->
   dict:map(Filter, Ants).
 
 
--spec update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Model) -> {Processed, MovedAntsWithIndices} when
+-spec update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Impl) -> {Processed, MovedAntsWithIndices} when
   IColour :: pos_integer(),
   KColours :: pos_integer(),
   Ants :: dict:dict(pos_integer(),[ant()]),
@@ -195,11 +164,11 @@ update_ants(Processed, Ants) ->
   Width :: dimension(),
   Height ::dimension(),
   Board :: board(),
-  Model :: model(),
+  Impl :: world_impl(),
   Processed :: [pos_integer()],
   MovedAntsWithIndices :: [{pos_integer(), [ant()]}].
 
-update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Model) ->
+update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Board, Impl) ->
   % FIXME this part can be parallelized
   MaxI = dict:size(Ants),
 %%   io:format("MAXI = ~p = SIZE(ANTS = ~p)~n",[MaxI, dict:to_list(Ants)]),
@@ -215,7 +184,7 @@ update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boar
           Width,
           Height,
           Board,
-          Model)
+          Impl)
     } ||
     T = [I, ILeft, IRight] <- IndexTriplets
   ],
@@ -226,7 +195,7 @@ update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boar
 %%   {Processed, MovedAntsWithIndices}.
   {Processed, group_by_concat(MovedAntsWithIndices)}.
 
--spec update_tile(TileAnts, Tiles, MovedToTileAnts, NeighbourAnts, Width, Height, Board, Model) ->
+-spec update_tile(TileAnts, Tiles, MovedToTileAnts, NeighbourAnts, Width, Height, Board, Impl) ->
   {MovedTileAnts, MovedToLeftAnts, MovedToRightAnts} when
   TileAnts :: [ant()],
   Tiles :: {Tile, LeftTile},
@@ -239,20 +208,20 @@ update_colour(IColour, KColours, Ants, MovedAnts, TilesDict, Width, Height, Boar
   Width :: dimension(),
   Height ::dimension(),
   Board :: board(), % readonly
-  Model :: model(),
+  Impl :: world_impl(),
   MovedTileAnts :: [ant()],
   MovedToLeftAnts :: [ant()],
   MovedToRightAnts :: [ant()].
 
-update_tile([], _Tiles, _MovedToTileAnts, _Neighbours, _Width, _Height, _Board, Model) ->
+update_tile([], _Tiles, _MovedToTileAnts, _Neighbours, _Width, _Height, _Board, Impl) ->
   [[], [], []];
-update_tile(TileAnts, Tiles, MovedToTileAnts, {LeftAnts, RightAnts}, Width, Height, Board, Model) ->
+update_tile(TileAnts, Tiles, MovedToTileAnts, {LeftAnts, RightAnts}, Width, Height, Board, Impl) ->
   % turn and move every ant if relevant cell is not occupied by ants from MoveToTile, Left or Right
   % return moved ants split in three areas center, left neighbour, right neighbour
   OccuppiedCells = MovedToTileAnts ++ LeftAnts ++ RightAnts,
-  GetAntCell = fun(#ant{pos = Pos}) -> parallant_tiled:get_cell(Model, Pos, Width, Height, Board) end,
+  GetAntCell = fun(#ant{pos = Pos}) -> parallant:get_cell(Impl, Pos, Width, Height, Board) end,
   AntCells = lists:map(GetAntCell, TileAnts),
-  NewAnts = parallant_tiled:move_ants(AntCells, TileAnts, Width, Height, OccuppiedCells),
+  NewAnts = parallant:move_ants(AntCells, TileAnts, Width, Height, OccuppiedCells),
   SplittedAnts = split_moved_ants(NewAnts, Tiles),
   SplittedAnts.
 
