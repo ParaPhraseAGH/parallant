@@ -37,15 +37,14 @@ or in erlang shell:
 ```
 #!erlang
 
-1> parallant:start(Model, Width, Height, PopulationSize, Steps).
+1> parallant:start(Model, Impl, Width, Height, PopulationSize, Steps).
 
 ```
 
 where: 
 
-* `Model :: list_based | gbtree_based`
+* `Model :: parallant_seq | parallant_tiled`
+* `Impl :: list_based | gbtree_based`
 * `Width :: pos_integer(), Height :: pos_integer()`
 * `PopulationSize :: pos_integer() < Width*Height` - how many agents
 * `Steps : pos_integer()` - number of simulation steps
-
-
