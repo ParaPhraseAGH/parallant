@@ -21,6 +21,8 @@
 ```
 
   Tiled version uses `skel` library
+
+```
 #!bash
   
   ./rebar clean compile -D skel
