@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#Width=20
-#Height=10
-#Ants=2
-#Steps=10
+DefaultWidth=20
+DefaultHeight=10
+DefaultAnts=2
+DefaultSteps=10
 
-Width=$1
-Height=$2
-Ants=$3
-Steps=$4
+Width=${1:-$DefaultWidth}
+Height=${2:-$DefaultHeight}
+Ants=${3:-$DefaultAnts}
+Steps=${4:-$DefaultSteps}
 
 ./rebar clean compile
 
