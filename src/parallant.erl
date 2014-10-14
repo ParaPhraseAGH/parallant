@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/5, start/6]).
--export([get_cell/5, update_board/5, move_ants/5, log/7, update_cell/1]).
+-export([get_cell/3, update_board/3, move_ants/4, log/7, update_cell/1]).
 
 -include("parallant.hrl").
 -define(LOG_DELAY, 50). % ms
@@ -50,23 +50,26 @@ start(Model, Impl, Width, Height, PopulationSize, Steps) ->
     Board = create_board(Impl, Width, Height),
     Ants = create_ants(Impl, PopulationSize, Width, Height),
 
+    Env = #env{agents = Ants, world = Board, backend = Impl},
+
     if
         Width < ?MAX_WIDTH_TO_SHOW ->
             io:format("Ants: ~p~n", [Ants]),
             io:format("Step 1:~n"),
-            Model:display(Impl, Ants, Board, Width, Height);
+            Model:display(Env);
         true -> ok
     end,
     T1 = erlang:now(),
 
-    {EndBoard, EndAnts} = Model:run(Impl, Board, Width, Height, Ants, Steps),
+    EndEnv = Model:run(Steps, Env),
+    %% {EndBoard, EndAnts} = Model:run(Impl, Board, Width, Height, Ants, Steps),
 
     T2 = erlang:now(),
 
     if
         Width < ?MAX_WIDTH_TO_SHOW ->
             io:format("Step ~p:~n", [Steps]),
-            Model:display(Impl, EndAnts, EndBoard, Width, Height);
+            Model:display(EndEnv);
         true -> ok
     end,
 
@@ -94,7 +97,7 @@ log(Model, Impl, NewAnts, NewBoard, Step, Width, Height) ->
     %%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
     %%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
     io:format("Step ~p:~n", [Step + 1]),
-    Model:display(Impl, NewAnts, NewBoard, Width, Height),
+    Model:display(Env),
     timer:sleep(?LOG_DELAY),
     overwrite_display(Height).
 
@@ -111,21 +114,21 @@ create_ants(PopulationSize, Width, Height) ->
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
     [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
 
--spec move_ants([cell()], [ant()], dimension(), dimension(), position()) -> [ant()].
-move_ants([], [], _, _, _) -> [];
-move_ants([AntCell | TAntCells], [Ant | TAnts], W, H, Occuppied) ->
-    NewAnt = move_ant(AntCell, Ant, W, H, Occuppied),
-    [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewAnt#ant.pos | Occuppied])].
+-spec move_ants([cell()], [ant()], board(), position()) -> [ant()].
+move_ants([], [], _, _) -> [];
+move_ants([AntCell | TAntCells], [Ant | TAnts], World, Occuppied) ->
+    NewAnt = move_ant(AntCell, Ant, World, Occuppied),
+    [NewAnt | move_ants(TAntCells, TAnts, World, [NewAnt#ant.pos | Occuppied])].
 
--spec update_board(world_impl(), board(), dimension(), dimension(), [ant()]) -> board().
-update_board(Impl, Board, W, H, Ants) ->
-    Impl:update_board(Board, W, H, Ants).
+-spec update_board(world_impl(), board(), [ant()]) -> board().
+update_board(Impl, World, Ants) ->
+    Impl:update_board(World, Ants).
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
-move_ant({AntCellState}, #ant{pos = Pos, dir = Dir}, W, H, Occuppied) ->
+move_ant({AntCellState}, #ant{pos = Pos, dir = Dir}, #world { w = W, h = H}, Occuppied) ->
     NewDir = turn(Dir, AntCellState),
     NewPos = forward(Pos, NewDir, W, H, Occuppied),
     #ant{pos = NewPos, dir = NewDir}.
@@ -165,8 +168,9 @@ create_ants(_Impl, PopSize, W, H) ->
     create_ants(PopSize, W, H).
 
 create_board(Impl, W, H)->
-    Impl:create_board(W, H).
+    Board = Impl:create_board(W, H),
+    #world{board = Board, w = W, h = H}.
 
--spec get_cell(world_impl(), position(), dimension(), dimension(), board()) -> cell().
-get_cell(Impl, {X,Y}, Width, Height, Board) ->
-    Impl:get_cell({X,Y}, Width, Height, Board).
+-spec get_cell(world_impl(), position(), board()) -> cell().
+get_cell(Impl, {X,Y}, World) ->
+    Impl:get_cell({X,Y}, World).

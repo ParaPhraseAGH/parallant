@@ -12,7 +12,7 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/4, get_cell/4, display/4]).
+-export([create_board/2, update_board/2, get_cell/2, display/2]).
 
 -spec create_board(dimension(), dimension()) -> [gb_trees:tree(position(), cell())].
 create_board(Width, Height) ->
@@ -25,21 +25,21 @@ populateTree(_, [], Tree) -> Tree;
 populateTree(Val, [HI | TI], Tree) ->
     populateTree(Val, TI, gb_trees:insert(HI, Val, Tree)).
 
--spec update_board(gb_trees:tree(position(), cell()), dimension(), dimension(), [ant()]) -> gb_trees:tree(position(), cell()).
-update_board(Board, _W, _H, []) -> Board;
-update_board(Board, W, H, [#ant{pos = APos} | TAnts]) ->
-                                                % assertion: every Ant position is different
-    ACell = gb_trees:get(APos, Board),
-    NewBoard = gb_trees:update(APos, parallant:update_cell(ACell), Board),
-    update_board(NewBoard, W, H, TAnts).
+-spec update_board(board(), [ant()]) -> board().
+update_board(World, []) -> World;
+update_board(W, [#ant{pos = APos} | TAnts]) ->
+    % assertion: every Ant position is different
+    ACell = gb_trees:get(APos, W#world.board),
+    NewBoard = gb_trees:update(APos, parallant:update_cell(ACell), W#world.board),
+    update_board(W#world{board = NewBoard}, TAnts).
 
--spec get_cell(position(), dimension(), dimension(), gb_trees:tree(position(), cell())) -> cell().
-get_cell(Pos, _Width, _Height, Board) ->
-    gb_trees:get(Pos, Board).
+-spec get_cell(position(), board()) -> cell().
+get_cell(Pos, W) ->
+    gb_trees:get(Pos, W#world.board).
 
--spec display([ant()], board(), dimension(), dimension()) -> ok.
-display(Ants, Board, Width, Height) ->
+-spec display([ant()], board()) -> ok.
+display(Ants, W) ->
     %%   io:format("RawBoard: ~p~n",[Board]),
-    BoardList = gb_trees:values(Board),
+    BoardList = gb_trees:values(W#world.board),
     %%   BoardList = gb_trees:to_list(Board),
-    graphics:display(Ants, BoardList, Width, Height).
+    graphics:display(Ants, W#world{board = BoardList}).

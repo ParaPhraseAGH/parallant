@@ -11,7 +11,7 @@
 
 -include("parallant.hrl").
 %% API
--export([display/4]).
+-export([display/2]).
 
 pos_to_index({X, Y}, W, H) ->
     (H - Y) * W + X.
@@ -46,8 +46,8 @@ display_cell(I, Cell, AntsWithIndex) ->
 %% |
 %% *------> x (up to max=W)
 %%
--spec display([ant()], [cell()], dimension(), dimension()) -> ok.
-display(Ants, Board, W, H) ->
+-spec display([ant()], board()) -> ok.
+display(Ants, #world{board = Board, w = W, h = H}) ->
     AntsWithIndex = [{pos_to_index(A#ant.pos, W, H), A} || A <- Ants],
     ChunkedBoard = split_into_chunks(Board, H),
     TransposedBoard = lists:reverse(transpose_board(ChunkedBoard)),

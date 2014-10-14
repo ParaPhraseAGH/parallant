@@ -20,6 +20,12 @@
                min_y :: dimension(),
                max_y :: dimension()}).
 
+-record(env, {
+          agents :: [ant()],
+          world :: board(),
+          backend :: world_impl()
+         }).
+
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
@@ -30,3 +36,4 @@
 -type board() :: #world{}.
 -type model() :: parallant_seq | parallant_tiled.
 -type world_impl() :: list_based | gbtree_based.
+-type environment() :: #env{}.
