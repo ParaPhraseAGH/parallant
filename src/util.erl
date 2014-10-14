@@ -17,14 +17,14 @@
 
 -spec all_positions(dimension(), dimension()) -> [position()].
 all_positions(Width, Height) ->
-  [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)].
+    [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)].
 
 -spec shuffle(list()) -> list().
 shuffle(L) ->
-  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 -spec random_direction() -> direction().
 random_direction() ->
-  Dirs = [north, south, east, west],
-  Idx = random:uniform(length(Dirs)),
-  lists:nth(Idx, Dirs).
+    Dirs = [north, south, east, west],
+    Idx = random:uniform(length(Dirs)),
+    lists:nth(Idx, Dirs).

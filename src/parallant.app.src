@@ -1,12 +1,9 @@
 {application, parallant,
- [
-  {description, ""},
+ [{description, ""},
   {vsn, "1"},
   {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { parallant_app, []}},
+  {applications, [kernel,
+                  stdlib]},
+  {mod, {parallant_app, []}},
   {env, []}
  ]}.

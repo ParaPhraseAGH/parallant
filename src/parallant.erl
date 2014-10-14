@@ -17,73 +17,73 @@
 
 -spec test(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
 test(Width, Height, NAnts, Steps) ->
-  Seed = erlang:now(),
-  io:format("Parallant_seq:~n"),
-  test(parallant_seq, Seed, Width, Height, NAnts, Steps),
-  io:format("Parallant_tiled:~n"),
-  test(parallant_tiled, Seed, Width, Height, NAnts, Steps).
+    Seed = erlang:now(),
+    io:format("Parallant_seq:~n"),
+    test(parallant_seq, Seed, Width, Height, NAnts, Steps),
+    io:format("Parallant_tiled:~n"),
+    test(parallant_tiled, Seed, Width, Height, NAnts, Steps).
 
 -spec test() -> ok.
 test() ->
-  test(50, 30, 5, 500).
+    test(50, 30, 5, 500).
 
 -spec test(model()) -> ok.
 test(Model) ->
-  Seed = erlang:now(),
-  test(Model, Seed,50, 30, 5, 500).
+    Seed = erlang:now(),
+    test(Model, Seed, 50, 30, 5, 500).
 
 -spec test(model(), any(), dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
 test(Model, Seed, Width, Height, NAnts, Steps) ->
-  io:format("ListBased:~n"),
-  random:seed(Seed),
-  start(Model, list_based, Width, Height, NAnts, Steps),
-  io:format("Gb_treeBased:~n"),
-  random:seed(Seed),
-  start(Model, gbtree_based, Width, Height, NAnts, Steps).
+    io:format("ListBased:~n"),
+    random:seed(Seed),
+    start(Model, list_based, Width, Height, NAnts, Steps),
+    io:format("Gb_treeBased:~n"),
+    random:seed(Seed),
+    start(Model, gbtree_based, Width, Height, NAnts, Steps).
 
 -spec start(model(), world_impl(), dimension(), dimension(), pos_integer()) -> ok.
 start(Model, Impl, Width, Height, Steps) ->
-  start(Model, Impl, Width, Height, 1, Steps).
+    start(Model, Impl, Width, Height, 1, Steps).
 
 -spec start(model(), world_impl(), dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
 start(Model, Impl, Width, Height, PopulationSize, Steps) ->
-  Board = create_board(Impl, Width, Height),
-  Ants = create_ants(Impl, PopulationSize, Width, Height),
+    Board = create_board(Impl, Width, Height),
+    Ants = create_ants(Impl, PopulationSize, Width, Height),
 
-  if
-    Width < ?MAX_WIDTH_TO_SHOW ->
-      io:format("Ants: ~p~n", [Ants]),
-      io:format("Step 1:~n"),
-      Model:display(Impl, Ants, Board, Width, Height);
-    true -> ok
-  end,
-  T1 = erlang:now(),
+    if
+        Width < ?MAX_WIDTH_TO_SHOW ->
+            io:format("Ants: ~p~n", [Ants]),
+            io:format("Step 1:~n"),
+            Model:display(Impl, Ants, Board, Width, Height);
+        true -> ok
+    end,
+    T1 = erlang:now(),
 
-  {EndBoard, EndAnts} = Model:run(Impl, Board, Width, Height, Ants, Steps),
+    {EndBoard, EndAnts} = Model:run(Impl, Board, Width, Height, Ants, Steps),
 
-  T2 = erlang:now(),
+    T2 = erlang:now(),
 
-  if
-    Width < ?MAX_WIDTH_TO_SHOW ->
-      io:format("Step ~p:~n", [Steps]),
-      Model:display(Impl, EndAnts, EndBoard, Width, Height);
-    true -> ok
-  end,
+    if
+        Width < ?MAX_WIDTH_TO_SHOW ->
+            io:format("Step ~p:~n", [Steps]),
+            Model:display(Impl, EndAnts, EndBoard, Width, Height);
+        true -> ok
+    end,
 
-  Time = timer:now_diff(T2, T1),
-  TimeInSecs = Time / 1000000,
-  io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
+    Time = timer:now_diff(T2, T1),
+    TimeInSecs = Time / 1000000,
+    io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
 
 
 -ifdef(dont_overwrite_disp).
 
 overwrite_display(_) ->
-  ok.
+    ok.
 
 -else.
 
 overwrite_display(Height) ->
-  io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
+    io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
 
 -endif.
 
@@ -91,53 +91,53 @@ overwrite_display(Height) ->
 
 -spec log(model(), world_impl(), [ant()], board(), pos_integer(), dimension(), dimension()) -> ok.
 log(Model, Impl, NewAnts, NewBoard, Step, Width, Height) ->
-%%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
-%%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
-  io:format("Step ~p:~n", [Step + 1]),
-  Model:display(Impl, NewAnts, NewBoard, Width, Height),
-  timer:sleep(?LOG_DELAY),
-  overwrite_display(Height).
+    %%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
+    %%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
+    io:format("Step ~p:~n", [Step + 1]),
+    Model:display(Impl, NewAnts, NewBoard, Width, Height),
+    timer:sleep(?LOG_DELAY),
+    overwrite_display(Height).
 
 -else.
 
 -spec log(any(), any(), any(), any(), any(), any(), any()) -> ok.
 log(_,_,_,_,_,_,_) ->
-  ok.
+    ok.
 -endif.
 
 -spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
 create_ants(PopulationSize, Width, Height) ->
-  ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
-  AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
+    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
+    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
+    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
 
 -spec move_ants([cell()], [ant()], dimension(), dimension(), position()) -> [ant()].
 move_ants([], [], _, _, _) -> [];
 move_ants([AntCell | TAntCells], [Ant | TAnts], W, H, Occuppied) ->
-  NewAnt = move_ant(AntCell, Ant, W, H, Occuppied),
-  [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewAnt#ant.pos | Occuppied])].
+    NewAnt = move_ant(AntCell, Ant, W, H, Occuppied),
+    [NewAnt | move_ants(TAntCells, TAnts, W, H, [NewAnt#ant.pos | Occuppied])].
 
 -spec update_board(world_impl(), board(), dimension(), dimension(), [ant()]) -> board().
 update_board(Impl, Board, W, H, Ants) ->
-  Impl:update_board(Board, W, H, Ants).
+    Impl:update_board(Board, W, H, Ants).
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
 move_ant({AntCellState}, #ant{pos = Pos, dir = Dir}, W, H, Occuppied) ->
-  NewDir = turn(Dir, AntCellState),
-  NewPos = forward(Pos, NewDir, W, H, Occuppied),
-  #ant{pos = NewPos, dir = NewDir}.
+    NewDir = turn(Dir, AntCellState),
+    NewPos = forward(Pos, NewDir, W, H, Occuppied),
+    #ant{pos = NewPos, dir = NewDir}.
 
 forward({X, Y}, Dir, W, H, Occuppied) ->
-  {DX, DY} = heading(Dir),
-  NewX = torus_bounds(X + DX, W),
-  NewY = torus_bounds(Y + DY, H),
-  case lists:member({NewX, NewY}, Occuppied) of
-    true -> {X, Y};
-    false -> {NewX, NewY}
-  end.
+    {DX, DY} = heading(Dir),
+    NewX = torus_bounds(X + DX, W),
+    NewY = torus_bounds(Y + DY, H),
+    case lists:member({NewX, NewY}, Occuppied) of
+        true -> {X, Y};
+        false -> {NewX, NewY}
+    end.
 
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
@@ -162,11 +162,11 @@ heading(east) -> {1, 0};
 heading(west) -> {-1, 0}.
 
 create_ants(_Impl, PopSize, W, H) ->
-  create_ants(PopSize, W, H).
+    create_ants(PopSize, W, H).
 
 create_board(Impl, W, H)->
-  Impl:create_board(W, H).
+    Impl:create_board(W, H).
 
 -spec get_cell(world_impl(), position(), dimension(), dimension(), board()) -> cell().
 get_cell(Impl, {X,Y}, Width, Height, Board) ->
-  Impl:get_cell({X,Y}, Width, Height, Board).
+    Impl:get_cell({X,Y}, Width, Height, Board).
