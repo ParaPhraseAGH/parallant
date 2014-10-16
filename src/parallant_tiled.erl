@@ -55,10 +55,9 @@ step(MaxStep, MaxStep, Env, TiledAnts, _TilesDict) ->
     {Env, TiledAnts};
 step(Step, MaxStep, E = #env{world = World, backend = Impl}, Ants, TilesDict) ->
     KColours = 2,
-    NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, E),
     AntList = ?TILED_MODULE:flatten_tiles(Ants),
-    NewBoard = parallant:update_board(Impl, World, AntList),
-    #world{w = W, h = H} = E#env.world,
-    parallant:log(?MODULE, Impl, NewAnts, NewBoard, Step, W, H),
-    NewEnv = E#env{world = NewBoard},
+    NewWorld = parallant:update_board(Impl, World, AntList),
+    NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, E),
+    NewEnv = E#env{world = NewWorld, agents = NewAnts},
+    logger:log(?MODULE, NewEnv, Step),
     step(Step + 1, MaxStep, NewEnv, NewAnts, TilesDict).

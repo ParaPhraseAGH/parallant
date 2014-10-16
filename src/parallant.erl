@@ -9,11 +9,9 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/5, start/6]).
--export([get_cell/3, update_board/3, move_ants/4, log/7, update_cell/1]).
+-export([get_cell/3, update_board/3, move_ants/4, update_cell/1]).
 
 -include("parallant.hrl").
--define(LOG_DELAY, 50). % ms
--define(MAX_WIDTH_TO_SHOW, 65).
 
 -spec test(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
 test(Width, Height, NAnts, Steps) ->
@@ -52,61 +50,17 @@ start(Model, Impl, Width, Height, PopulationSize, Steps) ->
 
     Env = #env{agents = Ants, world = Board, backend = Impl},
 
-    if
-        Width < ?MAX_WIDTH_TO_SHOW ->
-            io:format("Ants: ~p~n", [Ants]),
-            io:format("Step 1:~n"),
-            Model:display(Env);
-        true -> ok
-    end,
+    logger:start(Model, Env),
     T1 = erlang:now(),
 
     EndEnv = Model:run(Steps, Env),
-    %% {EndBoard, EndAnts} = Model:run(Impl, Board, Width, Height, Ants, Steps),
 
     T2 = erlang:now(),
-
-    if
-        Width < ?MAX_WIDTH_TO_SHOW ->
-            io:format("Step ~p:~n", [Steps]),
-            Model:display(EndEnv);
-        true -> ok
-    end,
+    logger:stop(Model, EndEnv, Steps),
 
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
-
-
--ifdef(dont_overwrite_disp).
-
-overwrite_display(_) ->
-    ok.
-
--else.
-
-overwrite_display(Height) ->
-    io:format("\033[~pA", [Height + 2]). % display in the same place as the previous step
-
--endif.
-
--ifdef(debug).
-
--spec log(model(), world_impl(), [ant()], board(), pos_integer(), dimension(), dimension()) -> ok.
-log(Model, Impl, NewAnts, NewBoard, Step, Width, Height) ->
-    %%  lists:map(fun({_,NewADir}) -> io:format("new ant dir ~p~n",[NewADir]) end,NewAnts),
-    %%  lists:map(fun({NewAPos,_}) -> io:format("new ant pos ~p~n",[NewAPos]) end,NewAnts),
-    io:format("Step ~p:~n", [Step + 1]),
-    Model:display(Env),
-    timer:sleep(?LOG_DELAY),
-    overwrite_display(Height).
-
--else.
-
--spec log(any(), any(), any(), any(), any(), any(), any()) -> ok.
-log(_,_,_,_,_,_,_) ->
-    ok.
--endif.
 
 -spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
 create_ants(PopulationSize, Width, Height) ->

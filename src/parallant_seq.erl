@@ -29,9 +29,10 @@ run(Steps, Env) ->
 step(MaxT, MaxT, Env) ->
     Env;
 step(T, MaxT, E = #env{backend = Impl, agents = Ants, world = World}) ->
-    #world{w = W, h = H} = World,
-    AntCells = [parallant:get_cell(Impl, APos, World) || #ant{pos = APos} <- Ants],
+    AntCells = [parallant:get_cell(Impl, APos, World)
+                || #ant{pos = APos} <- Ants],
+    NewWorld = parallant:update_board(Impl, World, Ants),
     NewAnts = parallant:move_ants(AntCells, Ants, World, []),
-    NewBoard = parallant:update_board(Impl, World, Ants),
-    parallant:log(?MODULE, Impl, NewAnts, NewBoard, T+1, W, H),
-    step(T + 1, MaxT, E#env{world = NewBoard, agents = NewAnts}).
+    NewEnv = E#env{world = NewWorld, agents = NewAnts},
+    logger:log(?MODULE, NewEnv, T+1),
+    step(T+1, MaxT, NewEnv).
