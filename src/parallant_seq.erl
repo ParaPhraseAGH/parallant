@@ -29,7 +29,7 @@ run(Steps, Env) ->
 step(MaxT, MaxT, Env) ->
     Env;
 step(T, MaxT, E = #env{backend = Impl, agents = Ants, world = World}) ->
-    #world{board = Board, w = W, h = H} = World,
+    #world{w = W, h = H} = World,
     AntCells = [parallant:get_cell(Impl, APos, World) || #ant{pos = APos} <- Ants],
     NewAnts = parallant:move_ants(AntCells, Ants, World, []),
     NewBoard = parallant:update_board(Impl, World, Ants),

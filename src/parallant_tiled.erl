@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(parallant_tiled).
 %% API
--export([test/0, display/5, run/6]).
+-export([test/0, display/1, run/2]).
 
 -include("parallant.hrl").
 
@@ -23,41 +23,42 @@
 test() ->
     parallant:test(?MODULE).
 
--spec run(world_impl(), [cell()], dimension(), dimension(), dict:dict(pos_integer(),[ant()]), pos_integer()) -> {[cell()],[ant()]}.
-run(Impl, Board, Width, Height, Ants, Steps) ->
+-spec run(pos_integer(), environment()) -> environment().
+run(Steps, E = #env{world = World, agents = Ants}) ->
     KColours = 2,
-    %%   NWorkers = 2,
     NParts = ?N_WORKERS * KColours,
-    {TiledAnts, TilesDict} = ?TILED_MODULE:split_ants_to_tiles(Ants, Width, Height, NParts),
-    {EndBoard,EndTiledAnts} = step(Impl, Board, Width, Height, TiledAnts, TilesDict, 1, Steps),
+    {TiledAnts, TilesDict} =
+        ?TILED_MODULE:split_ants_to_tiles(Ants, World, NParts),
+    {EndEnv, EndTiledAnts} = step(1, Steps, E, TiledAnts, TilesDict),
     EndAnts = ?TILED_MODULE:flatten_tiles(EndTiledAnts),
-    {EndBoard, EndAnts}.
+    EndEnv#env{agents = EndAnts}.
 
--spec display(world_impl(), ant(), board(), dimension(), dimension()) -> ok.
-display(Impl, Ants, Board, Width, Height) when is_list(Ants) ->
-    Impl:display(Ants, Board, Width, Height);
-display(Impl, Ants, Board, Width, Height) ->
-    FlattenedAnts = ?TILED_MODULE:flatten_tiles(Ants),
-    Impl:display(FlattenedAnts, Board, Width, Height).
+-spec display(environment()) -> ok.
+display(E = #env{agents = Ants}) when is_list(Ants) ->
+    (E#env.backend):display(Ants, E#env.world);
+display(E) ->
+    FlattenedAnts = ?TILED_MODULE:flatten_tiles(E#env.agents),
+    display(E#env{agents = FlattenedAnts}).
 
--spec step(Impl, Board, Width, Height, TiledAnts, TilesDict, CurrentStep, MaxStep) -> {EndAnts, EndBoard} when
-      Impl :: world_impl(),
-      Board :: board(),
-      Width :: dimension(),
-      Height :: dimension(),
+
+-spec step(CurrentStep, MaxStep, Env, TiledAnts, TilesDict) ->
+                  {EndEnv, EndAnts} when
+      Env :: environment(),
       TiledAnts :: dict:dict(pos_integer(), [ant()]),
       TilesDict :: dict:dict(pos_integer(), tile()),
       CurrentStep :: pos_integer(),
       MaxStep :: pos_integer(),
       EndAnts :: dict:dict(pos_integer(), [ant()]),
-      EndBoard :: board().
+      EndEnv :: environment().
 
-step(_Impl, Board, _Width, _Height, TiledAnts, _TilesDict, MaxStep, MaxStep) ->
-    {Board, TiledAnts};
-step(Impl, Board, Width, Height, Ants, TilesDict, Step, MaxStep) ->
+step(MaxStep, MaxStep, Env, TiledAnts, _TilesDict) ->
+    {Env, TiledAnts};
+step(Step, MaxStep, E = #env{world = World, backend = Impl}, Ants, TilesDict) ->
     KColours = 2,
-    NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, Width, Height, Board, Impl),
+    NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, E),
     AntList = ?TILED_MODULE:flatten_tiles(Ants),
-    NewBoard = parallant:update_board(Impl, Board, Width, Height, AntList),
-    parallant:log(?MODULE, Impl, NewAnts, NewBoard, Step, Width, Height),
-    step(Impl, NewBoard, Width, Height, NewAnts, TilesDict, Step+1, MaxStep).
+    NewBoard = parallant:update_board(Impl, World, AntList),
+    #world{w = W, h = H} = E#env.world,
+    parallant:log(?MODULE, Impl, NewAnts, NewBoard, Step, W, H),
+    NewEnv = E#env{world = NewBoard},
+    step(Step + 1, MaxStep, NewEnv, NewAnts, TilesDict).
