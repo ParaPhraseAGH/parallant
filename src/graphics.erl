@@ -46,7 +46,7 @@ display_cell(I, Cell, AntsWithIndex) ->
 %% |
 %% *------> x (up to max=W)
 %%
--spec display([ant()], board()) -> ok.
+-spec display([ant()], world()) -> ok.
 display(Ants, #world{board = Board, w = W, h = H}) ->
     AntsWithIndex = [{pos_to_index(A#ant.pos, W, H), A} || A <- Ants],
     ChunkedBoard = split_into_chunks(Board, H),

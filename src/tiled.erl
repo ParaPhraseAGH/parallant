@@ -18,7 +18,7 @@
 -spec split_ants_to_tiles(Ants, World, NParts) ->
                                  {TiledAnts, TilesDict} when
       Ants :: [ant()],
-      World :: board(),
+      World :: world(),
       NParts :: pos_integer(),
       TiledAnts :: dict:dict(TileIndex, AntList),
       TilesDict :: dict:dict(TileIndex, tile()),

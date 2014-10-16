@@ -22,7 +22,7 @@
 
 -record(env, {
           agents :: [ant()],
-          world :: board(),
+          world :: world(),
           backend :: world_impl()
          }).
 
@@ -33,7 +33,7 @@
 -type tile() :: #tile{}.
 -type ant() :: #ant{}.
 -type board_state() :: [cell()] | gb_trees:tree().
--type board() :: #world{}.
+-type world() :: #world{}.
 -type model() :: parallant_seq | parallant_tiled.
 -type world_impl() :: list_based | gbtree_based.
 -type environment() :: #env{}.

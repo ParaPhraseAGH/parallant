@@ -114,13 +114,13 @@ create_ants(PopulationSize, Width, Height) ->
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
     [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
 
--spec move_ants([cell()], [ant()], board(), position()) -> [ant()].
+-spec move_ants([cell()], [ant()], world(), position()) -> [ant()].
 move_ants([], [], _, _) -> [];
 move_ants([AntCell | TAntCells], [Ant | TAnts], World, Occuppied) ->
     NewAnt = move_ant(AntCell, Ant, World, Occuppied),
     [NewAnt | move_ants(TAntCells, TAnts, World, [NewAnt#ant.pos | Occuppied])].
 
--spec update_board(world_impl(), board(), [ant()]) -> board().
+-spec update_board(world_impl(), world(), [ant()]) -> world().
 update_board(Impl, World, Ants) ->
     Impl:update_board(World, Ants).
 
@@ -171,6 +171,6 @@ create_board(Impl, W, H)->
     Board = Impl:create_board(W, H),
     #world{board = Board, w = W, h = H}.
 
--spec get_cell(world_impl(), position(), board()) -> cell().
+-spec get_cell(world_impl(), position(), world()) -> cell().
 get_cell(Impl, {X,Y}, World) ->
     Impl:get_cell({X,Y}, World).

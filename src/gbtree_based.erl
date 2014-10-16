@@ -25,7 +25,7 @@ populateTree(_, [], Tree) -> Tree;
 populateTree(Val, [HI | TI], Tree) ->
     populateTree(Val, TI, gb_trees:insert(HI, Val, Tree)).
 
--spec update_board(board(), [ant()]) -> board().
+-spec update_board(world(), [ant()]) -> world().
 update_board(World, []) -> World;
 update_board(W, [#ant{pos = APos} | TAnts]) ->
     % assertion: every Ant position is different
@@ -33,11 +33,11 @@ update_board(W, [#ant{pos = APos} | TAnts]) ->
     NewBoard = gb_trees:update(APos, parallant:update_cell(ACell), W#world.board),
     update_board(W#world{board = NewBoard}, TAnts).
 
--spec get_cell(position(), board()) -> cell().
+-spec get_cell(position(), world()) -> cell().
 get_cell(Pos, W) ->
     gb_trees:get(Pos, W#world.board).
 
--spec display([ant()], board()) -> ok.
+-spec display([ant()], world()) -> ok.
 display(Ants, W) ->
     %%   io:format("RawBoard: ~p~n",[Board]),
     BoardList = gb_trees:values(W#world.board),

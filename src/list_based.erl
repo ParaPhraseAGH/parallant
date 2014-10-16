@@ -19,7 +19,7 @@ create_board(Width, Height) ->
     [{dead} || _I <- lists:seq(1,Width), _J <- lists:seq(1,Height)].
 %%   [{I,J} || I <- lists:seq(1,Width), J <- lists:seq(1,Height)].
 
--spec update_board(board(), [ant()]) -> board().
+-spec update_board(world(), [ant()]) -> world().
 update_board(World, []) -> World;
 update_board(W, [#ant{pos = APos} | TAnts]) ->
     % assertion: every Ant position is different
@@ -32,7 +32,7 @@ update_board(W, [#ant{pos = APos} | TAnts]) ->
 map_nth(1, [Old | Rest], F) -> [F(Old) | Rest];
 map_nth(I, [E | Rest], F) -> [E | map_nth(I - 1, Rest, F)].
 
--spec get_cell(position(), board()) -> cell().
+-spec get_cell(position(), world()) -> cell().
 get_cell({X, Y}, #world{board = Board, w = W, h = H}) ->
     Idx = pos_to_index({X, Y}, W, H),
     %%   io:format("X:~p, Y:~p, W:~p, I:~p~n",[X,Y,Width,Idx]),
@@ -41,6 +41,6 @@ get_cell({X, Y}, #world{board = Board, w = W, h = H}) ->
 pos_to_index({X, Y}, _W, H) ->
     (X - 1) * H + Y.
 
--spec display([ant()], board()) -> ok.
+-spec display([ant()], world()) -> ok.
 display(Ants, World) ->
     graphics:display(Ants, World).
