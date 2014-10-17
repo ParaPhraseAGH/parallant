@@ -59,5 +59,5 @@ step(Step, MaxStep, E = #env{world = World, backend = Impl}, Ants, TilesDict) ->
     NewWorld = parallant:update_board(Impl, World, AntList),
     NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, E),
     NewEnv = E#env{world = NewWorld, agents = NewAnts},
-    logger:log(?MODULE, NewEnv, Step),
+    logger:log(NewEnv),
     step(Step + 1, MaxStep, NewEnv, NewAnts, TilesDict).

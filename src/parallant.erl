@@ -50,13 +50,16 @@ start(Model, Impl, Width, Height, PopulationSize, Steps) ->
 
     Env = #env{agents = Ants, world = Board, backend = Impl},
 
-    logger:start(Model, Env),
+    Log = true,
+    Animate = true,
+
+    logger:start(Model, Env, Log, Animate),
     T1 = erlang:now(),
 
     EndEnv = Model:run(Steps, Env),
 
     T2 = erlang:now(),
-    logger:stop(Model, EndEnv, Steps),
+    logger:stop(EndEnv),
 
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,

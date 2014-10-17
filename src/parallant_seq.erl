@@ -34,5 +34,5 @@ step(T, MaxT, E = #env{backend = Impl, agents = Ants, world = World}) ->
     NewWorld = parallant:update_board(Impl, World, Ants),
     NewAnts = parallant:move_ants(AntCells, Ants, World, []),
     NewEnv = E#env{world = NewWorld, agents = NewAnts},
-    logger:log(?MODULE, NewEnv, T+1),
+    logger:log(NewEnv),
     step(T+1, MaxT, NewEnv).
