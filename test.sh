@@ -10,8 +10,6 @@ Height=${2:-$DefaultHeight}
 Ants=${3:-$DefaultAnts}
 Steps=${4:-$DefaultSteps}
 
-./rebar clean compile
-
 echo ""
 echo "# version seq"
 erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_seq, gbtree_based,$Width,$Height,$Ants,$Steps)." -run init stop -noshell
@@ -22,6 +20,7 @@ erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_tiled, gbtree_b
 
 #start(Model, Impl, Width, Height, PopulationSize, Steps)
 
+make clean
 ./rebar clean compile -D skel
 echo ""
 echo "# version tiled skel"
