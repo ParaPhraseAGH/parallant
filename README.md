@@ -1,56 +1,35 @@
 # parallant #
 
+[![Build Status](https://secure.travis-ci.org/ParaPhraseAGH/parallant.svg?branch=master "Build Status")](http://travis-ci.org/ParaPhraseAGH/parallant)
+
 
 ### Compilation ###
 
 * Standard
   
-```
-#!bash
-
-  make all
-```
+`make all`
 
 * Skel
 
   Tiled version uses `skel` library
 
-```
-#!bash
-  
-  make skel
-```
+`make skel`
 
 
 ### Running ###
 
 There is a script that runs `gbtree_based`: `seq`, `skel` and `not skel` versions:
 
-```
-#!bash
-
-./test.sh Width Height PopulationSize Iterations
-
-```
+`./test.sh Width Height PopulationSize Iterations`
 
 or
 
 
-```
-#!bash
-
- erl -pa ebin -eval "parallant:test()." -s init stop -noshell
-
-```
+`erl -pa ebin -eval "parallant:test()." -s init stop -noshell`
 
 You can run also another configuration using erlang shell:
 
-```
-#!erlang
-
-1> parallant:start(Model, Impl, Width, Height, PopulationSize, Steps).
-
-```
+`1> parallant:start(Model, Impl, Width, Height, PopulationSize, Steps)`
 
 where: 
 
