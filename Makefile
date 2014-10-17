@@ -4,7 +4,7 @@ ERL=erl
 
 REBAR=./rebar
 
-.PHONY: all compile deps clean test update-deps
+.PHONY: all compile deps clean test skel update-deps
 
 all: deps compile
 
@@ -15,6 +15,10 @@ deps:
 update-deps:
 	$(REBAR) update-deps
 	$(REBAR) compile
+
+skel:
+	make clean
+	$(REBAR) compile -D skel
 
 compile:
 	$(REBAR) skip_deps=true compile
