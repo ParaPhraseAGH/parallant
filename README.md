@@ -8,24 +8,17 @@
 ```
 #!bash
 
-  ./rebar clean compile
+  make all
 ```
 
-* Debug 
-
-  Every step of the simulation is displayed in an ASCII animation
-```
-#!bash
-  
-  ./rebar clean compile -D debug
-```
+* Skel
 
   Tiled version uses `skel` library
 
 ```
 #!bash
   
-  ./rebar clean compile -D skel
+  make skel
 ```
 
 
@@ -40,7 +33,6 @@ There is a script that runs `gbtree_based`: `seq`, `skel` and `not skel` version
 
 ```
 
-
 or
 
 
@@ -51,7 +43,7 @@ or
 
 ```
 
-or in erlang shell:
+You can run also another configuration using erlang shell:
 
 ```
 #!erlang
