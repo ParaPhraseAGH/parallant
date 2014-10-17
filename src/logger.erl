@@ -13,6 +13,7 @@
 -define(SERVER, ?MODULE).
 
 -record(state, {model :: model(),
+                env :: environment(),
                 step = 1 :: pos_integer(),
                 log = false :: boolean(),
                 animate = true :: boolean()}).
@@ -69,7 +70,7 @@ init([Model, Env, Log]) ->
     init([Model, Env, Log, true]);
 init([Model, Env, Log, Animate]) ->
     print(Model, Env, 1),
-    {ok, #state{model = Model, log = Log, animate = Animate}}.
+    {ok, #state{model = Model, log = Log, animate = Animate, env = Env}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -102,13 +103,16 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_cast({log, _Env}, S = #state{log = false}) ->
-    {noreply, S#state{step = S#state.step+1}};
+handle_cast({log, Env}, S = #state{log = false}) ->
+    noreply_log(S#state{env = Env});
 handle_cast({log, Env}, S) ->
     log(S#state.model, Env, S#state.step, S#state.animate),
-    {noreply, S#state{step = S#state.step+1}};
+    noreply_log(S#state{env = Env});
 handle_cast(_Msg, S) ->
     {noreply, S}.
+
+noreply_log(S) ->
+    {noreply, S#state{step = S#state.step + 1}}.
 
 %%--------------------------------------------------------------------
 %% @private
