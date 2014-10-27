@@ -12,7 +12,7 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/2, get_cell/2, display/2]).
+-export([create_board/2, update_board/2, get_cell/2, display/2, update_cell/2]).
 
 -spec create_board(dimension(), dimension()) -> [gb_trees:tree(position(), cell())].
 create_board(Width, Height) ->
@@ -27,11 +27,16 @@ populateTree(Val, [HI | TI], Tree) ->
 
 -spec update_board(world(), [ant()]) -> world().
 update_board(World, []) -> World;
-update_board(W, [#ant{pos = APos} | TAnts]) ->
+update_board(W, [#ant{pos = Pos} | TAnts]) ->
     % assertion: every Ant position is different
-    ACell = gb_trees:get(APos, W#world.board),
-    NewBoard = gb_trees:update(APos, parallant:update_cell(ACell), W#world.board),
-    update_board(W#world{board = NewBoard}, TAnts).
+    NewWorld = update_cell(Pos, W),
+    update_board(NewWorld, TAnts).
+
+-spec update_cell(position(), world()) -> world().
+update_cell(Pos, W) ->
+    Cell = get_cell(Pos, W),
+    NewBoard = gb_trees:update(Pos, parallant:update_cell(Cell), W#world.board),
+    W#world{board = NewBoard}.
 
 -spec get_cell(position(), world()) -> cell().
 get_cell(Pos, W) ->

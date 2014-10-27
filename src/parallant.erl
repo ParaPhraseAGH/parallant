@@ -9,7 +9,8 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/5, start/7]).
--export([get_cell/3, update_board/3, move_ants/4, update_cell/1]).
+-export([get_cell/3, update_board/3, move_ants/4, update_cell/1,
+        get_moves/1, apply_moves/2]).
 
 -include("parallant.hrl").
 
@@ -137,3 +138,53 @@ create_board(Impl, W, H)->
 -spec get_cell(world_impl(), position(), world()) -> cell().
 get_cell(Impl, {X,Y}, World) ->
     Impl:get_cell({X,Y}, World).
+
+
+%%%%%%%%%%%
+% NEW API
+%%%%%%%%%%%
+
+
+-spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
+get_moves(E = #env{agents = Agents}) ->
+    GetMove = fun (A) -> {A, move_agent(A, E)} end,
+    lists:map(GetMove, Agents).
+
+-spec move_agent(ant(), environment()) -> ant().
+move_agent(#ant{pos = Pos, dir = Dir}, #env{backend = Impl, world = World}) ->
+    {AgentCellState} = Impl:get_cell(Pos, World),
+    NewDir = turn(Dir, AgentCellState),
+    NewPos = forward(Pos, NewDir, World),
+    #ant{pos = NewPos, dir = NewDir}.
+
+-spec forward(position(), direction(), world()) -> position().
+forward({X, Y}, Dir, #world{w = W, h = H}) ->
+    {DX, DY} = heading(Dir),
+    NewX = torus_bounds(X + DX, W),
+    NewY = torus_bounds(Y + DY, H),
+    {NewX, NewY}.
+
+-spec apply_moves([{ant(), ant()}], environment()) -> environment().
+apply_moves(Moves, Env) ->
+    ApplyMove = fun (Move, {Occ, E}) -> apply_move(Move, {Occ, E}) end,
+    {_Acc, Env1} = lists:foldl(ApplyMove,
+                             {Env#env.agents, Env#env{agents = []}},
+                             Moves),
+    Env1.
+
+-spec apply_move({ant(), ant()}, {[ant()], environment()}) -> environment().
+apply_move({Old, New}, {Occ, E}) ->
+    IsPosTaken = fun(#ant{pos = P}) -> P == New end,
+    {NewOcc, Ant} = case lists:any(IsPosTaken, E#env.agents ++ Occ) of
+                        true ->
+                            {Occ, Old};
+                        false ->
+                            Occ1 = [A || A <- Occ, A#ant.pos /= Old],
+                            {[New | Occ1], New}
+                    end,
+    E1 = update_cell(Old#ant.pos, E),
+    {NewOcc, E1#env{agents = [Ant | E1#env.agents]}}.
+
+-spec update_cell(position(), environment()) -> environment().
+update_cell(Pos, E = #env{backend = Impl, world = World}) ->
+    E#env{world = Impl:update_cell(Pos, World)}.

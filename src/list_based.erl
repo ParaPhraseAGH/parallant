@@ -12,7 +12,7 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/2, get_cell/2, display/2]).
+-export([create_board/2, update_board/2, get_cell/2, display/2, update_cell/2]).
 
 -spec create_board(dimension(), dimension()) -> [cell()].
 create_board(Width, Height) ->
@@ -24,9 +24,14 @@ update_board(World, []) -> World;
 update_board(W, [#ant{pos = APos} | TAnts]) ->
     % assertion: every Ant position is different
     % TODO update board with all Ants in one pass
-    Idx = pos_to_index(APos, W#world.w, W#world.h),
+    NewWorld = update_cell(APos, W),
+    update_board(NewWorld, TAnts).
+
+-spec update_cell(position(), world()) -> world().
+update_cell(Pos, W) ->
+    Idx = pos_to_index(Pos, W#world.w, W#world.h),
     NewBoard = map_nth(Idx, W#world.board, fun parallant:update_cell/1),
-    update_board(W#world{board = NewBoard}, TAnts).
+    W#world{board = NewBoard}.
 
 
 map_nth(1, [Old | Rest], F) -> [F(Old) | Rest];
