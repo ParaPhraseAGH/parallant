@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(parallant).
 %% API
--export([test/0, test/1, test/4, start/5, start/6]).
+-export([test/0, test/1, test/4, start/5, start/7]).
 -export([get_cell/3, update_board/3, move_ants/4, update_cell/1]).
 
 -include("parallant.hrl").
@@ -30,27 +30,29 @@ test(Model) ->
     Seed = erlang:now(),
     test(Model, Seed, 50, 30, 5, 500).
 
--spec test(model(), any(), dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
+-spec test(model(), any(), dimension(), dimension(),
+           pos_integer(), pos_integer()) -> ok.
 test(Model, Seed, Width, Height, NAnts, Steps) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
-    start(Model, list_based, Width, Height, NAnts, Steps),
+    start(Model, list_based, Width, Height, NAnts, Steps, true),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
-    start(Model, gbtree_based, Width, Height, NAnts, Steps).
+    start(Model, gbtree_based, Width, Height, NAnts, Steps, true).
 
--spec start(model(), world_impl(), dimension(), dimension(), pos_integer()) -> ok.
+-spec start(model(), world_impl(), dimension(), dimension(),
+            pos_integer()) -> ok.
 start(Model, Impl, Width, Height, Steps) ->
-    start(Model, Impl, Width, Height, 1, Steps).
+    start(Model, Impl, Width, Height, 1, Steps, true).
 
--spec start(model(), world_impl(), dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
-start(Model, Impl, Width, Height, PopulationSize, Steps) ->
+-spec start(model(), world_impl(), dimension(), dimension(),
+            pos_integer(), pos_integer(), boolean()) -> ok.
+start(Model, Impl, Width, Height, PopulationSize, Steps, Log) ->
     Board = create_board(Impl, Width, Height),
     Ants = create_ants(Impl, PopulationSize, Width, Height),
 
     Env = #env{agents = Ants, world = Board, backend = Impl},
 
-    Log = true,
     Animate = true,
 
     logger:start(Model, Env, Log, Animate),
@@ -63,7 +65,8 @@ start(Model, Impl, Width, Height, PopulationSize, Steps) ->
 
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
-    io:format("Time elapsed: ~p. Time per iteration: ~p s~n", [TimeInSecs, TimeInSecs / Steps]).
+    io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
+              [TimeInSecs, TimeInSecs / Steps]).
 
 -spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
 create_ants(PopulationSize, Width, Height) ->
@@ -85,7 +88,10 @@ update_board(Impl, World, Ants) ->
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
-move_ant({AntCellState}, #ant{pos = Pos, dir = Dir}, #world { w = W, h = H}, Occuppied) ->
+move_ant({AntCellState},
+         #ant{pos = Pos, dir = Dir},
+         #world { w = W, h = H},
+         Occuppied) ->
     NewDir = turn(Dir, AntCellState),
     NewPos = forward(Pos, NewDir, W, H, Occuppied),
     #ant{pos = NewPos, dir = NewDir}.
