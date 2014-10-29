@@ -10,7 +10,7 @@
 %% API
 -export([test/0, test/1, test/4, start/5, start/7]).
 -export([get_cell/3, update_board/3, move_ants/4, update_cell/1,
-        get_moves/1, apply_moves/2]).
+        get_moves/1, apply_moves/3]).
 
 -include("parallant.hrl").
 
@@ -164,13 +164,13 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
     NewY = torus_bounds(Y + DY, H),
     {NewX, NewY}.
 
--spec apply_moves([{ant(), ant()}], environment()) -> environment().
-apply_moves(Moves, Env) ->
+-spec apply_moves([{ant(), ant()}], environment(), [ant()]) ->
+                         {[ant()], environment()}.
+apply_moves(Moves, Env, Occupied) ->
     ApplyMove = fun (Move, {Occ, E}) -> apply_move(Move, {Occ, E}) end,
-    {_Acc, Env1} = lists:foldl(ApplyMove,
-                             {Env#env.agents, Env#env{agents = []}},
-                             Moves),
-    Env1.
+    lists:foldl(ApplyMove,
+                {Occupied, Env#env{agents = []}},
+                Moves).
 
 -spec apply_move({ant(), ant()}, {[ant()], environment()}) -> environment().
 apply_move({Old, New}, {Occ, E}) ->

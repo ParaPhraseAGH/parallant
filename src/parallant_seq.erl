@@ -30,6 +30,6 @@ step(MaxT, MaxT, Env) ->
     Env;
 step(T, MaxT, Env) ->
     Moves = parallant:get_moves(Env),
-    NewEnv = parallant:apply_moves(Moves, Env),
+    {_Occupied, NewEnv} = parallant:apply_moves(Moves, Env, Env#env.agents),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv).
