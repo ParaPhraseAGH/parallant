@@ -11,7 +11,7 @@
 -record(ant, {pos :: position(),
               dir :: direction()}).
 
--record(world, {board :: board_state(),
+-record(world, {board :: board(),
                 w :: dimension(),
                 h :: dimension()}).
 
@@ -32,7 +32,7 @@
 -type cell() :: {dead} | {alive}.
 -type tile() :: #tile{}.
 -type ant() :: #ant{}.
--type board_state() :: [cell()] | gb_trees:tree().
+-type board() :: [cell()] | gb_trees:tree().
 -type world() :: #world{}.
 -type model() :: parallant_seq | parallant_tiled.
 -type world_impl() :: list_based | gbtree_based.

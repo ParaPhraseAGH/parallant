@@ -9,12 +9,14 @@
 -module(gbtree_based).
 -author("piotr").
 
+-behaviour(world_impl).
 -include("parallant.hrl").
 
 %% API
 -export([create_board/2, update_board/2, get_cell/2, display/2, update_cell/2]).
 
--spec create_board(dimension(), dimension()) -> [gb_trees:tree(position(), cell())].
+-spec create_board(dimension(), dimension()) ->
+                          [gb_trees:tree(position(), cell())].
 create_board(Width, Height) ->
     Tree = gb_trees:empty(),
     Indices = util:all_positions(Width, Height),

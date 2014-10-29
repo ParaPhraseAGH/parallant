@@ -9,6 +9,7 @@
 -module(list_based).
 -author("piotr").
 
+-behaviour(world_impl).
 -include("parallant.hrl").
 
 %% API

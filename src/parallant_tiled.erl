@@ -77,7 +77,7 @@ partition(Env) ->
 -spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
 group_by(List) ->
     dict:to_list(
-      lists:foldl(fun({K,V}, D) ->
+      lists:foldl(fun({K, V}, D) ->
                           dict:append_list(K, V, D)
                   end, dict:new(), List)).
 

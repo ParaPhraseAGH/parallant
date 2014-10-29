@@ -132,12 +132,12 @@ create_ants(_Impl, PopSize, W, H) ->
     create_ants(PopSize, W, H).
 
 create_board(Impl, W, H)->
-    Board = Impl:create_board(W, H),
+    Board = world_impl:create_board(Impl, W, H),
     #world{board = Board, w = W, h = H}.
 
 -spec get_cell(world_impl(), position(), world()) -> cell().
-get_cell(Impl, {X,Y}, World) ->
-    Impl:get_cell({X,Y}, World).
+get_cell(Impl, {X ,Y}, World) ->
+    world_impl:get_cell(Impl, {X, Y}, World).
 
 
 %%%%%%%%%%%
@@ -152,7 +152,7 @@ get_moves(E = #env{agents = Agents}) ->
 
 -spec move_agent(ant(), environment()) -> ant().
 move_agent(#ant{pos = Pos, dir = Dir}, #env{backend = Impl, world = World}) ->
-    {AgentCellState} = Impl:get_cell(Pos, World),
+    {AgentCellState} = world_impl:get_cell(Impl, Pos, World),
     NewDir = turn(Dir, AgentCellState),
     NewPos = forward(Pos, NewDir, World),
     #ant{pos = NewPos, dir = NewDir}.
@@ -187,4 +187,4 @@ apply_move({Old, New}, {Occ, E}) ->
 
 -spec update_cell(position(), environment()) -> environment().
 update_cell(Pos, E = #env{backend = Impl, world = World}) ->
-    E#env{world = Impl:update_cell(Pos, World)}.
+    E#env{world = world_impl:update_cell(Impl, Pos, World)}.
