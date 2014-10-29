@@ -2,7 +2,6 @@
 
 [![Build Status](https://secure.travis-ci.org/ParaPhraseAGH/parallant.svg?branch=master "Build Status")](http://travis-ci.org/ParaPhraseAGH/parallant)
 
-
 ### Compilation ###
 
 * Standard
