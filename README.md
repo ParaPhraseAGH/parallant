@@ -4,20 +4,12 @@
 
 ### Compilation ###
 
-* Standard
-  
 `make all`
-
-* Skel
-
-  Tiled version uses `skel` library
-
-`make skel`
 
 
 ### Running ###
 
-There is a script that runs `gbtree_based`: `seq`, `skel` and `not skel` versions:
+There is a script that runs `gbtree_based`: `seq` and `tiled` versions:
 
 `./test.sh Width Height PopulationSize Iterations`
 
@@ -37,7 +29,7 @@ where:
 * `Width :: pos_integer(), Height :: pos_integer()`
 * `PopulationSize :: pos_integer() < Width*Height` - how many agents
 * `Steps : pos_integer()` - number of simulation steps
-* `Log : true | false` - number of simulation steps
+* `Log : true | false` - the simulation state of every step is displayed if `true` (only the first and the last if `false`)
 
 
 When running `parallant_tiled` the width of the world should be even.
