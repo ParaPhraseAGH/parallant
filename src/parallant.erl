@@ -136,7 +136,7 @@ create_board(Impl, W, H)->
     #world{board = Board, w = W, h = H}.
 
 -spec get_cell(world_impl(), position(), world()) -> cell().
-get_cell(Impl, {X ,Y}, World) ->
+get_cell(Impl, {X, Y}, World) ->
     world_impl:get_cell(Impl, {X, Y}, World).
 
 
