@@ -9,8 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/5, start/7]).
--export([get_cell/3, update_board/3, move_ants/4, update_cell/1,
-        get_moves/1, apply_moves/3]).
+-export([get_cell/3, update_cell/1, get_moves/1, apply_moves/3]).
 
 -include("parallant.hrl").
 
@@ -49,9 +48,8 @@ start(Model, Impl, Width, Height, Steps) ->
 -spec start(model(), world_impl(), dimension(), dimension(),
             pos_integer(), pos_integer(), boolean()) -> ok.
 start(Model, Impl, Width, Height, PopulationSize, Steps, Log) ->
-    Board = create_board(Impl, Width, Height),
+    Board = create_world(Impl, Width, Height),
     Ants = create_ants(Impl, PopulationSize, Width, Height),
-
     Env = #env{agents = Ants, world = Board, backend = Impl},
 
     Animate = true,
@@ -69,42 +67,35 @@ start(Model, Impl, Width, Height, PopulationSize, Steps, Log) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
-    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
-
--spec move_ants([cell()], [ant()], world(), position()) -> [ant()].
-move_ants([], [], _, _) -> [];
-move_ants([AntCell | TAntCells], [Ant | TAnts], World, Occuppied) ->
-    NewAnt = move_ant(AntCell, Ant, World, Occuppied),
-    [NewAnt | move_ants(TAntCells, TAnts, World, [NewAnt#ant.pos | Occuppied])].
-
--spec update_board(world_impl(), world(), [ant()]) -> world().
-update_board(Impl, World, Ants) ->
-    Impl:update_board(World, Ants).
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
-move_ant({AntCellState},
-         #ant{pos = Pos, dir = Dir},
-         #world { w = W, h = H},
-         Occuppied) ->
-    NewDir = turn(Dir, AntCellState),
-    NewPos = forward(Pos, NewDir, W, H, Occuppied),
-    #ant{pos = NewPos, dir = NewDir}.
+-spec get_cell(world_impl(), position(), world()) -> cell().
+get_cell(Impl, {X, Y}, World) ->
+    world_impl:get_cell(Impl, {X, Y}, World).
 
-forward({X, Y}, Dir, W, H, Occuppied) ->
-    {DX, DY} = heading(Dir),
-    NewX = torus_bounds(X + DX, W),
-    NewY = torus_bounds(Y + DY, H),
-    case lists:member({NewX, NewY}, Occuppied) of
-        true -> {X, Y};
-        false -> {NewX, NewY}
-    end.
+-spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
+get_moves(E = #env{agents = Agents}) ->
+    GetMove = fun (A) -> {A, move_agent(A, E)} end,
+    lists:map(GetMove, Agents).
+
+-spec apply_moves([{ant(), ant()}], environment(), [ant()]) ->
+                         {[ant()], environment()}.
+apply_moves(Moves, Env, Occupied) ->
+    ApplyMove = fun (Move, {Occ, E}) -> apply_move(Move, {Occ, E}) end,
+    lists:foldl(ApplyMove,
+                {Occupied, Env#env{agents = []}},
+                Moves).
+
+% internal functions
+
+-spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
+create_ants(PopulationSize, Width, Height) ->
+    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
+    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
+    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
 
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
@@ -131,24 +122,9 @@ heading(west) -> {-1, 0}.
 create_ants(_Impl, PopSize, W, H) ->
     create_ants(PopSize, W, H).
 
-create_board(Impl, W, H)->
+create_world(Impl, W, H)->
     Board = world_impl:create_board(Impl, W, H),
     #world{board = Board, w = W, h = H}.
-
--spec get_cell(world_impl(), position(), world()) -> cell().
-get_cell(Impl, {X, Y}, World) ->
-    world_impl:get_cell(Impl, {X, Y}, World).
-
-
-%%%%%%%%%%%
-% NEW API
-%%%%%%%%%%%
-
-
--spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
-get_moves(E = #env{agents = Agents}) ->
-    GetMove = fun (A) -> {A, move_agent(A, E)} end,
-    lists:map(GetMove, Agents).
 
 -spec move_agent(ant(), environment()) -> ant().
 move_agent(#ant{pos = Pos, dir = Dir}, #env{backend = Impl, world = World}) ->
@@ -163,14 +139,6 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
     NewX = torus_bounds(X + DX, W),
     NewY = torus_bounds(Y + DY, H),
     {NewX, NewY}.
-
--spec apply_moves([{ant(), ant()}], environment(), [ant()]) ->
-                         {[ant()], environment()}.
-apply_moves(Moves, Env, Occupied) ->
-    ApplyMove = fun (Move, {Occ, E}) -> apply_move(Move, {Occ, E}) end,
-    lists:foldl(ApplyMove,
-                {Occupied, Env#env{agents = []}},
-                Moves).
 
 -spec apply_move({ant(), ant()}, {[ant()], environment()}) -> environment().
 apply_move({Old, New}, {Occ, E}) ->

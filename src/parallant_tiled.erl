@@ -12,23 +12,13 @@
 
 -include("parallant.hrl").
 
--ifdef(skel).
--define(TILED_MODULE, tiled_skel).
--else.
--define(TILED_MODULE, tiled).
--endif.
--define(N_WORKERS, 4).
-
 -spec test() -> ok.
 test() ->
     parallant:test(?MODULE).
 
 -spec display(environment()) -> ok.
 display(E = #env{agents = Ants}) when is_list(Ants) ->
-    (E#env.backend):display(Ants, E#env.world);
-display(E) ->
-    FlattenedAnts = ?TILED_MODULE:flatten_tiles(E#env.agents),
-    display(E#env{agents = FlattenedAnts}).
+    (E#env.backend):display(Ants, E#env.world).
 
 -spec run(pos_integer(), environment()) -> environment().
 run(Steps, Env) ->
