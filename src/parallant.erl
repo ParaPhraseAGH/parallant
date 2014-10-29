@@ -174,12 +174,12 @@ apply_moves(Moves, Env, Occupied) ->
 
 -spec apply_move({ant(), ant()}, {[ant()], environment()}) -> environment().
 apply_move({Old, New}, {Occ, E}) ->
-    IsPosTaken = fun(#ant{pos = P}) -> P == New end,
+    IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
     {NewOcc, Ant} = case lists:any(IsPosTaken, E#env.agents ++ Occ) of
                         true ->
                             {Occ, Old};
                         false ->
-                            Occ1 = [A || A <- Occ, A#ant.pos /= Old],
+                            Occ1 = [A || A <- Occ, A /= Old],
                             {[New | Occ1], New}
                     end,
     E1 = update_cell(Old#ant.pos, E),
