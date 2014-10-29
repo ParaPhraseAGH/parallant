@@ -23,16 +23,6 @@
 test() ->
     parallant:test(?MODULE).
 
--spec run(pos_integer(), environment()) -> environment().
-run(Steps, E = #env{world = World, agents = Ants}) ->
-    KColours = 2,
-    NParts = ?N_WORKERS * KColours,
-    {TiledAnts, TilesDict} =
-        ?TILED_MODULE:split_ants_to_tiles(Ants, World, NParts),
-    {EndEnv, EndTiledAnts} = step(1, Steps, E, TiledAnts, TilesDict),
-    EndAnts = ?TILED_MODULE:flatten_tiles(EndTiledAnts),
-    EndEnv#env{agents = EndAnts}.
-
 -spec display(environment()) -> ok.
 display(E = #env{agents = Ants}) when is_list(Ants) ->
     (E#env.backend):display(Ants, E#env.world);
@@ -40,24 +30,64 @@ display(E) ->
     FlattenedAnts = ?TILED_MODULE:flatten_tiles(E#env.agents),
     display(E#env{agents = FlattenedAnts}).
 
+-spec run(pos_integer(), environment()) -> environment().
+run(Steps, Env) ->
+    step(1, Steps, Env).
 
--spec step(CurrentStep, MaxStep, Env, TiledAnts, TilesDict) ->
-                  {EndEnv, EndAnts} when
-      Env :: environment(),
-      TiledAnts :: dict:dict(pos_integer(), [ant()]),
-      TilesDict :: dict:dict(pos_integer(), tile()),
-      CurrentStep :: pos_integer(),
-      MaxStep :: pos_integer(),
-      EndAnts :: dict:dict(pos_integer(), [ant()]),
-      EndEnv :: environment().
+-spec step(pos_integer(), pos_integer(), environment()) -> environment().
+step(MaxT, MaxT, Env) ->
+    Env;
+step(T, MaxT, Env) ->
+    Partitioned = partition(Env),
 
-step(MaxStep, MaxStep, Env, TiledAnts, _TilesDict) ->
-    {Env, TiledAnts};
-step(Step, MaxStep, E = #env{world = World, backend = Impl}, Ants, TilesDict) ->
-    KColours = 2,
-    AntList = ?TILED_MODULE:flatten_tiles(Ants),
-    NewWorld = parallant:update_board(Impl, World, AntList),
-    NewAnts = ?TILED_MODULE:update_colours(KColours, Ants, TilesDict, E),
-    NewEnv = E#env{world = NewWorld, agents = NewAnts},
+    ProcessTile =
+        fun(Tile, {Occupied, E}) ->
+                F = fun (A) -> parallant:get_moves(E#env{agents = A}) end,
+                Moves = F(Tile),
+                %% Moves = lists:flatmap(F, Tile),
+
+                parallant:apply_moves(Moves, E, Occupied)
+        end,
+    {NewOccupied, UpdatedEnv} = lists:foldl(ProcessTile,
+                                         {Env#env.agents, Env},
+                                         Partitioned),
+    NewEnv = UpdatedEnv#env{agents = NewOccupied},
     logger:log(NewEnv),
-    step(Step + 1, MaxStep, NewEnv, NewAnts, TilesDict).
+    step(T+1, MaxT, NewEnv).
+
+
+-spec partition(environment()) -> [[[ant()]]].
+partition(Env) ->
+    W = (Env#env.world)#world.w,
+    %% H = 5,
+    NStripes = 2,
+    NColours = 2,
+    D = round(W/NStripes),
+    Zeros = [{I, []} || I <- lists:seq(1, W, D)],
+    AssignTileToAnt = fun(A = #ant{pos={X, _}}) ->
+                              ITile = trunc((X-1)/D)*D+1,
+                              {ITile, [A]}
+                      end,
+    TiledAnts = lists:map(AssignTileToAnt, Env#env.agents),
+    TagTiles = group_by(TiledAnts ++ Zeros),
+    Tiles = [T || {_, T} <- TagTiles],
+    Colours = group_by_colour(Tiles, NColours),
+    Colours.
+
+-spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
+group_by(List) ->
+    dict:to_list(
+      lists:foldl(fun({K,V}, D) ->
+                          dict:append_list(K, V, D)
+                  end, dict:new(), List)).
+
+-spec group_by_colour([[ant()]], pos_integer()) -> [[ant()]].
+group_by_colour(Tiles, N) ->
+    N = 2, % dividing in stripes
+    EveryNth = fun (Rest) ->
+                       lists:flatten(
+                         [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
+                                                   Tiles),
+                               I rem N == Rest])
+               end,
+    lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
