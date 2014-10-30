@@ -78,7 +78,10 @@ get_cell(Impl, {X, Y}, World) ->
 
 -spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
 get_moves(E = #env{agents = Agents}) ->
-    GetMove = fun (A) -> {A, move_agent(A, E)} end,
+    GetMove = fun (A) ->
+                      New = move_agent(A, E),
+                      {A#ant{dir = New#ant.dir}, New}
+              end,
     lists:map(GetMove, Agents).
 
 -spec apply_moves([{ant(), ant()}], environment(), [ant()]) ->
@@ -143,14 +146,13 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
 -spec apply_move({ant(), ant()}, {[ant()], environment()}) -> environment().
 apply_move({Old, New}, {Occ, E}) ->
     IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
-    {NewOcc, Ant} = case lists:any(IsPosTaken, E#env.agents ++ Occ) of
+    {NewOcc, E1, Ant} = case lists:any(IsPosTaken, E#env.agents ++ Occ) of
                         true ->
-                            {Occ, Old};
+                            {Occ, E, Old};
                         false ->
-                            Occ1 = [A || A <- Occ, A /= Old],
-                            {[New | Occ1], New}
+                            Occ1 = [A || A <- Occ, A#ant.pos /= Old#ant.pos],
+                            {[New | Occ1], update_cell(Old#ant.pos, E), New}
                     end,
-    E1 = update_cell(Old#ant.pos, E),
     {NewOcc, E1#env{agents = [Ant | E1#env.agents]}}.
 
 -spec update_cell(position(), environment()) -> environment().
