@@ -31,17 +31,14 @@ step(T, MaxT, Env) ->
     Partitioned = partition(Env),
 
     ProcessTile =
-        fun(Tile, {Occupied, E}) ->
+        fun(Tile, E) ->
                 F = fun (A) -> parallant:get_moves(E#env{agents = A}) end,
                 Moves = F(Tile),
                 %% Moves = lists:flatmap(F, Tile),
 
-                parallant:apply_moves(Moves, E, Occupied)
+                parallant:apply_moves(Moves, E)
         end,
-    {NewOccupied, UpdatedEnv} = lists:foldl(ProcessTile,
-                                         {Env#env.agents, Env},
-                                         Partitioned),
-    NewEnv = UpdatedEnv#env{agents = NewOccupied},
+    NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv).
 
@@ -50,9 +47,9 @@ step(T, MaxT, Env) ->
 partition(Env) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
-    NStripes = 2,
+    NTiles = 2,
     NColours = 2,
-    D = round(W/NStripes),
+    D = round(W/NTiles),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
     AssignTileToAnt = fun(A = #ant{pos={X, _}}) ->
                               ITile = trunc((X-1)/D)*D+1,

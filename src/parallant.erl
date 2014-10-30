@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/5, start/7]).
--export([get_cell/3, update_cell/1, get_moves/1, apply_moves/3]).
+-export([get_cell/3, update_cell/1, get_moves/1, apply_moves/2]).
 
 -include("parallant.hrl").
 
@@ -84,13 +84,11 @@ get_moves(E = #env{agents = Agents}) ->
               end,
     lists:map(GetMove, Agents).
 
--spec apply_moves([{ant(), ant()}], environment(), [ant()]) ->
+-spec apply_moves([{ant(), ant()}], environment()) ->
                          {[ant()], environment()}.
-apply_moves(Moves, Env, Occupied) ->
-    ApplyMove = fun (Move, {Occ, E}) -> apply_move(Move, {Occ, E}) end,
-    lists:foldl(ApplyMove,
-                {Occupied, Env#env{agents = []}},
-                Moves).
+apply_moves(Moves, Env) ->
+    ApplyMove = fun (Move, E) -> apply_move(Move, E) end,
+    lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
 
@@ -143,17 +141,16 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
     NewY = torus_bounds(Y + DY, H),
     {NewX, NewY}.
 
--spec apply_move({ant(), ant()}, {[ant()], environment()}) -> environment().
-apply_move({Old, New}, {Occ, E}) ->
+-spec apply_move({ant(), ant()}, environment()) -> environment().
+apply_move({Old, New}, E) ->
     IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
-    {NewOcc, E1, Ant} = case lists:any(IsPosTaken, E#env.agents ++ Occ) of
-                        true ->
-                            {Occ, E, Old};
-                        false ->
-                            Occ1 = [A || A <- Occ, A#ant.pos /= Old#ant.pos],
-                            {[New | Occ1], update_cell(Old#ant.pos, E), New}
-                    end,
-    {NewOcc, E1#env{agents = [Ant | E1#env.agents]}}.
+    case lists:any(IsPosTaken, E#env.agents) of
+        true ->
+            E;
+        false ->
+            NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
+            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]})
+    end.
 
 -spec update_cell(position(), environment()) -> environment().
 update_cell(Pos, E = #env{backend = Impl, world = World}) ->
