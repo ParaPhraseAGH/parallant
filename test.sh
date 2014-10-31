@@ -2,26 +2,27 @@
 
 DefaultWidth=20
 DefaultHeight=10
-DefaultAnts=2
-DefaultSteps=10
+DefaultAnts=10
+DefaultSteps=100
 
 Width=${1:-$DefaultWidth}
 Height=${2:-$DefaultHeight}
 Ants=${3:-$DefaultAnts}
 Steps=${4:-$DefaultSteps}
 
-echo ""
-echo "# version seq"
-erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_seq, gbtree_based,$Width,$Height,$Ants,$Steps)." -run init stop -noshell
+models="parallant_seq parallant_tiled"
+backends="list_based gbtree_based"
 
-echo ""
-echo "# version tiled no_skel"
-erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_tiled, gbtree_based,$Width,$Height,$Ants,$Steps)." -run init stop -noshell
+for model in $models; do
+    for backend in $backends; do
+        echo ""
+        echo "# version $model with $backend backend"
+        erl -pa ebin -pa deps/skel/ebin -eval "parallant:start($model, $backend,$Width,$Height,$Ants,$Steps,false)." -run init stop -noshell
+    done
+done
 
-#start(Model, Impl, Width, Height, PopulationSize, Steps)
-
-make clean
-./rebar clean compile -D skel
-echo ""
-echo "# version tiled skel"
-erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_tiled, gbtree_based,$Width,$Height,$Ants,$Steps)." -run init stop -noshell
+# make clean
+# ./rebar clean compile -D skel
+# echo ""
+# echo "# version tiled skel"
+# erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_tiled, gbtree_based,$Width,$Height,$Ants,$Steps,false)." -run init stop -noshell
