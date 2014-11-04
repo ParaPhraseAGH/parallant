@@ -87,7 +87,7 @@ get_moves(E = #env{agents = Agents}) ->
 -spec apply_moves([{ant(), ant()}], environment()) ->
                          {[ant()], environment()}.
 apply_moves(Moves, Env) ->
-    ApplyMove = fun (Move, E) -> apply_move(Move, E) end,
+    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
@@ -140,18 +140,3 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
     NewX = torus_bounds(X + DX, W),
     NewY = torus_bounds(Y + DY, H),
     {NewX, NewY}.
-
--spec apply_move({ant(), ant()}, environment()) -> environment().
-apply_move({Old, New}, E) ->
-    IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
-    case lists:any(IsPosTaken, E#env.agents) of
-        true ->
-            E;
-        false ->
-            NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
-            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]})
-    end.
-
--spec update_cell(position(), environment()) -> environment().
-update_cell(Pos, E = #env{backend = Impl, world = World}) ->
-    E#env{world = world_impl:update_cell(Impl, Pos, World)}.

@@ -4,6 +4,22 @@
 
 -compile(export_all).
 
+-spec apply_move({ant(), ant()}, environment()) -> environment().
+apply_move({Old, New}, E) ->
+    IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
+    case lists:any(IsPosTaken, E#env.agents) of
+        true ->
+            E;
+        false ->
+            NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
+            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]})
+    end.
+
+-spec update_cell(position(), environment()) -> environment().
+update_cell(Pos, E = #env{backend = Impl, world = World}) ->
+    E#env{world = world_impl:update_cell(Impl, Pos, World)}.
+
+
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->
     [Env#env.agents];
