@@ -28,7 +28,9 @@ run(Steps, Env) ->
 step(MaxT, MaxT, Env) ->
     Env;
 step(T, MaxT, Env) ->
-    Partitioned = partition(Env),
+    NColours = 2,
+    NParts = 2,
+    Partitioned = ants:partition(Env, NColours, NParts),
 
     ProcessTile =
         fun(Tile, E) ->
@@ -41,40 +43,3 @@ step(T, MaxT, Env) ->
     NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv).
-
-
--spec partition(environment()) -> [[[ant()]]].
-partition(Env) ->
-    W = (Env#env.world)#world.w,
-    %% H = 5,
-    NTiles = 2,
-    NColours = 2,
-    D = round(W/NTiles),
-    Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAnt = fun(A = #ant{pos={X, _}}) ->
-                              ITile = trunc((X-1)/D)*D+1,
-                              {ITile, [A]}
-                      end,
-    TiledAnts = lists:map(AssignTileToAnt, Env#env.agents),
-    TagTiles = group_by(TiledAnts ++ Zeros),
-    Tiles = [T || {_, T} <- TagTiles],
-    Colours = group_by_colour(Tiles, NColours),
-    Colours.
-
--spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
-group_by(List) ->
-    dict:to_list(
-      lists:foldl(fun({K, V}, D) ->
-                          dict:append_list(K, V, D)
-                  end, dict:new(), List)).
-
--spec group_by_colour([[ant()]], pos_integer()) -> [[ant()]].
-group_by_colour(Tiles, N) ->
-    N = 2, % dividing in stripes
-    EveryNth = fun (Rest) ->
-                       lists:flatten(
-                         [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
-                                                   Tiles),
-                               I rem N == Rest])
-               end,
-    lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).

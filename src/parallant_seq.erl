@@ -29,7 +29,11 @@ run(Steps, Env) ->
 step(MaxT, MaxT, Env) ->
     Env;
 step(T, MaxT, Env) ->
-    Moves = parallant:get_moves(Env),
+    NColours = 1,
+    NParts = 1,
+    [AntList] = ants:partition(Env, NColours, NParts),
+
+    Moves = parallant:get_moves(Env#env{agents = AntList}),
     NewEnv = parallant:apply_moves(Moves, Env),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv).
