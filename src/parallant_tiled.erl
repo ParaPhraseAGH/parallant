@@ -35,8 +35,8 @@ step(T, MaxT, Env) ->
     ProcessTile =
         fun(Tile, E) ->
                 F = fun (A) -> parallant:get_moves(E#env{agents = A}) end,
-                Moves = F(Tile),
-                %% Moves = lists:flatmap(F, Tile),
+                %% Moves = F(Tile),
+                Moves = lists:flatmap(F, Tile),
 
                 parallant:apply_moves(Moves, E)
         end,

@@ -2,7 +2,7 @@
 
 -include("parallant.hrl").
 
--compile(export_all).
+-export([create_ants/3, apply_move/2, partition/3]).
 
 -spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
 create_ants(PopulationSize, Width, Height) ->
@@ -55,9 +55,8 @@ group_by(List) ->
 group_by_colour(Tiles, N) ->
     N = 2, % dividing in stripes
     EveryNth = fun (Rest) ->
-                       lists:flatten(
-                         [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
-                                                   Tiles),
-                               I rem N == Rest])
+                       [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
+                                                 Tiles),
+                             I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
