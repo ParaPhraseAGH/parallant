@@ -92,12 +92,6 @@ apply_moves(Moves, Env) ->
 
 % internal functions
 
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
-    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
-
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
 torus_bounds(Val, _Max) -> Val.
@@ -121,7 +115,7 @@ heading(east) -> {1, 0};
 heading(west) -> {-1, 0}.
 
 create_ants(_Impl, PopSize, W, H) ->
-    create_ants(PopSize, W, H).
+    ants:create_ants(PopSize, W, H).
 
 create_world(Impl, W, H)->
     Board = world_impl:create_board(Impl, W, H),

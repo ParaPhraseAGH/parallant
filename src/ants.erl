@@ -4,6 +4,12 @@
 
 -compile(export_all).
 
+-spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
+create_ants(PopulationSize, Width, Height) ->
+    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
+    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
+    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
+
 -spec apply_move({ant(), ant()}, environment()) -> environment().
 apply_move({Old, New}, E) ->
     IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
