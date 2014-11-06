@@ -87,16 +87,10 @@ get_moves(E = #env{agents = Agents}) ->
 -spec apply_moves([{ant(), ant()}], environment()) ->
                          {[ant()], environment()}.
 apply_moves(Moves, Env) ->
-    ApplyMove = fun (Move, E) -> apply_move(Move, E) end,
+    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
-
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
-    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
 
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
@@ -121,7 +115,7 @@ heading(east) -> {1, 0};
 heading(west) -> {-1, 0}.
 
 create_ants(_Impl, PopSize, W, H) ->
-    create_ants(PopSize, W, H).
+    ants:create_ants(PopSize, W, H).
 
 create_world(Impl, W, H)->
     Board = world_impl:create_board(Impl, W, H),
@@ -140,18 +134,3 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
     NewX = torus_bounds(X + DX, W),
     NewY = torus_bounds(Y + DY, H),
     {NewX, NewY}.
-
--spec apply_move({ant(), ant()}, environment()) -> environment().
-apply_move({Old, New}, E) ->
-    IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
-    case lists:any(IsPosTaken, E#env.agents) of
-        true ->
-            E;
-        false ->
-            NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
-            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]})
-    end.
-
--spec update_cell(position(), environment()) -> environment().
-update_cell(Pos, E = #env{backend = Impl, world = World}) ->
-    E#env{world = world_impl:update_cell(Impl, Pos, World)}.
