@@ -4,7 +4,7 @@
 
 -include("parallant.hrl").
 %% API
--export([start_link/1, start/2, start/3, start/4, stop/1, log/1]).
+-export([start_link/1, start/2, stop/1, log/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -38,12 +38,8 @@ start_link(Params) ->
 log(Env) ->
     gen_server:cast(?SERVER, {log, Env}).
 
-start(Algorithm, Env) ->
-    start(Algorithm, Env, false, true).
-start(Algorithm, Env, Log) ->
-    start(Algorithm, Env, Log, true).
-start(Algorithm, Env, Log, Animate) ->
-    start_link([Algorithm, Env, Log, Animate]).
+start(Env, C) ->
+    start_link([C#config.algorithm, Env, C#config.log, C#config.animate]).
 
 stop(EndEnv) ->
     gen_server:call(?SERVER, {stop, EndEnv}, infinity).

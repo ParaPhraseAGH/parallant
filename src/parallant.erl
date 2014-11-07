@@ -8,10 +8,13 @@
 %%%-------------------------------------------------------------------
 -module(parallant).
 %% API
--export([test/0, test/1, test/4, start/5, start/7]).
+-export([test/0, test/1, test/4, start/3, start/5]).
 -export([get_cell/3, get_moves/1, apply_moves/2]).
 
 -include("parallant.hrl").
+
+-define(LOAD(Attribute, Proplist, Default),
+        Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
 -spec test(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
 test(Width, Height, NAnts, Steps) ->
@@ -35,31 +38,32 @@ test(Algorithm) ->
 test(Algorithm, Seed, Width, Height, NAnts, Steps) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
-    start(Algorithm, list_based, Width, Height, NAnts, Steps, true),
+    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {world_impl, list_based}]),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
-    start(Algorithm, gbtree_based, Width, Height, NAnts, Steps, true).
+    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {world_impl, gbtree_based}]).
 
--spec start(algorithm(), world_impl(), dimension(), dimension(),
-            pos_integer()) -> ok.
-start(Algorithm, Impl, Width, Height, Steps) ->
-    start(Algorithm, Impl, Width, Height, 1, Steps, true).
+-spec start(dimension(), dimension(), pos_integer()) -> ok.
+start(Width, Height, Steps) ->
+    start(Width, Height, 1, Steps, []).
 
--spec start(algorithm(), world_impl(), dimension(), dimension(),
-            pos_integer(), pos_integer(), boolean()) -> ok.
-start(Algorithm, Impl, Width, Height, PopulationSize, Steps, Log) ->
-    ConfigProps = [{model, model}, {algorithm, Algorithm}, {world_impl, Impl}],
-    _Config = create_config(ConfigProps),
+-spec start(dimension(), dimension(), pos_integer(), pos_integer(),
+            proplists:proplist()) -> ok.
+start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
+    Config = create_config(ConfigOptions),
 
-    Board = create_world(Impl, Width, Height),
-    Ants = create_ants(Impl, PopulationSize, Width, Height),
-    Env = #env{agents = Ants, world = Board, backend = Impl},
+    Board = create_world(Width, Height, Config),
+    Ants = create_ants(PopulationSize, Width, Height, Config),
+    Env = #env{agents = Ants,
+               world = Board,
+               backend = Config#config.world_impl},
 
-    Animate = true,
-
-    logger:start(Algorithm, Env, Log, Animate),
+    logger:start(Env, Config),
     T1 = erlang:now(),
 
+    Algorithm = Config#config.algorithm,
     EndEnv = Algorithm:run(Steps, Env),
 
     T2 = erlang:now(),
@@ -86,16 +90,17 @@ apply_moves(Moves, Env) ->
 
 % internal functions
 
-create_ants(_Impl, PopSize, W, H) ->
+create_ants(PopSize, W, H, _Config) ->
+    %% Model = Config#config.model,
     ants:create_ants(PopSize, W, H).
 
-create_world(Impl, W, H)->
-    Board = world_impl:create_board(Impl, W, H),
+create_world(W, H, C)->
+    Board = world_impl:create_board(C#config.world_impl, W, H),
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->
-    #config{
-       model = proplists:get_value(model, ConfigProps),
-       algorithm = proplists:get_value(algorithm, ConfigProps),
-       world_impl = proplists:get_value(world_impl, ConfigProps)
-      }.
+    #config{?LOAD(model, ConfigProps, model),
+            ?LOAD(algorithm, ConfigProps, parallant_seq),
+            ?LOAD(world_impl, ConfigProps, gbtree_based),
+            ?LOAD(log, ConfigProps, true),
+            ?LOAD(animate, ConfigProps, true)}.

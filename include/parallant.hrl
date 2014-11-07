@@ -24,7 +24,9 @@
 -record(config, {
           world_impl :: world_impl(),
           model :: 'model',
-          algorithm :: algorithm()
+          algorithm  :: algorithm(),
+          log :: boolean(),
+          animate :: boolean()
          }).
 
 -type dimension() :: pos_integer().
