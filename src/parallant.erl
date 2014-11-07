@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/5, start/7]).
--export([get_cell/3, update_cell/1, get_moves/1, apply_moves/2]).
+-export([get_cell/3, get_moves/1, apply_moves/2]).
 
 -include("parallant.hrl").
 
@@ -67,22 +67,13 @@ start(Model, Impl, Width, Height, PopulationSize, Steps, Log) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
-
--spec update_cell(cell()) -> cell().
-update_cell({dead}) -> {alive};
-update_cell({alive}) -> {dead}.
-
 -spec get_cell(world_impl(), position(), world()) -> cell().
 get_cell(Impl, {X, Y}, World) ->
     world_impl:get_cell(Impl, {X, Y}, World).
 
 -spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
 get_moves(E = #env{agents = Agents}) ->
-    GetMove = fun (A) ->
-                      New = move_agent(A, E),
-                      {A#ant{dir = New#ant.dir}, New}
-              end,
-    lists:map(GetMove, Agents).
+    [model:get_move(A, E) || A <- Agents].
 
 -spec apply_moves([{ant(), ant()}], environment()) ->
                          {[ant()], environment()}.
@@ -92,45 +83,9 @@ apply_moves(Moves, Env) ->
 
 % internal functions
 
-torus_bounds(Val, Max) when Val < 1 -> Max + Val;
-torus_bounds(Val, Max) when Val > Max -> Val - Max;
-torus_bounds(Val, _Max) -> Val.
-
-turn(Dir, dead) -> turn_right(Dir);
-turn(Dir, alive) -> turn_left(Dir).
-
-turn_right(north) -> east;
-turn_right(east) -> south;
-turn_right(south) -> west;
-turn_right(west) -> north.
-
-turn_left(north) -> west;
-turn_left(east) -> north;
-turn_left(south) -> east;
-turn_left(west) -> south.
-
-heading(north) -> {0, 1};
-heading(south) -> {0, -1};
-heading(east) -> {1, 0};
-heading(west) -> {-1, 0}.
-
 create_ants(_Impl, PopSize, W, H) ->
     ants:create_ants(PopSize, W, H).
 
 create_world(Impl, W, H)->
     Board = world_impl:create_board(Impl, W, H),
     #world{board = Board, w = W, h = H}.
-
--spec move_agent(ant(), environment()) -> ant().
-move_agent(#ant{pos = Pos, dir = Dir}, #env{backend = Impl, world = World}) ->
-    {AgentCellState} = world_impl:get_cell(Impl, Pos, World),
-    NewDir = turn(Dir, AgentCellState),
-    NewPos = forward(Pos, NewDir, World),
-    #ant{pos = NewPos, dir = NewDir}.
-
--spec forward(position(), direction(), world()) -> position().
-forward({X, Y}, Dir, #world{w = W, h = H}) ->
-    {DX, DY} = heading(Dir),
-    NewX = torus_bounds(X + DX, W),
-    NewY = torus_bounds(Y + DY, H),
-    {NewX, NewY}.
