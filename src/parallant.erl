@@ -25,39 +25,42 @@ test(Width, Height, NAnts, Steps) ->
 test() ->
     test(50, 30, 5, 500).
 
--spec test(model()) -> ok.
-test(Model) ->
+-spec test(algorithm()) -> ok.
+test(Algorithm) ->
     Seed = erlang:now(),
-    test(Model, Seed, 50, 30, 5, 500).
+    test(Algorithm, Seed, 50, 30, 5, 500).
 
--spec test(model(), any(), dimension(), dimension(),
+-spec test(algorithm(), any(), dimension(), dimension(),
            pos_integer(), pos_integer()) -> ok.
-test(Model, Seed, Width, Height, NAnts, Steps) ->
+test(Algorithm, Seed, Width, Height, NAnts, Steps) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
-    start(Model, list_based, Width, Height, NAnts, Steps, true),
+    start(Algorithm, list_based, Width, Height, NAnts, Steps, true),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
-    start(Model, gbtree_based, Width, Height, NAnts, Steps, true).
+    start(Algorithm, gbtree_based, Width, Height, NAnts, Steps, true).
 
--spec start(model(), world_impl(), dimension(), dimension(),
+-spec start(algorithm(), world_impl(), dimension(), dimension(),
             pos_integer()) -> ok.
-start(Model, Impl, Width, Height, Steps) ->
-    start(Model, Impl, Width, Height, 1, Steps, true).
+start(Algorithm, Impl, Width, Height, Steps) ->
+    start(Algorithm, Impl, Width, Height, 1, Steps, true).
 
--spec start(model(), world_impl(), dimension(), dimension(),
+-spec start(algorithm(), world_impl(), dimension(), dimension(),
             pos_integer(), pos_integer(), boolean()) -> ok.
-start(Model, Impl, Width, Height, PopulationSize, Steps, Log) ->
+start(Algorithm, Impl, Width, Height, PopulationSize, Steps, Log) ->
+    ConfigProps = [{model, model}, {algorithm, Algorithm}, {world_impl, Impl}],
+    _Config = create_config(ConfigProps),
+
     Board = create_world(Impl, Width, Height),
     Ants = create_ants(Impl, PopulationSize, Width, Height),
     Env = #env{agents = Ants, world = Board, backend = Impl},
 
     Animate = true,
 
-    logger:start(Model, Env, Log, Animate),
+    logger:start(Algorithm, Env, Log, Animate),
     T1 = erlang:now(),
 
-    EndEnv = Model:run(Steps, Env),
+    EndEnv = Algorithm:run(Steps, Env),
 
     T2 = erlang:now(),
     logger:stop(EndEnv),
@@ -89,3 +92,10 @@ create_ants(_Impl, PopSize, W, H) ->
 create_world(Impl, W, H)->
     Board = world_impl:create_board(Impl, W, H),
     #world{board = Board, w = W, h = H}.
+
+create_config(ConfigProps) ->
+    #config{
+       model = proplists:get_value(model, ConfigProps),
+       algorithm = proplists:get_value(algorithm, ConfigProps),
+       world_impl = proplists:get_value(world_impl, ConfigProps)
+      }.
