@@ -9,7 +9,7 @@ create_ants(PopulationSize, Width, Height) ->
     AllPositions = [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)],
     ShuffledCellPositions = shuffle(AllPositions),
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, dir = random_direction()} || Pos <- AntPositions].
+    [#ant{pos = Pos, state = model:random_ant_state()} || Pos <- AntPositions].
 
 -spec apply_move({ant(), ant()}, environment()) -> environment().
 apply_move({Old, New}, E) ->
@@ -66,9 +66,3 @@ group_by_colour(Tiles, N) ->
 -spec shuffle(list()) -> list().
 shuffle(L) ->
     [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
-
--spec random_direction() -> direction().
-random_direction() ->
-    Dirs = [north, south, east, west],
-    Idx = random:uniform(length(Dirs)),
-    lists:nth(Idx, Dirs).

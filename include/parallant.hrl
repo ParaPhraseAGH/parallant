@@ -9,7 +9,7 @@
 -author("piotr").
 
 -record(ant, {pos :: position(),
-              dir :: direction()}).
+              state :: ant_state()}).
 
 -record(world, {board :: board(),
                 w :: dimension(),
@@ -32,6 +32,7 @@
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
+-type ant_state() :: direction().
 -type cell() :: {dead} | {alive}.
 -type ant() :: #ant{}.
 -type board() :: [cell()] | gb_trees:tree().
