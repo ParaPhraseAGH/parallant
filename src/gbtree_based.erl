@@ -19,7 +19,7 @@
                           [gb_trees:tree(position(), cell())].
 create_board(Width, Height) ->
     Tree = gb_trees:empty(),
-    Indices = util:all_positions(Width, Height),
+    Indices = [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)],
     populateTree({dead}, Indices, Tree).
 
 -spec populateTree(cell(), [position()], gb_trees:tree()) -> gb_trees:tree().
