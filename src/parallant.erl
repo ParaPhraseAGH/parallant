@@ -63,8 +63,7 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     logger:start(Env, Config),
     T1 = erlang:now(),
 
-    Algorithm = Config#config.algorithm,
-    EndEnv = Algorithm:run(Steps, Env),
+    EndEnv = algorithm:run(Config#config.algorithm, Steps, Env),
 
     T2 = erlang:now(),
     logger:stop(EndEnv),

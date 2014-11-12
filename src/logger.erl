@@ -165,19 +165,19 @@ overwrite_display(false, _) ->
 -spec log(algorithm(), environment(), pos_integer(), boolean()) -> ok.
 log(Algorithm, Env, Step, Animate) ->
     io:format("Step ~p:~n", [Step + 1]),
-    Algorithm:display(Env),
+    algorithm:display(Algorithm, Env),
     timer:sleep(?LOG_DELAY),
     overwrite_display(Animate, get_height(Env)).
 
 -spec print(algorithm(), environment(), pos_integer()) -> ok.
 print(Algorithm, E = #env{world = W}, Steps) ->
     #world{w = Width} = W,
-    if
-        Width < ?MAX_WIDTH_TO_SHOW ->
+    case Width < ?MAX_WIDTH_TO_SHOW of
+        true ->
             %% io:format("Ants: ~p~n", [E#env.agents]),
             io:format("Step ~p:~n", [Steps]),
-            Algorithm:display(E);
-        true -> ok
+            algorithm:display(Algorithm, E);
+        false -> ok
     end.
 
 -spec get_height(environment()) -> pos_integer().
