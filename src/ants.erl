@@ -2,14 +2,15 @@
 
 -include("parallant.hrl").
 
--export([create_ants/3, apply_move/2, partition/3]).
+-export([create_ants/4, apply_move/2, partition/3]).
 
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
+-spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
+create_ants(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)],
     ShuffledCellPositions = shuffle(AllPositions),
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, state = model:random_ant_state()} || Pos <- AntPositions].
+    [#ant{pos = Pos, state = model:random_ant_state(Config#config.model)}
+     || Pos <- AntPositions].
 
 -spec apply_move({ant(), ant()}, environment()) -> environment().
 apply_move({Old, New}, E) ->

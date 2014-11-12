@@ -63,7 +63,7 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     logger:start(Env, Config),
     T1 = erlang:now(),
 
-    EndEnv = algorithm:run(Config#config.algorithm, Steps, Env),
+    EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
     logger:stop(EndEnv),
@@ -89,9 +89,8 @@ apply_moves(Moves, Env) ->
 
 % internal functions
 
-create_ants(PopSize, W, H, _Config) ->
-    %% Model = Config#config.model,
-    ants:create_ants(PopSize, W, H).
+create_ants(PopSize, W, H, Config) ->
+    ants:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, C)->
     Board = world_impl:create_board(C#config.world_impl, W, H),

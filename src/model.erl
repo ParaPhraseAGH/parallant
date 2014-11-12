@@ -2,10 +2,10 @@
 
 -include("parallant.hrl").
 
--export([random_ant_state/0, get_move/2, update_cell/1]).
+-export([random_ant_state/1, get_move/2, update_cell/1]).
 
--spec random_ant_state() -> ant_state().
-random_ant_state() ->
+-spec random_ant_state(model()) -> ant_state().
+random_ant_state(_Model) ->
     random_direction().
 
 -spec update_cell(cell()) -> cell().

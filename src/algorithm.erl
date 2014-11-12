@@ -13,7 +13,7 @@
 -callback display(environment()) ->
     ok.
 
--callback run(pos_integer(), environment()) ->
+-callback run(pos_integer(), environment(), config()) ->
     environment().
 
 % Exported functions
@@ -26,6 +26,7 @@ test(Alg) ->
 display(Alg, Env) ->
     Alg:display(Env).
 
--spec run(algorithm(), pos_integer(), environment()) ->  environment().
-run(Alg, Steps, Env) ->
-    Alg:run(Steps, Env).
+-spec run(pos_integer(), environment(), config()) ->  environment().
+run(Steps, Env, Config) ->
+    Alg = Config#config.algorithm,
+    Alg:run(Steps, Env, Config).

@@ -10,7 +10,7 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0, display/1, run/2]).
+-export([test/0, display/1, run/3]).
 
 -include("parallant.hrl").
 
@@ -22,14 +22,15 @@ test() ->
 display(E = #env{agents = Ants}) when is_list(Ants) ->
     (E#env.backend):display(Ants, E#env.world).
 
--spec run(pos_integer(), environment()) -> environment().
-run(Steps, Env) ->
-    step(1, Steps, Env).
+-spec run(pos_integer(), environment(), config()) -> environment().
+run(Steps, Env, Config) ->
+    step(1, Steps, Env, Config).
 
--spec step(pos_integer(), pos_integer(), environment()) -> environment().
-step(MaxT, MaxT, Env) ->
+-spec step(pos_integer(), pos_integer(), environment(), config()) ->
+                  environment().
+step(MaxT, MaxT, Env, _Config) ->
     Env;
-step(T, MaxT, Env) ->
+step(T, MaxT, Env, Config) ->
     NColours = 2,
     NParts = 2,
     Partitioned = ants:partition(Env, NColours, NParts),
@@ -44,4 +45,4 @@ step(T, MaxT, Env) ->
         end,
     NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
     logger:log(NewEnv),
-    step(T+1, MaxT, NewEnv).
+    step(T+1, MaxT, NewEnv, Config).
