@@ -7,6 +7,8 @@
 %%% Created : 30. May 2014 10:29 AM
 %%%-------------------------------------------------------------------
 -module(parallant_tiled).
+
+-behaviour(algorithm).
 %% API
 -export([test/0, display/1, run/2]).
 

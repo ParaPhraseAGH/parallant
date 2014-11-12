@@ -4,7 +4,7 @@
 
 -include("parallant.hrl").
 %% API
--export([start_link/1, start/2, start/3, start/4, stop/1, log/1]).
+-export([start_link/1, start/2, stop/1, log/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -12,7 +12,7 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {model :: model(),
+-record(state, {algorithm :: algorithm(),
                 env :: environment(),
                 step = 1 :: pos_integer(),
                 log = false :: boolean(),
@@ -38,12 +38,8 @@ start_link(Params) ->
 log(Env) ->
     gen_server:cast(?SERVER, {log, Env}).
 
-start(Model, Env) ->
-    start(Model, Env, false, true).
-start(Model, Env, Log) ->
-    start(Model, Env, Log, true).
-start(Model, Env, Log, Animate) ->
-    start_link([Model, Env, Log, Animate]).
+start(Env, C) ->
+    start_link([C#config.algorithm, Env, C#config.log, C#config.animate]).
 
 stop(EndEnv) ->
     gen_server:call(?SERVER, {stop, EndEnv}, infinity).
@@ -64,13 +60,16 @@ stop(EndEnv) ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([Model, Env]) ->
-    init([Model, Env, false, true]);
-init([Model, Env, Log]) ->
-    init([Model, Env, Log, true]);
-init([Model, Env, Log, Animate]) ->
-    print(Model, Env, 1),
-    {ok, #state{model = Model, log = Log, animate = Animate, env = Env}}.
+init([Algorithm, Env]) ->
+    init([Algorithm, Env, false, true]);
+init([Algorithm, Env, Log]) ->
+    init([Algorithm, Env, Log, true]);
+init([Algorithm, Env, Log, Animate]) ->
+    print(Algorithm, Env, 1),
+    {ok, #state{algorithm = Algorithm,
+                log = Log,
+                animate = Animate,
+                env = Env}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -87,7 +86,7 @@ init([Model, Env, Log, Animate]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({stop, Env}, _From, State) ->
-    print(State#state.model, Env, State#state.step),
+    print(State#state.algorithm, Env, State#state.step),
     {stop, normal, ok, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -106,7 +105,7 @@ handle_call(_Request, _From, State) ->
 handle_cast({log, Env}, S = #state{log = false}) ->
     noreply_log(S#state{env = Env});
 handle_cast({log, Env}, S) ->
-    log(S#state.model, Env, S#state.step, S#state.animate),
+    log(S#state.algorithm, Env, S#state.step, S#state.animate),
     noreply_log(S#state{env = Env});
 handle_cast(_Msg, S) ->
     {noreply, S}.
@@ -163,22 +162,22 @@ overwrite_display(true, Height) ->
 overwrite_display(false, _) ->
     ok.
 
--spec log(model(), environment(), pos_integer(), boolean()) -> ok.
-log(Model, Env, Step, Animate) ->
+-spec log(algorithm(), environment(), pos_integer(), boolean()) -> ok.
+log(Algorithm, Env, Step, Animate) ->
     io:format("Step ~p:~n", [Step + 1]),
-    Model:display(Env),
+    algorithm:display(Algorithm, Env),
     timer:sleep(?LOG_DELAY),
     overwrite_display(Animate, get_height(Env)).
 
--spec print(model(), environment(), pos_integer()) -> ok.
-print(Model, E = #env{world = W}, Steps) ->
+-spec print(algorithm(), environment(), pos_integer()) -> ok.
+print(Algorithm, E = #env{world = W}, Steps) ->
     #world{w = Width} = W,
-    if
-        Width < ?MAX_WIDTH_TO_SHOW ->
+    case Width < ?MAX_WIDTH_TO_SHOW of
+        true ->
             %% io:format("Ants: ~p~n", [E#env.agents]),
             io:format("Step ~p:~n", [Steps]),
-            Model:display(E);
-        true -> ok
+            algorithm:display(Algorithm, E);
+        false -> ok
     end.
 
 -spec get_height(environment()) -> pos_integer().

@@ -31,7 +31,7 @@ update_board(W, [#ant{pos = APos} | TAnts]) ->
 -spec update_cell(position(), world()) -> world().
 update_cell(Pos, W) ->
     Idx = pos_to_index(Pos, W#world.w, W#world.h),
-    NewBoard = map_nth(Idx, W#world.board, fun parallant:update_cell/1),
+    NewBoard = map_nth(Idx, W#world.board, fun model:update_cell/1),
     W#world{board = NewBoard}.
 
 

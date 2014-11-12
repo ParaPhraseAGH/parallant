@@ -37,7 +37,7 @@ update_board(W, [#ant{pos = Pos} | TAnts]) ->
 -spec update_cell(position(), world()) -> world().
 update_cell(Pos, W) ->
     Cell = get_cell(Pos, W),
-    NewBoard = gb_trees:update(Pos, parallant:update_cell(Cell), W#world.board),
+    NewBoard = gb_trees:update(Pos, model:update_cell(Cell), W#world.board),
     W#world{board = NewBoard}.
 
 -spec get_cell(position(), world()) -> cell().
