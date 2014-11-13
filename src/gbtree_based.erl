@@ -13,14 +13,15 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/3, get_cell/2, display/2, update_cell/3]).
+-export([create_board/3, update_board/3, get_cell/2, display/2, update_cell/3]).
 
--spec create_board(dimension(), dimension()) ->
+-spec create_board(dimension(), dimension(), config()) ->
                           [gb_trees:tree(position(), cell())].
-create_board(Width, Height) ->
+create_board(Width, Height, Config) ->
     Tree = gb_trees:empty(),
-    Indices = [{I,J} || I <- lists:seq(1, Width), J <-lists:seq(1,Height)],
-    populateTree({dead}, Indices, Tree).
+    Model = Config#config.model,
+    Indices = [{I, J} || I <- lists:seq(1, Width), J <-lists:seq(1, Height)],
+    populateTree(model:initial_cell_state(Model), Indices, Tree).
 
 -spec populateTree(cell(), [position()], gb_trees:tree()) -> gb_trees:tree().
 populateTree(_, [], Tree) -> Tree;

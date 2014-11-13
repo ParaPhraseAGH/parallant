@@ -92,8 +92,8 @@ apply_moves(Moves, Env, Config) ->
 create_ants(PopSize, W, H, Config) ->
     ants:create_ants(PopSize, W, H, Config).
 
-create_world(W, H, C)->
-    Board = world_impl:create_board(C#config.world_impl, W, H),
+create_world(W, H, Config)->
+    Board = world_impl:create_board(W, H, Config),
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->

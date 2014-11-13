@@ -13,11 +13,12 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/3, get_cell/2, display/2, update_cell/3]).
+-export([create_board/3, update_board/3, get_cell/2, display/2, update_cell/3]).
 
--spec create_board(dimension(), dimension()) -> [cell()].
-create_board(Width, Height) ->
-    [{dead} || _I <- lists:seq(1,Width), _J <- lists:seq(1,Height)].
+-spec create_board(dimension(), dimension(), config()) -> [cell()].
+create_board(Width, Height, Config) ->
+    [model:initial_cell_state(Config#config.model)
+     || _I <- lists:seq(1, Width), _J <- lists:seq(1, Height)].
 %%   [{I,J} || I <- lists:seq(1,Width), J <- lists:seq(1,Height)].
 
 -spec update_board(world(), [ant()], config()) -> world().
