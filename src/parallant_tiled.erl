@@ -37,11 +37,13 @@ step(T, MaxT, Env, Config) ->
 
     ProcessTile =
         fun(Tile, E) ->
-                F = fun (A) -> parallant:get_moves(E#env{agents = A}) end,
+                F = fun (A) ->
+                            parallant:get_moves(E#env{agents = A}, Config)
+                    end,
                 %% Moves = F(Tile),
                 Moves = lists:flatmap(F, Tile),
 
-                parallant:apply_moves(Moves, E)
+                parallant:apply_moves(Moves, E, Config)
         end,
     NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
     logger:log(NewEnv),

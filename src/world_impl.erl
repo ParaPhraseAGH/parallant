@@ -10,10 +10,10 @@
 -callback create_board(dimension(), dimension()) ->
     board().
 
--callback update_board(world(), [ant()]) ->
+-callback update_board(world(), [ant()], config()) ->
     world().
 
--callback update_cell(position(), world()) ->
+-callback update_cell(position(), world(), config()) ->
     cell().
 
 -callback get_cell(position(), world()) ->
@@ -31,9 +31,10 @@ create_board(Impl, Width, Height) ->
 update_board(Impl, World, Ants) ->
     Impl:update_board(World, Ants).
 
--spec update_cell(world_impl(), position(), world()) -> cell().
-update_cell(Impl, Pos, World) ->
-    Impl:update_cell(Pos, World).
+-spec update_cell(position(), world(), config()) -> cell().
+update_cell(Pos, World, Config) ->
+    Impl = Config#config.world_impl,
+    Impl:update_cell(Pos, World, Config).
 
 -spec get_cell(world_impl(), position(), world()) -> cell().
 get_cell(Impl, Pos, World) ->

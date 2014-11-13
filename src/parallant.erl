@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([get_cell/3, get_moves/1, apply_moves/2]).
+-export([get_cell/3, get_moves/2, apply_moves/3]).
 
 -include("parallant.hrl").
 
@@ -77,14 +77,14 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
 get_cell(Impl, {X, Y}, World) ->
     world_impl:get_cell(Impl, {X, Y}, World).
 
--spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
-get_moves(E = #env{agents = Agents}) ->
-    [model:get_move(A, E) || A <- Agents].
+-spec get_moves(environment(), config()) -> [{Old :: ant(), New :: ant()}].
+get_moves(E = #env{agents = Agents}, Config) ->
+    [model:get_move(Config#config.model, A, E) || A <- Agents].
 
--spec apply_moves([{ant(), ant()}], environment()) ->
+-spec apply_moves([{ant(), ant()}], environment(), config()) ->
                          {[ant()], environment()}.
-apply_moves(Moves, Env) ->
-    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E) end,
+apply_moves(Moves, Env, Config) ->
+    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions

@@ -2,20 +2,31 @@
 
 -include("parallant.hrl").
 
--export([random_ant_state/1, get_move/2, update_cell/1]).
+-export([random_ant_state/1, get_move/3, update_cell/2]).
 
 -spec random_ant_state(model()) -> ant_state().
 random_ant_state(_Model) ->
-    random_direction().
+    random_ant_state().
 
--spec update_cell(cell()) -> cell().
-update_cell({dead}) -> {alive};
-update_cell({alive}) -> {dead}.
+-spec update_cell(model(), cell()) -> cell().
+update_cell(_Model, CellState) -> update_cell(CellState).
+
+-spec get_move(model(), ant(), environment()) -> {ant(), ant()}.
+get_move(_Model, A, E) ->
+    get_move(A, E).
+
+-spec random_ant_state() -> ant_state().
+random_ant_state() ->
+    random_direction().
 
 -spec get_move(ant(), environment()) -> {ant(), ant()}.
 get_move(A, E) ->
     New = move_agent(A, E),
     {A#ant{state = New#ant.state}, New}.
+
+-spec update_cell(cell()) -> cell().
+update_cell({dead}) -> {alive};
+update_cell({alive}) -> {dead}.
 
 -spec move_agent(ant(), environment()) -> ant().
 move_agent(#ant{pos = Pos, state = Dir}, #env{backend = Impl, world = World}) ->
