@@ -17,9 +17,13 @@
 test() ->
     parallant:test(?MODULE).
 
+%% TODO
 -spec display(environment()) -> ok.
+display(E = #env{agents = Ants}) when is_list(Ants) ->
+  (E#env.backend):display(Ants, E#env.world); %% List case
 display(E) ->
-    (E#env.backend):display(gb_trees:values(E#env.agents), E#env.world). %Conversion into list added [DG]
+  (E#env.backend):display(gb_trees:values(E#env.agents), E#env.world). %% gb_trees case
+
 
 -spec run(pos_integer(), environment(), model()) -> environment().
 run(Steps, Env, Model) ->
