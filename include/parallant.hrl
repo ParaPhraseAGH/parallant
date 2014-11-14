@@ -23,7 +23,7 @@
 
 -record(config, {
           world_impl :: world_impl(),
-          model :: 'model',
+          model :: model(),
           algorithm  :: algorithm(),
           log :: boolean(),
           animate :: boolean()
@@ -40,3 +40,4 @@
 -type world_impl() :: list_based | gbtree_based.
 -type environment() :: #env{}.
 -type config() :: #config{}.
+-type model() :: ants | ants_gbt.

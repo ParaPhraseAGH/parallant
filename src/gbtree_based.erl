@@ -46,7 +46,8 @@ get_cell(Pos, W) ->
 
 -spec display([ant()], world()) -> ok.
 display(Ants, W) ->
-    %%   io:format("RawBoard: ~p~n",[Board]),
-    BoardList = gb_trees:values(W#world.board),
-    %%   BoardList = gb_trees:to_list(Board),
-    graphics:display(Ants, W#world{board = BoardList}).
+  ok.
+%%     %%   io:format("RawBoard: ~p~n",[Board]),
+%%     BoardList = gb_trees:values(W#world.board),
+%%     %%   BoardList = gb_trees:to_list(Board),
+%%     graphics:display(Ants, W#world{board = BoardList}).

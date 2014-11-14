@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([get_cell/3, get_moves/1, apply_moves/2]).
+-export([get_cell/3, get_moves/1, apply_moves/3]).
 
 -include("parallant.hrl").
 
@@ -39,7 +39,7 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, list_based}]),
+                                        {world_impl, list_based}, {model, ants_gbt}]),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
@@ -53,7 +53,6 @@ start(Width, Height, Steps) ->
             proplists:proplist()) -> ok.
 start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
-
     Board = create_world(Width, Height, Config),
     Ants = create_ants(PopulationSize, Width, Height, Config),
     Env = #env{agents = Ants,
@@ -63,7 +62,7 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     logger:start(Env, Config),
     T1 = erlang:now(),
 
-    EndEnv = algorithm:run(Config#config.algorithm, Steps, Env),
+    EndEnv = algorithm:run(Config#config.algorithm, Steps, Env, Config#config.model),
 
     T2 = erlang:now(),
     logger:stop(EndEnv),
@@ -81,24 +80,24 @@ get_cell(Impl, {X, Y}, World) ->
 get_moves(E = #env{agents = Agents}) ->
     [model:get_move(A, E) || A <- Agents].
 
--spec apply_moves([{ant(), ant()}], environment()) ->
+-spec apply_moves([{ant(), ant()}], environment(), model()) ->
                          {[ant()], environment()}.
-apply_moves(Moves, Env) ->
-    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E) end,
+apply_moves(Moves, Env, Model) ->
+    ApplyMove = fun (Move, E) -> Model:apply_move(Move, E) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
 
-create_ants(PopSize, W, H, _Config) ->
-    %% Model = Config#config.model,
-    ants:create_ants(PopSize, W, H).
+create_ants(PopSize, W, H, Config) ->
+    Model = Config#config.model,
+    Model:create_ants(PopSize, W, H).
 
 create_world(W, H, C)->
     Board = world_impl:create_board(C#config.world_impl, W, H),
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->
-    #config{?LOAD(model, ConfigProps, model),
+    #config{?LOAD(model, ConfigProps, ants),
             ?LOAD(algorithm, ConfigProps, parallant_seq),
             ?LOAD(world_impl, ConfigProps, gbtree_based),
             ?LOAD(log, ConfigProps, true),

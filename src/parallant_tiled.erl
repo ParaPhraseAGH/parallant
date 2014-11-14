@@ -10,7 +10,7 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0, display/1, run/2]).
+-export([test/0, display/1, run/3]).
 
 -include("parallant.hrl").
 
@@ -18,21 +18,27 @@
 test() ->
     parallant:test(?MODULE).
 
+%% Commented [DG]
+%% -spec display(environment()) -> ok.
+%% display(E = #env{agents = Ants}) when is_list(Ants) ->
+%%     (E#env.backend):display(Ants, E#env.world).
+
+%Conversion into list added [DG]
 -spec display(environment()) -> ok.
-display(E = #env{agents = Ants}) when is_list(Ants) ->
-    (E#env.backend):display(Ants, E#env.world).
+display(E) ->
+  (E#env.backend):display(gb_trees:values(E#env.agents), E#env.world). %Conversion into list added [DG]
 
--spec run(pos_integer(), environment()) -> environment().
-run(Steps, Env) ->
-    step(1, Steps, Env).
+-spec run(pos_integer(), environment(), model()) -> environment().
+run(Steps, Env, Model) ->
+    step(1, Steps, Env, Model).
 
--spec step(pos_integer(), pos_integer(), environment()) -> environment().
-step(MaxT, MaxT, Env) ->
+-spec step(pos_integer(), pos_integer(), environment(), model()) -> environment().
+step(MaxT, MaxT, Env, _Model) ->
     Env;
-step(T, MaxT, Env) ->
+step(T, MaxT, Env, Model) ->
     NColours = 2,
     NParts = 2,
-    Partitioned = ants:partition(Env, NColours, NParts),
+    Partitioned = Model:partition(Env, NColours, NParts),
 
     ProcessTile =
         fun(Tile, E) ->
@@ -40,8 +46,8 @@ step(T, MaxT, Env) ->
                 %% Moves = F(Tile),
                 Moves = lists:flatmap(F, Tile),
 
-                parallant:apply_moves(Moves, E)
+                parallant:apply_moves(Moves, E, Model)
         end,
     NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
     logger:log(NewEnv),
-    step(T+1, MaxT, NewEnv).
+    step(T+1, MaxT, NewEnv, Model).

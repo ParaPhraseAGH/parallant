@@ -1,6 +1,6 @@
 -module(algorithm).
 
--export([test/1, display/2, run/3]).
+-export([test/1, display/2, run/4]).
 
 -include("parallant.hrl").
 
@@ -26,6 +26,6 @@ test(Alg) ->
 display(Alg, Env) ->
     Alg:display(Env).
 
--spec run(algorithm(), pos_integer(), environment()) ->  environment().
-run(Alg, Steps, Env) ->
-    Alg:run(Steps, Env).
+-spec run(algorithm(), pos_integer(), environment(), model()) ->  environment().
+run(Alg, Steps, Env, Model) ->
+    Alg:run(Steps, Env, Model).

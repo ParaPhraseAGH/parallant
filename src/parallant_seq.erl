@@ -9,7 +9,7 @@
 -module(parallant_seq).
 -behaviour(algorithm).
 %% API
--export([test/0, display/1, run/2]).
+-export([test/0, display/1, run/3]).
 
 -include("parallant.hrl").
 
@@ -19,21 +19,21 @@ test() ->
 
 -spec display(environment()) -> ok.
 display(E) ->
-    (E#env.backend):display(E#env.agents, E#env.world).
+    (E#env.backend):display(gb_trees:values(E#env.agents), E#env.world). %Conversion into list added [DG]
 
--spec run(pos_integer(), environment()) -> environment().
-run(Steps, Env) ->
-    step(1, Steps, Env).
+-spec run(pos_integer(), environment(), model()) -> environment().
+run(Steps, Env, Model) ->
+    step(1, Steps, Env, Model).
 
--spec step(pos_integer(), pos_integer(), environment()) -> environment().
-step(MaxT, MaxT, Env) ->
+-spec step(pos_integer(), pos_integer(), environment(), model()) -> environment().
+step(MaxT, MaxT, Env, _Model) ->
     Env;
-step(T, MaxT, Env) ->
+step(T, MaxT, Env, Model) ->
     NColours = 1,
     NParts = 1,
-    [AntList] = ants:partition(Env, NColours, NParts),
+    [AntList] = Model:partition(Env, NColours, NParts),
 
     Moves = parallant:get_moves(Env#env{agents = AntList}),
-    NewEnv = parallant:apply_moves(Moves, Env),
+    NewEnv = parallant:apply_moves(Moves, Env, Model),
     logger:log(NewEnv),
-    step(T+1, MaxT, NewEnv).
+    step(T+1, MaxT, NewEnv, Model).
