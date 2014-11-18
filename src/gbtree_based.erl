@@ -15,15 +15,16 @@
 %% API
 -export([create_board/3, update_board/3, get_cell/2, display/2, update_cell/3]).
 
+-type world_tree() :: gb_trees:tree(position(), cell()).
 -spec create_board(dimension(), dimension(), config()) ->
-                          [gb_trees:tree(position(), cell())].
+                          world_tree().
 create_board(Width, Height, Config) ->
     Tree = gb_trees:empty(),
     Model = Config#config.model,
     Indices = [{I, J} || I <- lists:seq(1, Width), J <-lists:seq(1, Height)],
     populateTree(model:initial_cell_state(Model), Indices, Tree).
 
--spec populateTree(cell(), [position()], gb_trees:tree()) -> gb_trees:tree().
+-spec populateTree(cell(), [position()], world_tree()) -> world_tree().
 populateTree(_, [], Tree) -> Tree;
 populateTree(Val, [HI | TI], Tree) ->
     populateTree(Val, TI, gb_trees:insert(HI, Val, Tree)).

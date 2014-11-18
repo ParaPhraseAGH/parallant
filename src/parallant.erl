@@ -81,8 +81,7 @@ get_cell(Impl, {X, Y}, World) ->
 get_moves(E = #env{agents = Agents}, Config) ->
     [model:get_move(Config#config.model, A, E) || A <- Agents].
 
--spec apply_moves([{ant(), ant()}], environment(), config()) ->
-                         {[ant()], environment()}.
+-spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
 apply_moves(Moves, Env, Config) ->
     ApplyMove = fun (Move, E) -> ants:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
@@ -90,6 +89,7 @@ apply_moves(Moves, Env, Config) ->
 % internal functions
 
 create_ants(PopSize, W, H, Config) ->
+    %% Model = Config#config.model,
     ants:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, Config)->

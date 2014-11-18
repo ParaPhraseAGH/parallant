@@ -14,7 +14,7 @@
     world().
 
 -callback update_cell(position(), world(), config()) ->
-    cell().
+    world().
 
 -callback get_cell(position(), world()) ->
     cell().
@@ -32,7 +32,7 @@ create_board(Width, Height, Config) ->
 update_board(Impl, World, Ants) ->
     Impl:update_board(World, Ants).
 
--spec update_cell(position(), world(), config()) -> cell().
+-spec update_cell(position(), world(), config()) -> world().
 update_cell(Pos, World, Config) ->
     Impl = Config#config.world_impl,
     Impl:update_cell(Pos, World, Config).
