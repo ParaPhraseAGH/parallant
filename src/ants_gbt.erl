@@ -10,22 +10,23 @@
 -author("Daniel").
 
 %% API
-%-export([]).
--compile(export_all).
+-export([create_ants/4, apply_move/3, partition/3]).
 
 -include("parallant.hrl").
 
-create_ants(PopulationSize, Width, Height) ->
-  ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
+create_ants(PopulationSize, Width, Height, Config) ->
+  AllPositions = [{I, J} || I <- lists:seq(1, Width),
+    J <- lists:seq(1, Height)],
+  ShuffledCellPositions = shuffle(AllPositions),
   AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  gb_trees:from_orddict([{Pos, #ant{pos = Pos, dir = util:random_direction()}} || Pos <- lists:sort(AntPositions)]). % {Pozycja, CałyAgent} - ew. do zmiany, jest zbalansowany [DG]
+  gb_trees:from_orddict([{Pos, #ant{pos = Pos, state = model:random_ant_state(Config#config.model)}} || Pos <- lists:sort(AntPositions)]). % {Pozycja, CałyAgent} - ew. do zmiany, jest zbalansowany [DG]
   %io:format("~p", [AntPositions]),
   %AntsListWithKeys=lists:zip(lists:seq(1, PopulationSize), [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions]),
   %io:format("~p", [AntsListWithKeys]),
   %gb_trees:from_orddict(AntsListWithKeys). %balanced tree
 
--spec apply_move({ant(), ant()}, environment()) -> environment().
-apply_move({Old, New}, E) ->
+-spec apply_move({ant(), ant()}, environment(), config()) -> environment().
+apply_move({Old, New}, E, Config) ->
   case gb_trees:lookup(New#ant.pos, E#env.agents) of
     none ->
       %io:format("New: ~p~n Old: ~p~n", [New, Old]),
@@ -38,15 +39,14 @@ apply_move({Old, New}, E) ->
 
       AgentsAfterDelete = gb_trees:delete(Old#ant.pos, AgentsAfterInsert),
       %io:format("AgentsAfterDelete: ~p~n", [AgentsAfterDelete]),
-      update_cell(Old#ant.pos, E#env{agents = AgentsAfterDelete});
+      update_cell(Old#ant.pos, E#env{agents = AgentsAfterDelete}, Config);
     {value, _} ->
       E
   end.
 
--spec update_cell(position(), environment()) -> environment().
-update_cell(Pos, E = #env{backend = Impl, world = World}) ->
-  E#env{world = world_impl:update_cell(Impl, Pos, World)}.
-
+-spec update_cell(position(), environment(), config()) -> environment().
+update_cell(Pos, E = #env{world = World}, Config) ->
+  E#env{world = world_impl:update_cell(Pos, World, Config)}.
 
 
 -spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
@@ -86,6 +86,10 @@ partition(Env, NColours, NParts) ->
   Colours.
 
 
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+  [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
+
 %% Poszukiwanie wartości
 %% is_value(Iter, SeekingValue) ->
 %%   case gb_trees:next(Iter) of
@@ -98,26 +102,3 @@ partition(Env, NColours, NParts) ->
 %%       end;
 %%     none -> false
 %%   end.
-
-
-
-test() ->
-  T=create_ants(2, 5, 5),
-  Board = create_world(5, 5, []),
-  Env = #env{agents = T,
-    world = Board,
-    backend = gbtree_based},
-  A1 = {ant,{1,1},south},
-  {_,A2} = gb_trees:smallest(T),
-  apply_move({A2, A1}, Env).
-
-
-create_world(W, H, _)->
-  Board = world_impl:create_board(gbtree_based, W, H),
-  #world{board = Board, w = W, h = H}.
-
-reload() ->
-code:purge(ants_gbt),
-code:soft_purge(ants_gbt),
-{module, ants_gbt} = code:load_file(ants_gbt),
-{ok, ants_gbt}.

@@ -36,14 +36,30 @@ test(Algorithm) ->
 -spec test(algorithm(), any(), dimension(), dimension(),
            pos_integer(), pos_integer()) -> ok.
 test(Algorithm, Seed, Width, Height, NAnts, Steps) ->
-    io:format("ListBased:~n"),
+    io:format("ListBasedWorld & ListBasedModel:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, list_based}]),
-    io:format("Gb_treeBased:~n"),
+                                        {world_impl, list_based},
+                                        {model, ants},
+                                        {log, false}]),
+    io:format("Gb_treeBasedWorld & ListBasedModel:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, gbtree_based}]).
+                                        {world_impl, gbtree_based},
+                                        {model, ants},
+                                        {log, false}]),
+    io:format("ListBasedWorld & Gb_treeBasedModel:~n"),
+    random:seed(Seed),
+    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {world_impl, list_based},
+                                        {model, ants_gbt},
+                                        {log, false}]),
+    io:format("Gb_treeBasedWorld & Gb_treeBasedModel:~n"),
+    random:seed(Seed),
+    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {world_impl, gbtree_based},
+                                        {model, ants_gbt},
+                                        {log, false}]).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
 start(Width, Height, Steps) ->
@@ -59,14 +75,15 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Env = #env{agents = Ants,
                world = Board,
                backend = Config#config.world_impl},
+               %model = Config#config.model},
 
-    logger:start(Env, Config),
+    %logger:start(Env, Config),
     T1 = erlang:now(),
 
     EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
-    logger:stop(EndEnv),
+    %logger:stop(EndEnv),
 
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
@@ -83,14 +100,15 @@ get_moves(E = #env{agents = Agents}, Config) ->
 
 -spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
 apply_moves(Moves, Env, Config) ->
-    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E, Config) end,
+    Model = Config#config.model,
+    ApplyMove = fun (Move, E) -> Model:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
 
 create_ants(PopSize, W, H, Config) ->
-    %% Model = Config#config.model,
-    ants:create_ants(PopSize, W, H, Config).
+    Model = Config#config.model,
+    Model:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, Config)->
     Board = world_impl:create_board(W, H, Config),

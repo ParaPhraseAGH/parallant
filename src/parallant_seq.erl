@@ -17,9 +17,14 @@
 test() ->
     parallant:test(?MODULE).
 
+%% TODO
 -spec display(environment()) -> ok.
+display(E = #env{agents = Ants}) when is_list(Ants) ->
+  (E#env.backend):display(Ants, E#env.world); %% List case
 display(E) ->
-    (E#env.backend):display(E#env.agents, E#env.world).
+  (E#env.backend):display(gb_trees:values(E#env.agents), E#env.world). %% gb_trees case
+
+
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
@@ -30,9 +35,10 @@ run(Steps, Env, Config) ->
 step(MaxT, MaxT, Env, _Config) ->
     Env;
 step(T, MaxT, Env, Config) ->
+    Model = Config#config.model,
     NColours = 1,
     NParts = 1,
-    [AntList] = ants:partition(Env, NColours, NParts),
+    [AntList] = Model:partition(Env, NColours, NParts),
 
     Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
     NewEnv = parallant:apply_moves(Moves, Env, Config),
