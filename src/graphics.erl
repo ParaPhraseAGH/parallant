@@ -30,8 +30,8 @@ split_into_chunks([H | T], ChunkAcc, ChunkLen, CurrIndex) ->
 display_cell(I, Cell, AntsWithIndex) ->
     Result = lists:keytake(I, 1, AntsWithIndex),
     {C, RestOfAnts} = case Result of
-                          {value, {_I, #ant{dir = ADir}}, Rest} ->
-                              {ant_char(ADir), Rest};
+                          {value, {_I, #ant{state = AState}}, Rest} ->
+                              {ant_char(AState), Rest};
                           false ->
                               {cell_char(Cell), AntsWithIndex}
                       end,
@@ -70,7 +70,7 @@ display(Ants, [HB | TB], W, H, I) ->
     RestOfAnts = display_cell(I, HB, Ants),
     display(RestOfAnts, TB, W, H, I + 1).
 
--spec ant_char(direction()) -> char().
+-spec ant_char(ant_state()) -> char().
 ant_char(west) -> $<;
 ant_char(east) -> $>;
 ant_char(north) -> $^;

@@ -1,6 +1,6 @@
 -module(algorithm).
 
--export([test/1, display/2, run/4]).
+-export([test/1, display/2, run/3]).
 
 -include("parallant.hrl").
 
@@ -13,7 +13,7 @@
 -callback display(environment()) ->
     ok.
 
--callback run(pos_integer(), environment()) ->
+-callback run(pos_integer(), environment(), config()) ->
     environment().
 
 % Exported functions
@@ -26,6 +26,7 @@ test(Alg) ->
 display(Alg, Env) ->
     Alg:display(Env).
 
--spec run(algorithm(), pos_integer(), environment(), model()) ->  environment().
-run(Alg, Steps, Env, Model) ->
-    Alg:run(Steps, Env, Model).
+-spec run(pos_integer(), environment(), config()) ->  environment().
+run(Steps, Env, Config) ->
+    Alg = Config#config.algorithm,
+    Alg:run(Steps, Env, Config).

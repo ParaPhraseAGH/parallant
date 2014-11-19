@@ -2,23 +2,42 @@
 
 -include("parallant.hrl").
 
--export([get_move/2, update_cell/1]).
+-export([initial_cell_state/1, random_ant_state/1, get_move/3, update_cell/2]).
+
+-spec initial_cell_state(model()) -> cell().
+initial_cell_state(_Model) ->
+    {dead}.
+
+-spec random_ant_state(model()) -> ant_state().
+random_ant_state(_Model) ->
+    random_ant_state().
+
+-spec update_cell(model(), cell()) -> cell().
+update_cell(_Model, CellState) -> update_cell(CellState).
+
+-spec get_move(model(), ant(), environment()) -> {ant(), ant()}.
+get_move(_Model, A, E) ->
+    get_move(A, E).
+
+-spec random_ant_state() -> ant_state().
+random_ant_state() ->
+    random_direction().
+
+-spec get_move(ant(), environment()) -> {ant(), ant()}.
+get_move(A, E) ->
+    New = move_agent(A, E),
+    {A#ant{state = New#ant.state}, New}.
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
--spec get_move(ant(), environment()) -> {ant(), ant()}.
-get_move(A, E) ->
-    New = move_agent(A, E),
-    {A#ant{dir = New#ant.dir}, New}.
-
 -spec move_agent(ant(), environment()) -> ant().
-move_agent(#ant{pos = Pos, dir = Dir}, #env{backend = Impl, world = World}) ->
+move_agent(#ant{pos = Pos, state = Dir}, #env{backend = Impl, world = World}) ->
     {AgentCellState} = world_impl:get_cell(Impl, Pos, World),
     NewDir = turn(Dir, AgentCellState),
     NewPos = forward(Pos, NewDir, World),
-    #ant{pos = NewPos, dir = NewDir}.
+    #ant{pos = NewPos, state = NewDir}.
 
 
 -spec forward(position(), direction(), world()) -> position().
@@ -49,3 +68,9 @@ heading(north) -> {0, 1};
 heading(south) -> {0, -1};
 heading(east) -> {1, 0};
 heading(west) -> {-1, 0}.
+
+-spec random_direction() -> direction().
+random_direction() ->
+    Dirs = [north, south, east, west],
+    Idx = random:uniform(length(Dirs)),
+    lists:nth(Idx, Dirs).

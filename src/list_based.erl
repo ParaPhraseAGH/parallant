@@ -13,25 +13,28 @@
 -include("parallant.hrl").
 
 %% API
--export([create_board/2, update_board/2, get_cell/2, display/2, update_cell/2]).
+-export([create_board/3, update_board/3, get_cell/2, display/2, update_cell/3]).
 
--spec create_board(dimension(), dimension()) -> [cell()].
-create_board(Width, Height) ->
-    [{dead} || _I <- lists:seq(1,Width), _J <- lists:seq(1,Height)].
+-spec create_board(dimension(), dimension(), config()) -> [cell()].
+create_board(Width, Height, Config) ->
+    [model:initial_cell_state(Config#config.model)
+     || _I <- lists:seq(1, Width), _J <- lists:seq(1, Height)].
 %%   [{I,J} || I <- lists:seq(1,Width), J <- lists:seq(1,Height)].
 
--spec update_board(world(), [ant()]) -> world().
-update_board(World, []) -> World;
-update_board(W, [#ant{pos = APos} | TAnts]) ->
+-spec update_board(world(), [ant()], config()) -> world().
+update_board(World, [], _Config) -> World;
+update_board(W, [#ant{pos = APos} | TAnts], Config) ->
     % assertion: every Ant position is different
     % TODO update board with all Ants in one pass
-    NewWorld = update_cell(APos, W),
-    update_board(NewWorld, TAnts).
+    NewWorld = update_cell(APos, W, Config),
+    update_board(NewWorld, TAnts, Config).
 
--spec update_cell(position(), world()) -> world().
-update_cell(Pos, W) ->
+-spec update_cell(position(), world(), config()) -> world().
+update_cell(Pos, W, Config) ->
     Idx = pos_to_index(Pos, W#world.w, W#world.h),
-    NewBoard = map_nth(Idx, W#world.board, fun model:update_cell/1),
+    Model = Config#config.model,
+    UpdateCell = fun(CellState) -> model:update_cell(Model, CellState) end,
+    NewBoard = map_nth(Idx, W#world.board, UpdateCell),
     W#world{board = NewBoard}.
 
 
