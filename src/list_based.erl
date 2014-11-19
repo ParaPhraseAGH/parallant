@@ -27,7 +27,7 @@ update_board(W, [#ant{pos = APos} | TAnts], Config) ->
     % assertion: every Ant position is different
     % TODO update board with all Ants in one pass
     NewWorld = update_cell(APos, W, Config),
-    update_board(NewWorld, TAnts,Config).
+    update_board(NewWorld, TAnts, Config).
 
 -spec update_cell(position(), world(), config()) -> world().
 update_cell(Pos, W, Config) ->
