@@ -17,7 +17,7 @@ for model in $models; do
     for backend in $backends; do
         echo ""
         echo "# version $model with $backend backend"
-        erl -pa ebin -pa deps/skel/ebin \
+        erl -pa ebin -pa deps/*/ebin \
             -eval "parallant:start($Width,$Height,$Ants,$Steps,[{algorithm,$model},{world_impl,$backend},{log,false}])." -run init stop -noshell
     done
 done
