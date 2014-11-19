@@ -43,7 +43,7 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps) ->
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, gbtree_based}]).
+                                        {world_impl, gbtree_based}, {model, ants_gbt}]).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
 start(Width, Height, Steps) ->
@@ -59,13 +59,13 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
                world = Board,
                backend = Config#config.world_impl},
 
-    logger:start(Env, Config),
+    %logger:start(Env, Config),
     T1 = erlang:now(),
 
     EndEnv = algorithm:run(Config#config.algorithm, Steps, Env, Config#config.model),
 
     T2 = erlang:now(),
-    logger:stop(EndEnv),
+    %logger:stop(EndEnv),
 
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,

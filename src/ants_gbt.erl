@@ -18,7 +18,7 @@
 create_ants(PopulationSize, Width, Height) ->
   ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
   AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  gb_trees:from_orddict([{Pos, #ant{pos = Pos, dir = util:random_direction()}} || Pos <- AntPositions]). % {Pozycja, CałyAgent} - ew. do zmiany, jest zbalansowany [DG]
+  gb_trees:from_orddict([{Pos, #ant{pos = Pos, dir = util:random_direction()}} || Pos <- lists:sort(AntPositions)]). % {Pozycja, CałyAgent} - ew. do zmiany, jest zbalansowany [DG]
   %io:format("~p", [AntPositions]),
   %AntsListWithKeys=lists:zip(lists:seq(1, PopulationSize), [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions]),
   %io:format("~p", [AntsListWithKeys]),
