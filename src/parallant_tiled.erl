@@ -10,7 +10,7 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0, display/1, run/3]).
+-export([test/0, display/2, run/3]).
 
 -include("parallant.hrl").
 
@@ -18,9 +18,9 @@
 test() ->
     parallant:test(?MODULE).
 
--spec display(environment()) -> ok.
-display(E = #env{agents = Ants}) when is_list(Ants) ->
-    (E#env.backend):display(Ants, E#env.world).
+-spec display(environment(), world_impl()) -> ok.
+display(E = #env{agents = Ants}, WorldImpl) when is_list(Ants) ->
+    WorldImpl:display(Ants, E#env.world).
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->

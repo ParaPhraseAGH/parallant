@@ -9,7 +9,7 @@
 -module(parallant_seq).
 -behaviour(algorithm).
 %% API
--export([test/0, display/1, run/3]).
+-export([test/0, display/2, run/3]).
 
 -include("parallant.hrl").
 
@@ -17,9 +17,9 @@
 test() ->
     parallant:test(?MODULE).
 
--spec display(environment()) -> ok.
-display(E) ->
-    (E#env.backend):display(E#env.agents, E#env.world).
+-spec display(environment(), world_impl()) -> ok.
+display(E, WorldImpl) ->
+    WorldImpl:display(E#env.agents, E#env.world).
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->

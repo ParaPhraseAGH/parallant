@@ -4,7 +4,7 @@
 
 -export([initial_cell_state/1, random_ant_state/1, get_move/3, update_cell/2]).
 
--export([initial_cell_state/0, random_ant_state/0, get_move/2, update_cell/1]).
+-export([initial_cell_state/0, random_ant_state/0, get_move2/3, update_cell/1]).
 
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
@@ -17,7 +17,7 @@
 -callback random_ant_state() ->
     ant_state().
 
--callback get_move(ant(), environment()) ->
+-callback get_move2(ant(), environment(), config()) ->
     {ant(), ant()}.
 
 -callback update_cell(cell()) ->
@@ -42,7 +42,7 @@ update_cell(CellState, Config) ->
 -spec get_move(ant(), environment(), config()) -> {ant(), ant()}.
 get_move(A, E, Config) ->
     Model = Config#config.model,
-    Model:get_move(A, E).
+    Model:get_move2(A, E, Config).
 
 
 % model specific functions
@@ -55,18 +55,18 @@ initial_cell_state() ->
 random_ant_state() ->
     random_direction().
 
--spec get_move(ant(), environment()) -> {ant(), ant()}.
-get_move(A, E) ->
-    New = move_agent(A, E),
+-spec get_move2(ant(), environment(), config()) -> {ant(), ant()}.
+get_move2(A, E, Config) ->
+    New = move_agent(A, E, Config),
     {A#ant{state = New#ant.state}, New}.
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
--spec move_agent(ant(), environment()) -> ant().
-move_agent(#ant{pos = Pos, state = Dir}, #env{backend = Impl, world = World}) ->
-    {AgentCellState} = world_impl:get_cell(Impl, Pos, World),
+-spec move_agent(ant(), environment(), config()) -> ant().
+move_agent(#ant{pos = Pos, state = Dir}, #env{world = World}, C) ->
+    {AgentCellState} = world_impl:get_cell(C#config.world_impl, Pos, World),
     NewDir = turn(Dir, AgentCellState),
     NewPos = forward(Pos, NewDir, World),
     #ant{pos = NewPos, state = NewDir}.

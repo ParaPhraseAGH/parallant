@@ -57,8 +57,7 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Board = create_world(Width, Height, Config),
     Ants = create_ants(PopulationSize, Width, Height, Config),
     Env = #env{agents = Ants,
-               world = Board,
-               backend = Config#config.world_impl},
+               world = Board},
 
     logger:start(Env, Config),
     T1 = erlang:now(),

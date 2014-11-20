@@ -17,8 +17,7 @@
 
 -record(env, {
           agents :: [ant()],
-          world :: world(),
-          backend :: world_impl()
+          world :: world()
          }).
 
 -record(config, {
