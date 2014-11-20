@@ -17,8 +17,8 @@
 
 -spec create_board(dimension(), dimension(), config()) -> [cell()].
 create_board(Width, Height, Config) ->
-    [model:initial_cell_state(Config#config.model)
-     || _I <- lists:seq(1, Width), _J <- lists:seq(1, Height)].
+    [model:initial_cell_state(Config) || _I <- lists:seq(1, Width),
+                                         _J <- lists:seq(1, Height)].
 %%   [{I,J} || I <- lists:seq(1,Width), J <- lists:seq(1,Height)].
 
 -spec update_board(world(), [ant()], config()) -> world().
@@ -32,8 +32,7 @@ update_board(W, [#ant{pos = APos} | TAnts], Config) ->
 -spec update_cell(position(), world(), config()) -> world().
 update_cell(Pos, W, Config) ->
     Idx = pos_to_index(Pos, W#world.w, W#world.h),
-    Model = Config#config.model,
-    UpdateCell = fun(CellState) -> model:update_cell(Model, CellState) end,
+    UpdateCell = fun(CellState) -> model:update_cell(CellState, Config) end,
     NewBoard = map_nth(Idx, W#world.board, UpdateCell),
     W#world{board = NewBoard}.
 

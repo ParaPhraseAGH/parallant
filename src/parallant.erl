@@ -79,7 +79,7 @@ get_cell(Impl, {X, Y}, World) ->
 
 -spec get_moves(environment(), config()) -> [{Old :: ant(), New :: ant()}].
 get_moves(E = #env{agents = Agents}, Config) ->
-    [model:get_move(Config#config.model, A, E) || A <- Agents].
+    [model:get_move(A, E, Config) || A <- Agents].
 
 -spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
 apply_moves(Moves, Env, Config) ->
