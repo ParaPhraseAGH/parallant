@@ -4,7 +4,8 @@
 
 -include("parallant.hrl").
 
--export([start_link/1]).
+-export([start_link/1,
+         get_moves/4]).
 -export([init/1,
          handle_call/3,
          handle_cast/2,
@@ -12,28 +13,37 @@
          terminate/2,
          code_change/3]).
 
+
 start_link(_Args) ->
     gen_server:start_link(?MODULE, [], []).
 
+
+get_moves(Pid, Agents, Env, Config) ->
+    gen_server:call(Pid, {get_moves, Agents, Env, Config}).
+
 init([]) ->
-    {ok, undefined}.
+    {ok, no_state}.
+
 
 handle_call(die, _From, State) ->
     {stop, {error, died}, dead, State};
-handle_call({agents, Agents, Env, Config}, From, State) ->
+
+handle_call({get_moves, Agents, Env, Config}, _From, State) ->
     Moves = parallant:get_moves(Env#env{agents = Agents}, Config),
-    {reply, Moves, State};
-handle_call(_Event, _From, State) ->
-    {reply, ok, State}.
+    {reply, Moves, State}.
 
-handle_cast(_Event, State) ->
-    {noreply, State}.
 
-handle_info(_Info, State) ->
-    {noreply, State}.
+handle_cast(Event, State) ->
+    {stop, {unsuported_event, Event}, State}.
+
+
+handle_info(Info, State) ->
+    {stop, {unsuported_info, Info}, State}.
+
 
 terminate(_Reason, _State) ->
     ok.
+
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.

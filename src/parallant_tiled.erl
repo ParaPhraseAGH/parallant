@@ -56,20 +56,22 @@ step(T, MaxT, Env, Pool, Config) ->
     step(T+1, MaxT, NewEnv, Pool, Config).
 
 send_to_work(Pool, Agents, Env, Config) ->
-    spawn(?MODULE, poolboy_transaction, [Pool, Agents, _Caller = self(), Env, Config]).
+    proc_lib:spawn_link(?MODULE,
+                        poolboy_transaction,
+                        [Pool, Agents, _Caller = self(), Env, Config]).
+
 
 poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
+    % TODO do we need transaction at this point?
     poolboy:transaction(Pool,
                         mk_worker(Caller, Agents, Env, Config)).
 
 
-
 mk_worker(Caller, Agents, Env, Config) ->
-    fun (Pid) ->
-            Result = gen_server:call(Pid, {agents, Agents, Env, Config}),
+    fun (Worker) ->
+            Result = tile_worker:get_moves(Worker, Agents, Env, Config),
             Caller ! {agents, Result}
     end.
-
 
 
 collect_results(Args) ->
