@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([get_cell/3, get_moves/1, apply_moves/2]).
+-export([get_cell/3, get_moves/2, apply_moves/3]).
 
 -include("parallant.hrl").
 
@@ -57,13 +57,12 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Board = create_world(Width, Height, Config),
     Ants = create_ants(PopulationSize, Width, Height, Config),
     Env = #env{agents = Ants,
-               world = Board,
-               backend = Config#config.world_impl},
+               world = Board},
 
     logger:start(Env, Config),
     T1 = erlang:now(),
 
-    EndEnv = algorithm:run(Config#config.algorithm, Steps, Env),
+    EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
     logger:stop(EndEnv),
@@ -77,24 +76,23 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
 get_cell(Impl, {X, Y}, World) ->
     world_impl:get_cell(Impl, {X, Y}, World).
 
--spec get_moves(environment()) -> [{Old :: ant(), New :: ant()}].
-get_moves(E = #env{agents = Agents}) ->
-    [model:get_move(A, E) || A <- Agents].
+-spec get_moves(environment(), config()) -> [{Old :: ant(), New :: ant()}].
+get_moves(E = #env{agents = Agents}, Config) ->
+    [model:get_move(A, E, Config) || A <- Agents].
 
--spec apply_moves([{ant(), ant()}], environment()) ->
-                         {[ant()], environment()}.
-apply_moves(Moves, Env) ->
-    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E) end,
+-spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
+apply_moves(Moves, Env, Config) ->
+    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
 
-create_ants(PopSize, W, H, _Config) ->
+create_ants(PopSize, W, H, Config) ->
     %% Model = Config#config.model,
-    ants:create_ants(PopSize, W, H).
+    ants:create_ants(PopSize, W, H, Config).
 
-create_world(W, H, C)->
-    Board = world_impl:create_board(C#config.world_impl, W, H),
+create_world(W, H, Config)->
+    Board = world_impl:create_board(W, H, Config),
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->

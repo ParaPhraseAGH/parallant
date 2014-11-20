@@ -1,4 +1,6 @@
 ERLFLAGS= -pa $(CURDIR)/ebin -pa $(CURDIR)/deps/*/ebin
+DEPS_PLT=$(CURDIR)/.deps_plt
+DEPS=erts kernel stdlib
 
 ERL=erl
 
@@ -19,6 +21,15 @@ update-deps:
 skel:
 	make clean
 	$(REBAR) compile -D skel
+
+$(DEPS_PLT):
+	@echo Building local plt at $(DEPS_PLT)
+	@echo
+	dialyzer --output_plt $(DEPS_PLT) --build_plt \
+		 --apps $(DEPS) -r deps -nn
+
+dialyzer: $(DEPS_PLT)
+	dialyzer --fullpath --plt $(DEPS_PLT) -Wrace_conditions -r ./ebin -nn
 
 compile:
 	$(REBAR) skip_deps=true compile

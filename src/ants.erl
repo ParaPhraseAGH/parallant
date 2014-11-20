@@ -2,28 +2,31 @@
 
 -include("parallant.hrl").
 
--export([create_ants/3, apply_move/2, partition/3]).
+-export([create_ants/4, apply_move/3, partition/3]).
 
--spec create_ants(pos_integer(), dimension(), dimension()) -> [ant()].
-create_ants(PopulationSize, Width, Height) ->
-    ShuffledCellPositions = util:shuffle(util:all_positions(Width, Height)),
+-spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
+create_ants(PopulationSize, Width, Height, Config) ->
+    AllPositions = [{I, J} || I <- lists:seq(1, Width),
+                              J <- lists:seq(1, Height)],
+    ShuffledCellPositions = shuffle(AllPositions),
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions].
+    [#ant{pos = Pos, state = model:random_ant_state(Config)}
+     || Pos <- AntPositions].
 
--spec apply_move({ant(), ant()}, environment()) -> environment().
-apply_move({Old, New}, E) ->
+-spec apply_move({ant(), ant()}, environment(), config()) -> environment().
+apply_move({Old, New}, E, Config) ->
     IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
     case lists:any(IsPosTaken, E#env.agents) of
         true ->
             E;
         false ->
             NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
-            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]})
+            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]}, Config)
     end.
 
--spec update_cell(position(), environment()) -> environment().
-update_cell(Pos, E = #env{backend = Impl, world = World}) ->
-    E#env{world = world_impl:update_cell(Impl, Pos, World)}.
+-spec update_cell(position(), environment(), config()) -> environment().
+update_cell(Pos, E = #env{world = World}, Config) ->
+    E#env{world = world_impl:update_cell(Pos, World, Config)}.
 
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
@@ -60,3 +63,8 @@ group_by_colour(Tiles, N) ->
                              I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
+
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

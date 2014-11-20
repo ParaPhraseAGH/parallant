@@ -9,7 +9,7 @@
 -author("piotr").
 
 -record(ant, {pos :: position(),
-              dir :: direction()}).
+              state :: ant_state()}).
 
 -record(world, {board :: board(),
                 w :: dimension(),
@@ -17,13 +17,12 @@
 
 -record(env, {
           agents :: [ant()],
-          world :: world(),
-          backend :: world_impl()
+          world :: world()
          }).
 
 -record(config, {
           world_impl :: world_impl(),
-          model :: 'model',
+          model :: model(),
           algorithm  :: algorithm(),
           log :: boolean(),
           animate :: boolean()
@@ -32,6 +31,8 @@
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
+-type ant_state() :: direction().
+-type model() :: 'model'.
 -type cell() :: {dead} | {alive}.
 -type ant() :: #ant{}.
 -type board() :: [cell()] | gb_trees:tree().

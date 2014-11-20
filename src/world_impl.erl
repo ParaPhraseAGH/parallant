@@ -7,14 +7,14 @@
 
 % Callbacks
 
--callback create_board(dimension(), dimension()) ->
+-callback create_board(dimension(), dimension(), config()) ->
     board().
 
--callback update_board(world(), [ant()]) ->
+-callback update_board(world(), [ant()], config()) ->
     world().
 
--callback update_cell(position(), world()) ->
-    cell().
+-callback update_cell(position(), world(), config()) ->
+    world().
 
 -callback get_cell(position(), world()) ->
     cell().
@@ -23,17 +23,19 @@
     ok.
 
 % Exported functions
--spec create_board(world_impl(), dimension(), dimension()) -> board().
-create_board(Impl, Width, Height) ->
-    Impl:create_board(Width, Height).
+-spec create_board(dimension(), dimension(), config()) -> board().
+create_board(Width, Height, Config) ->
+    Impl = Config#config.world_impl,
+    Impl:create_board(Width, Height, Config).
 
 -spec update_board(world_impl(), world(), [ant()]) -> world().
 update_board(Impl, World, Ants) ->
     Impl:update_board(World, Ants).
 
--spec update_cell(world_impl(), position(), world()) -> cell().
-update_cell(Impl, Pos, World) ->
-    Impl:update_cell(Pos, World).
+-spec update_cell(position(), world(), config()) -> world().
+update_cell(Pos, World, Config) ->
+    Impl = Config#config.world_impl,
+    Impl:update_cell(Pos, World, Config).
 
 -spec get_cell(world_impl(), position(), world()) -> cell().
 get_cell(Impl, Pos, World) ->
