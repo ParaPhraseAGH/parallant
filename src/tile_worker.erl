@@ -2,8 +2,14 @@
 -behaviour(gen_server).
 -behaviour(poolboy_worker).
 
+-include("parallant.hrl").
+
 -export([start_link/1]).
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
+-export([init/1,
+         handle_call/3,
+         handle_cast/2,
+         handle_info/2,
+         terminate/2,
          code_change/3]).
 
 start_link(_Args) ->
@@ -14,10 +20,9 @@ init([]) ->
 
 handle_call(die, _From, State) ->
     {stop, {error, died}, dead, State};
-handle_call({agents, Agents, Fun}, From, State) ->
-    %% io:format("Worker Pid: ~p, Caller Pid: ~p~n", [self(), From]),
-    %% timer:sleep(100),
-    {reply, Fun(Agents), State};
+handle_call({agents, Agents, Env, Config}, From, State) ->
+    Moves = parallant:get_moves(Env#env{agents = Agents}, Config),
+    {reply, Moves, State};
 handle_call(_Event, _From, State) ->
     {reply, ok, State}.
 

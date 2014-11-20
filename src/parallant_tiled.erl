@@ -66,14 +66,8 @@ poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
 
 mk_worker(Caller, Agents, Env, Config) ->
     fun (Pid) ->
-            GetMoves = mk_get_moves(Env, Config),
-            Result = gen_server:call(Pid, {agents, Agents, GetMoves}),
+            Result = gen_server:call(Pid, {agents, Agents, Env, Config}),
             Caller ! {agents, Result}
-    end.
-
-mk_get_moves(Env, Config) ->
-    fun (Agents) ->
-            parallant:get_moves(Env#env{agents = Agents}, Config)
     end.
 
 
