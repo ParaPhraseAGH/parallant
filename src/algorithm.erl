@@ -13,8 +13,8 @@
 -callback display(environment()) ->
     ok.
 
--callback run(pos_integer(), environment(), config()) ->
-    environment().
+-callback run(Steps, environment(), config()) -> environment()
+        when Steps :: pos_integer().
 
 % Exported functions
 
