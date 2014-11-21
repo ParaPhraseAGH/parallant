@@ -20,47 +20,32 @@
 test(Width, Height, NAnts, Steps) ->
     Seed = erlang:now(),
     io:format("Parallant_seq:~n"),
-    test(parallant_seq, Seed, Width, Height, NAnts, Steps),
+    test(parallant_seq, Seed, Width, Height, NAnts, Steps, false),
     io:format("Parallant_tiled:~n"),
-    test(parallant_tiled, Seed, Width, Height, NAnts, Steps).
+    test(parallant_tiled, Seed, Width, Height, NAnts, Steps, false).
 
 -spec test() -> ok.
 test() ->
-    test(100, 50, 20, 500).
-    %test(50, 30, 5, 500).
+    test(50, 30, 5, 500).
 
 -spec test(algorithm()) -> ok.
 test(Algorithm) ->
     Seed = erlang:now(),
-    test(Algorithm, Seed, 50, 30, 5, 500).
+    test(Algorithm, Seed, 50, 30, 5, 500, false).
 
 -spec test(algorithm(), any(), dimension(), dimension(),
-           pos_integer(), pos_integer()) -> ok.
-test(Algorithm, Seed, Width, Height, NAnts, Steps) ->
-    io:format("ListBasedWorld & ListBasedModel:~n"),
+           pos_integer(), pos_integer(), boolean()) -> ok.
+test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
+    io:format("ListBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
                                         {world_impl, list_based},
-                                        {model, ants},
-                                        {log, false}]),
-    io:format("Gb_treeBasedWorld & ListBasedModel:~n"),
+                                        {log, Log}]),
+    io:format("Gb_treeBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
                                         {world_impl, gbtree_based},
-                                        {model, ants},
-                                        {log, false}]),
-    io:format("ListBasedWorld & Gb_treeBasedModel:~n"),
-    random:seed(Seed),
-    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, list_based},
-                                        {model, ants_gbt},
-                                        {log, false}]),
-    io:format("Gb_treeBasedWorld & Gb_treeBasedModel:~n"),
-    random:seed(Seed),
-    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, gbtree_based},
-                                        {model, ants_gbt},
-                                        {log, false}]).
+                                        {log, Log}]).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
 start(Width, Height, Steps) ->
@@ -74,9 +59,7 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Board = create_world(Width, Height, Config),
     Ants = create_ants(PopulationSize, Width, Height, Config),
     Env = #env{agents = Ants,
-               world = Board,
-               backend = Config#config.world_impl},
-               %model = Config#config.model},
+               world = Board},
 
     logger:start(Env, Config),
     T1 = erlang:now(),
@@ -97,19 +80,17 @@ get_cell(Impl, {X, Y}, World) ->
 
 -spec get_moves(environment(), config()) -> [{Old :: ant(), New :: ant()}].
 get_moves(E = #env{agents = Agents}, Config) ->
-    [model:get_move(Config#config.model, A, E) || A <- Agents].
+    [model:get_move(A, E, Config) || A <- Agents].
 
 -spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
 apply_moves(Moves, Env, Config) ->
-    Model = Config#config.model,
-    ApplyMove = fun (Move, E) -> Model:apply_move(Move, E, Config) end,
+    ApplyMove = fun (Move, E) -> ants_impl:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
 
 create_ants(PopSize, W, H, Config) ->
-    Model = Config#config.model,
-    Model:create_ants(PopSize, W, H, Config).
+    ants_impl:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, Config)->
     Board = world_impl:create_board(W, H, Config),
@@ -119,5 +100,6 @@ create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model),
             ?LOAD(algorithm, ConfigProps, parallant_seq),
             ?LOAD(world_impl, ConfigProps, gbtree_based),
+            ?LOAD(ants_impl, ConfigProps, ants),
             ?LOAD(log, ConfigProps, true),
             ?LOAD(animate, ConfigProps, true)}.

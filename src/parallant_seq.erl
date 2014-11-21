@@ -9,7 +9,7 @@
 -module(parallant_seq).
 -behaviour(algorithm).
 %% API
--export([test/0, display/1, run/3]).
+-export([test/0, display/2, run/3]).
 
 -include("parallant.hrl").
 
@@ -18,13 +18,9 @@ test() ->
     parallant:test(?MODULE).
 
 %% TODO
--spec display(environment()) -> ok.
-display(E = #env{agents = Ants}) when is_list(Ants) ->
-  (E#env.backend):display(Ants, E#env.world); %% List case
-display(E) ->
-  (E#env.backend):display(gb_trees:values(E#env.agents), E#env.world). %% gb_trees case
-
-
+-spec display(environment(), world_impl()) -> ok.
+display(E, WorldImpl) ->
+    WorldImpl:display(E#env.agents, E#env.world).
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
@@ -35,10 +31,9 @@ run(Steps, Env, Config) ->
 step(MaxT, MaxT, Env, _Config) ->
     Env;
 step(T, MaxT, Env, Config) ->
-    Model = Config#config.model,
     NColours = 1,
     NParts = 1,
-    [AntList] = Model:partition(Env, NColours, NParts),
+    [AntList] = ants_impl:partition(Env, NColours, NParts, Config),
 
     Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
     NewEnv = parallant:apply_moves(Moves, Env, Config),

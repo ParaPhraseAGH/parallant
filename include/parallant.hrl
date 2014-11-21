@@ -22,6 +22,7 @@
 
 -record(config, {
           world_impl :: world_impl(),
+          ants_impl :: ants_impl(),
           model :: model(),
           algorithm  :: algorithm(),
           log :: boolean(),
@@ -39,5 +40,6 @@
 -type world() :: #world{}.
 -type algorithm() :: parallant_seq | parallant_tiled.
 -type world_impl() :: list_based | gbtree_based.
+-type ants_impl() :: ants | ants_gbt.
 -type environment() :: #env{}.
 -type config() :: #config{}.

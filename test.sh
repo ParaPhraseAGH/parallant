@@ -10,15 +10,19 @@ Height=${2:-$DefaultHeight}
 Ants=${3:-$DefaultAnts}
 Steps=${4:-$DefaultSteps}
 
-models="parallant_seq parallant_tiled"
-backends="list_based gbtree_based"
+algorithms="parallant_seq parallant_tiled"
+world_impls="list_based gbtree_based"
+ants_impls="ants" # ants_gbt
 
-for model in $models; do
-    for backend in $backends; do
-        echo ""
-        echo "# version $model with $backend backend"
-        erl -pa ebin -pa deps/*/ebin \
-            -eval "parallant:start($Width,$Height,$Ants,$Steps,[{algorithm,$model},{world_impl,$backend},{log,false}])." -run init stop -noshell || exit 1
+for algorithm in $algorithms; do
+    for world_impl in $world_impls; do
+    	for ants_impl in $ants_impls; do
+        	echo ""
+        	echo "# version $algorithm with $world_impl world_impl"
+        	erl -pa ebin -pa deps/*/ebin \
+            	-eval "parallant:start($Width,$Height,$Ants,$Steps,[{algorithm,$algorithm},{world_impl,$world_impl},{ants_impl,$ants_impl},{log,false}])." \
+            	-run init stop -noshell || exit 1
+    	done
     done
 done
 
