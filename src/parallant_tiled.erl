@@ -10,7 +10,10 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0, display/2, run/3]).
+-export([test/0,
+         display/2,
+         run/3,
+         poolboy_transaction/5]).
 
 -include("parallant.hrl").
 
@@ -40,9 +43,11 @@ step(T, MaxT, Env, Pool, Config) ->
 
     ProcessTile =
         fun(Tile, E) ->
-                GetMoves = mk_get_moves(E, Config),
-                SendToWorker = mk_send_to_worker(Pool, GetMoves),
-                lists:map(SendToWorker, Tile),
+                lists:map
+                  (fun(Agents) ->
+                           send_to_work(Pool, Agents, Env, Config)
+                   end,
+                   Tile),
                 Moves = collect_results(Tile),
                 parallant:apply_moves(Moves, E, Config)
         end,
@@ -50,19 +55,18 @@ step(T, MaxT, Env, Pool, Config) ->
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Pool, Config).
 
-mk_send_to_worker(Pool, GetMoves) ->
-    Caller = self(),
-    fun (Agents) ->
-            PoolboyTransaction =
-                fun () ->
-                        poolboy:transaction(Pool,
-                                            mk_worker(Caller, Agents, GetMoves))
-                end,
-            spawn(PoolboyTransaction)
-    end.
+send_to_work(Pool, Agents, Env, Config) ->
+    spawn(?MODULE, poolboy_transaction, [Pool, Agents, _Caller = self(), Env, Config]).
 
-mk_worker(Caller, Agents, GetMoves) ->
+poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
+    poolboy:transaction(Pool,
+                        mk_worker(Caller, Agents, Env, Config)).
+
+
+
+mk_worker(Caller, Agents, Env, Config) ->
     fun (Pid) ->
+            GetMoves = mk_get_moves(Env, Config),
             Result = gen_server:call(Pid, {agents, Agents, GetMoves}),
             Caller ! {agents, Result}
     end.
