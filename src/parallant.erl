@@ -101,5 +101,6 @@ create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model),
             ?LOAD(algorithm, ConfigProps, parallant_seq),
             ?LOAD(world_impl, ConfigProps, gbtree_based),
+            ?LOAD(ants_impl, ConfigProps, ants),
             ?LOAD(log, ConfigProps, true),
             ?LOAD(animate, ConfigProps, true)}.
