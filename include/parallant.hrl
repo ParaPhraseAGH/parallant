@@ -16,9 +16,8 @@
                 h :: dimension()}).
 
 -record(env, {
-          agents :: [ant()] | gb_trees:tree(),
-          world :: world(),
-          backend :: world_impl()
+          agents :: [ant()],
+          world :: world()
          }).
 
 -record(config, {
@@ -33,6 +32,7 @@
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
 -type ant_state() :: direction().
+-type model() :: 'model'.
 -type cell() :: {dead} | {alive}.
 -type ant() :: #ant{}.
 -type board() :: [cell()] | gb_trees:tree().
@@ -41,6 +41,3 @@
 -type world_impl() :: list_based | gbtree_based.
 -type environment() :: #env{}.
 -type config() :: #config{}.
--type model() :: ants | ants_gbt.
-%-type gb_tree() :: {pos_integer(), tree()}.
-%-type tree() :: {position(), ant(), tree() | nil, tree() | nil}.

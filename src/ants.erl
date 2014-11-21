@@ -10,7 +10,7 @@ create_ants(PopulationSize, Width, Height, Config) ->
                               J <- lists:seq(1, Height)],
     ShuffledCellPositions = shuffle(AllPositions),
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, state = model:random_ant_state(Config#config.model)}
+    [#ant{pos = Pos, state = model:random_ant_state(Config)}
      || Pos <- AntPositions].
 
 -spec apply_move({ant(), ant()}, environment(), config()) -> environment().

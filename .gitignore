@@ -3,3 +3,6 @@ ebin/*
 .idea/*
 *.iml
 .rebar*
+/.deps_plt
+deps
+*.*~

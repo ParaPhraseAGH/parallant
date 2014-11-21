@@ -20,9 +20,9 @@
                           world_tree().
 create_board(Width, Height, Config) ->
     Tree = gb_trees:empty(),
-    Model = Config#config.model,
-    Indices = [{I, J} || I <- lists:seq(1, Width), J <-lists:seq(1, Height)],
-    populateTree(model:initial_cell_state(Model), Indices, Tree).
+    Indices = [{I, J} || I <- lists:seq(1, Width),
+                         J <-lists:seq(1, Height)],
+    populateTree(model:initial_cell_state(Config), Indices, Tree).
 
 -spec populateTree(cell(), [position()], world_tree()) -> world_tree().
 populateTree(_, [], Tree) -> Tree;
@@ -39,9 +39,8 @@ update_board(W, [#ant{pos = Pos} | TAnts], Config) ->
 -spec update_cell(position(), world(), config()) -> world().
 update_cell(Pos, W, Config) ->
     Cell = get_cell(Pos, W),
-    Model = Config#config.model,
     NewBoard = gb_trees:update(Pos,
-                               model:update_cell(Model, Cell),
+                               model:update_cell(Cell, Config),
                                W#world.board),
     W#world{board = NewBoard}.
 
