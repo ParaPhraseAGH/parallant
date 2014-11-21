@@ -14,12 +14,15 @@
 
 -include("parallant.hrl").
 
+%% TODO balancing tree
+
+-spec create_ants(pos_integer(), dimension(), dimension(), config()) -> gb_trees:tree().
 create_ants(PopulationSize, Width, Height, Config) ->
   AllPositions = [{I, J} || I <- lists:seq(1, Width),
     J <- lists:seq(1, Height)],
   ShuffledCellPositions = shuffle(AllPositions),
   AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-  gb_trees:from_orddict([{Pos, #ant{pos = Pos, state = model:random_ant_state(Config#config.model)}} || Pos <- lists:sort(AntPositions)]). % {Pozycja, CałyAgent} - ew. do zmiany, jest zbalansowany [DG]
+  gb_trees:from_orddict([{Pos, #ant{pos = Pos, state = model:random_ant_state(Config)}} || Pos <- lists:sort(AntPositions)]). % {Pozycja, CałyAgent} - ew. do zmiany, jest zbalansowany [DG]
   %io:format("~p", [AntPositions]),
   %AntsListWithKeys=lists:zip(lists:seq(1, PopulationSize), [#ant{pos = Pos, dir = util:random_direction()} || Pos <- AntPositions]),
   %io:format("~p", [AntsListWithKeys]),

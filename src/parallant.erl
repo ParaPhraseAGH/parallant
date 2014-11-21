@@ -39,13 +39,16 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {ants_impl, ants_gbt},
                                         {world_impl, list_based},
                                         {log, Log}]),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {ants_impl, ants_gbt},
                                         {world_impl, gbtree_based},
                                         {log, Log}]).
+
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
 start(Width, Height, Steps) ->

@@ -12,13 +12,13 @@ Steps=${4:-$DefaultSteps}
 
 algorithms="parallant_seq parallant_tiled"
 world_impls="list_based gbtree_based"
-ants_impls="ants" # ants_gbt
+ants_impls="ants ants_gbt"
 
 for algorithm in $algorithms; do
     for world_impl in $world_impls; do
     	for ants_impl in $ants_impls; do
         	echo ""
-        	echo "# version $algorithm with $world_impl world_impl"
+        	echo "# version $algorithm with $world_impl world_impl and $ants_impl ants_impl"
         	erl -pa ebin -pa deps/*/ebin \
             	-eval "parallant:start($Width,$Height,$Ants,$Steps,[{algorithm,$algorithm},{world_impl,$world_impl},{ants_impl,$ants_impl},{log,false}])." \
             	-run init stop -noshell || exit 1
