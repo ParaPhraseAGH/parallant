@@ -34,11 +34,11 @@ handle_call({get_moves, Agents, Env, Config}, _From, State) ->
 
 
 handle_cast(Event, State) ->
-    {stop, {unsuported_event, Event}, State}.
+    {stop, {unsupported_event, Event}, State}.
 
 
 handle_info(Info, State) ->
-    {stop, {unsuported_info, Info}, State}.
+    {stop, {unsupported_info, Info}, State}.
 
 
 terminate(_Reason, _State) ->

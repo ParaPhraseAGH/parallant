@@ -43,11 +43,12 @@ step(T, MaxT, Env, Pool, Config) ->
 
     ProcessTile =
         fun(Tile, E) ->
-                lists:map
-                  (fun(Agents) ->
-                           send_to_work(Pool, Agents, Env, Config)
-                   end,
-                   Tile),
+                SendToWork =
+                    fun(Agents) ->
+                            send_to_work(Pool, Agents, E, Config)
+                    end,
+                lists:map(SendToWork,
+                          Tile),
                 Moves = collect_results(Tile),
                 parallant:apply_moves(Moves, E, Config)
         end,
