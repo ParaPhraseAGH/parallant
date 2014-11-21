@@ -26,7 +26,8 @@ test(Width, Height, NAnts, Steps) ->
 
 -spec test() -> ok.
 test() ->
-    test(50, 30, 5, 500).
+    test(100, 50, 20, 500).
+    %test(50, 30, 5, 500).
 
 -spec test(algorithm()) -> ok.
 test(Algorithm) ->
@@ -77,13 +78,13 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
                backend = Config#config.world_impl},
                %model = Config#config.model},
 
-    %logger:start(Env, Config),
+    logger:start(Env, Config),
     T1 = erlang:now(),
 
     EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
-    %logger:stop(EndEnv),
+    logger:stop(EndEnv),
 
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
