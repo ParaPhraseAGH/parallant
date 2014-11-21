@@ -84,14 +84,13 @@ get_moves(E = #env{agents = Agents}, Config) ->
 
 -spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
 apply_moves(Moves, Env, Config) ->
-    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E, Config) end,
+    ApplyMove = fun (Move, E) -> ants_impl:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
 % internal functions
 
 create_ants(PopSize, W, H, Config) ->
-    %% Model = Config#config.model,
-    ants:create_ants(PopSize, W, H, Config).
+    ants_impl:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, Config)->
     Board = world_impl:create_board(W, H, Config),

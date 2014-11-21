@@ -2,6 +2,8 @@
 
 -include("parallant.hrl").
 
+-behaviour(ants_impl).
+
 -export([create_ants/4, apply_move/3, partition/3]).
 
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].

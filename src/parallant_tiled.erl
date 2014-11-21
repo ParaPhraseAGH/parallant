@@ -39,7 +39,7 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
     NParts = 4, % TODO move to config
-    Partitioned = ants:partition(Env, NColours, NParts),
+    Partitioned = ants_impl:partition(Env, NColours, NParts, Config),
 
     ProcessTile =
         fun(Tile, E) ->

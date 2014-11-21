@@ -32,7 +32,7 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [AntList] = ants:partition(Env, NColours, NParts),
+    [AntList] = ants_impl:partition(Env, NColours, NParts, Config),
 
     Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
     NewEnv = parallant:apply_moves(Moves, Env, Config),

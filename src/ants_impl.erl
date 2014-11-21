@@ -6,7 +6,7 @@
 
 
 
--callback create_ants(pos_integer(), dimension(), config()) ->
+-callback create_ants(pos_integer(), dimension(), dimension(), config()) ->
     [ant()].
 
 -callback apply_move({ant(), ant()}, environment(), config()) ->
