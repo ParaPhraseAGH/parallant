@@ -21,9 +21,7 @@ test() ->
 %% Display/log extend of the Config
 -spec display(environment(), world_impl()) -> ok.
 display(E = #env{agents = Ants}, WorldImpl) when is_list(Ants) ->
-    WorldImpl:display(Ants, E#env.world);
-display(E = #env{agents = Ants}, WorldImpl) ->
-    WorldImpl:display(gb_trees:values(Ants), E#env.world).
+    WorldImpl:display(Ants, E#env.world).
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->

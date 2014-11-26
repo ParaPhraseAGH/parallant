@@ -25,9 +25,7 @@ test() ->
 %% Display/log extend of the Config
 -spec display(environment(), world_impl()) -> ok.
 display(E = #env{agents = Ants}, WorldImpl) when is_list(Ants) ->
-    WorldImpl:display(Ants, E#env.world);
-display(E = #env{agents = Ants}, WorldImpl) ->
-  WorldImpl:display(gb_trees:values(Ants), E#env.world).
+    WorldImpl:display(Ants, E#env.world).
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
@@ -67,7 +65,7 @@ send_to_work(Pool, Agents, Env, Config) ->
 
 
 poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
-    % TODO do we need transaction at this point?
+                                                % TODO do we need transaction at this point?
     poolboy:transaction(Pool,
                         mk_worker(Caller, Agents, Env, Config)).
 

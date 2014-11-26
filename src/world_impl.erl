@@ -5,7 +5,7 @@
 -export([create_board/3, update_board/3, update_cell/3, get_cell/3, display/3]).
 
 
-% Callbacks
+                                                % Callbacks
 
 -callback create_board(dimension(), dimension(), config()) ->
     board().
@@ -22,7 +22,7 @@
 -callback display([ant()], world()) ->
     ok.
 
-% Exported functions
+                                                % Exported functions
 -spec create_board(dimension(), dimension(), config()) -> board().
 create_board(Width, Height, Config) ->
     Impl = Config#config.world_impl,
@@ -42,5 +42,7 @@ get_cell(Impl, Pos, World) ->
     Impl:get_cell(Pos, World).
 
 -spec display(world_impl(), [ant()], world()) -> ok.
+display(Impl, Ants, World) when is_list(Ants) ->
+    Impl:display(Ants, World);
 display(Impl, Ants, World) ->
-    Impl:display(Ants, World).
+    Impl:display(gb_trees:values(Ants), World).

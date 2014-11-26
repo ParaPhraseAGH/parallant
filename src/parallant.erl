@@ -90,7 +90,7 @@ apply_moves(Moves, Env, Config) ->
     ApplyMove = fun (Move, E) -> ants_impl:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
-% internal functions
+                                                % internal functions
 
 create_ants(PopSize, W, H, Config) ->
     ants_impl:create_ants(PopSize, W, H, Config).

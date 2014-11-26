@@ -9,10 +9,10 @@
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
 
-% callbacks
+                                                % callbacks
 
 -callback initial_cell_state() ->
-     cell().
+    cell().
 
 -callback random_ant_state() ->
     ant_state().
@@ -21,7 +21,7 @@
     {ant(), ant()}.
 
 -callback update_cell(cell()) ->
-     cell().
+    cell().
 
 
 -spec initial_cell_state(config()) -> cell().
@@ -45,7 +45,7 @@ get_move(A, E, Config) ->
     Model:get_move2(A, E, Config).
 
 
-% model specific functions
+                                                % model specific functions
 
 -spec initial_cell_state() -> cell().
 initial_cell_state() ->
