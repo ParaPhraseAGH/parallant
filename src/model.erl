@@ -2,9 +2,13 @@
 
 -include("parallant.hrl").
 
--export([initial_cell_state/1, random_ant_state/1, get_move/3, update_cell/2]).
+-export([initial_cell_state/1, random_ant_state/1, get_move/3,
+         move/3,
+         update_cell/2]).
 
--export([initial_cell_state/0, random_ant_state/0, get_move2/3, update_cell/1]).
+-export([initial_cell_state/0, random_ant_state/0, get_move2/3,
+         move2/3,
+         update_cell/1]).
 
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
@@ -44,6 +48,11 @@ get_move(A, E, Config) ->
     Model = Config#config.model,
     Model:get_move2(A, E, Config).
 
+-spec move(ant(), environment(), config()) -> environment().
+move(A, E, Config) ->
+    Model = Config#config.model,
+    Model:move2(A, E, Config).
+
 
 % model specific functions
 
@@ -54,6 +63,14 @@ initial_cell_state() ->
 -spec random_ant_state() -> ant_state().
 random_ant_state() ->
     random_direction().
+
+-spec move2(ant(), environment(), config()) -> environment().
+move2(A, E, Config) ->
+    %% based on agent state and its neighbourhood
+    %% compute the new agent state and neighbourhood
+    %% langton's ant
+    M = get_move2(A, E, Config),
+    ants_impl:apply_move(M, E, Config).
 
 -spec get_move2(ant(), environment(), config()) -> {ant(), ant()}.
 get_move2(A, E, Config) ->
