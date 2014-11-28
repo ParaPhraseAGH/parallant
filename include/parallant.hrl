@@ -16,7 +16,7 @@
                 h :: dimension()}).
 
 -record(env, {
-          agents :: [ant()],
+          agents :: [ant()] | atom(),
           world :: world()
          }).
 

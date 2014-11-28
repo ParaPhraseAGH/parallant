@@ -5,7 +5,7 @@
 -include("parallant.hrl").
 
 
-% Callbacks
+%% Callbacks
 
 -callback test() ->
     ok.
@@ -16,7 +16,7 @@
 -callback run(Steps, environment(), config()) -> environment()
         when Steps :: pos_integer().
 
-% Exported functions
+%% Exported functions
 
 -spec test(algorithm()) -> ok.
 test(Alg) ->

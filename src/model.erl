@@ -9,7 +9,7 @@
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
 
-                                                % callbacks
+%% callbacks
 
 -callback initial_cell_state() ->
     cell().
@@ -44,8 +44,7 @@ get_move(A, E, Config) ->
     Model = Config#config.model,
     Model:get_move2(A, E, Config).
 
-
-                                                % model specific functions
+%% model specific functions
 
 -spec initial_cell_state() -> cell().
 initial_cell_state() ->

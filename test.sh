@@ -12,7 +12,7 @@ Steps=${4:-$DefaultSteps}
 
 algorithms="parallant_seq parallant_tiled"
 world_impls="list_based gbtree_based"
-ants_impls="ants ants_gbt"
+ants_impls="ants ants_gbt ants_ets"
 
 for algorithm in $algorithms; do
     for world_impl in $world_impls; do

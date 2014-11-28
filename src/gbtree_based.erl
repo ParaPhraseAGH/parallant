@@ -32,7 +32,7 @@ populateTree(Val, [HI | TI], Tree) ->
 -spec update_board(world(), [ant()], config()) -> world().
 update_board(World, [], _Config) -> World;
 update_board(W, [#ant{pos = Pos} | TAnts], Config) ->
-    % assertion: every Ant position is different
+    %% assertion: every Ant position is different
     NewWorld = update_cell(Pos, W, Config),
     update_board(NewWorld, TAnts, Config).
 

@@ -2,11 +2,11 @@
 %%% @author Daniel Grzonka
 %%% @copyright (C) 2014, <COMPANY>
 %%% @doc
-%%% Ants gb_trees based approach
+%%% Ants ETS based approach
 %%% @end
-%%% Created : 07. lis 2014 15:56
+%%% Created : 28. lis 2014 13:31
 %%%-------------------------------------------------------------------
--module(ants_gbt).
+-module(ants_ets).
 -author("Daniel").
 
 %% API
@@ -14,25 +14,29 @@
 
 -include("parallant.hrl").
 
--spec create_ants(pos_integer(), dimension(), dimension(), config()) -> gb_trees:tree().
+-define(LOAD(Attribute, Proplist, Default),
+        Attribute = proplists:get_value(Attribute, Proplist, Default)).
+
+-spec create_ants(pos_integer(), dimension(), dimension(), config()) -> atom().
 create_ants(PopulationSize, Width, Height, Config) ->
+    TID = ets:new(antsETS, [ordered_set, protected, {keypos, 2}]), %% unnamed ETS
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
     ShuffledCellPositions = shuffle(AllPositions),
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    gb_trees:from_orddict([{Pos,
-                            #ant{pos = Pos, state = model:random_ant_state(Config)}} ||
-                              Pos <- lists:sort(AntPositions)]).
+    ets:insert(TID, [#ant{pos = Pos, state = model:random_ant_state(Config)} ||
+                        Pos <- lists:sort(AntPositions)]),
+    TID.
 
 
 -spec apply_move({ant(), ant()}, environment(), config()) -> environment().
 apply_move({Old, New}, E, Config) ->
-    case gb_trees:lookup(New#ant.pos, E#env.agents) of
-        none ->
-            AgentsAfterInsert = gb_trees:insert(New#ant.pos, New, E#env.agents),
-            AgentsAfterDelete = gb_trees:delete(Old#ant.pos, AgentsAfterInsert),
-            update_cell(Old#ant.pos, E#env{agents = AgentsAfterDelete}, Config);
-        {value, _} ->
+    case ets:lookup(E#env.agents, New#ant.pos) of
+        [] ->
+            ets:insert(E#env.agents, New),
+            ets:delete(E#env.agents, Old),
+            update_cell(Old#ant.pos, E, Config);
+        [{ant, Pos, State}] when is_atom(State), is_tuple(Pos)->
             E
     end.
 
@@ -61,7 +65,7 @@ group_by_colour(Tiles, N) ->
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->
-    [gb_trees:values(Env#env.agents)]; %added: Conversion into list
+    [ets:tab2list(Env#env.agents)]; %added: Conversion into list
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
@@ -71,7 +75,7 @@ partition(Env, NColours, NParts) ->
                               ITile = trunc((X-1)/D)*D+1,
                               {ITile, [A]}
                       end,
-    TiledAnts = lists:map(AssignTileToAnt, gb_trees:values(Env#env.agents)), %added: Conversion into list
+    TiledAnts = lists:map(AssignTileToAnt, ets:tab2list(Env#env.agents)), %added: Conversion into list
     TagTiles = group_by(TiledAnts ++ Zeros),
     Tiles = [T || {_, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),

@@ -2,7 +2,7 @@
 
 -include("parallant.hrl").
 
--export([create_board/3, update_board/3, update_cell/3, get_cell/3, display/3]).
+-export([create_board/3, update_board/3, update_cell/3, get_cell/3, display/2]).
 
 
                                                 % Callbacks
@@ -41,8 +41,10 @@ update_cell(Pos, World, Config) ->
 get_cell(Impl, Pos, World) ->
     Impl:get_cell(Pos, World).
 
--spec display(world_impl(), [ant()], world()) -> ok.
-display(Impl, Ants, World) when is_list(Ants) ->
-    Impl:display(Ants, World);
-display(Impl, Ants, World) ->
-    Impl:display(gb_trees:values(Ants), World).
+-spec display(world_impl(), environment()) -> ok.
+display(Impl, E = #env{agents = Ants}) when is_list(Ants) ->
+    Impl:display(Ants, E#env.world);
+display(Impl, E = #env{agents = Ants}) when is_integer(Ants) ->
+    Impl:display(ets:tab2list(Ants), E#env.world);
+display(Impl, E = #env{agents = Ants}) ->
+    Impl:display(gb_trees:values(Ants), E#env.world).
