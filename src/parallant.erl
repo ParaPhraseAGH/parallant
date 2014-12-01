@@ -106,7 +106,7 @@ create_world(W, H, Config)->
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->
-    #config{?LOAD(model, ConfigProps, model),
+    #config{?LOAD(model, ConfigProps, model_langton),
             ?LOAD(algorithm, ConfigProps, parallant_seq),
             ?LOAD(world_impl, ConfigProps, gbtree_based),
             ?LOAD(ants_impl, ConfigProps, ants),
