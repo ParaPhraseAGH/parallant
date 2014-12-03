@@ -22,6 +22,9 @@
 -callback update_cell(cell()) ->
      cell().
 
+-callback move(ant(), environment(), config()) ->
+    environment().
+
 
 -spec initial_cell_state(config()) -> cell().
 initial_cell_state(Config) ->

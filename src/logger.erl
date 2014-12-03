@@ -170,7 +170,8 @@ overwrite_display(false, _) ->
                  ok.
 log(Algorithm, Env, WorldImpl, Step, Animate) ->
     io:format("Step ~p:~n", [Step + 1]),
-    algorithm:display(Algorithm, Env, WorldImpl),
+    %% algorithm:display(Algorithm, Env, WorldImpl),
+    io:format("Agents:~n~p~n",[lists:sort(Env#env.agents)]),
     timer:sleep(?LOG_DELAY),
     overwrite_display(Animate, get_height(Env)).
 
@@ -180,8 +181,9 @@ print(Algorithm, E = #env{world = W}, WorldImpl, Steps) ->
     case Width < ?MAX_WIDTH_TO_SHOW of
         true ->
             %% io:format("Ants: ~p~n", [E#env.agents]),
-            io:format("Step ~p:~n", [Steps]),
-            algorithm:display(Algorithm, E, WorldImpl);
+            io:format("Step ~p:~n", [Steps]), %%,
+            %% algorithm:display(Algorithm, E, WorldImpl)
+            io:format("Agents:~n~p~n",[lists:sort(E#env.agents)]);
         false -> ok
     end.
 

@@ -10,25 +10,57 @@
 create_ants(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
-    ShuffledCellPositions = shuffle(AllPositions),
-    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, state = model:random_ant_state(Config)}
-     || Pos <- AntPositions].
+    AntPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
+    CellPositions = AllPositions,
+    All = [{Pos, [ant]} || Pos <- AntPositions]
+        ++ [{Pos, [cell]} || Pos <- CellPositions],
 
--spec apply_move({ant(), ant()}, environment(), config()) -> environment().
-apply_move({Old, New}, E, Config) ->
-    IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
-    case lists:any(IsPosTaken, E#env.agents) of
+    [populate_cell(Pos, Members, Config) || {Pos, Members} <- group_by(All)].
+
+populate_cell(Pos, Members, Config) ->
+    case lists:member(ant, Members) of
         true ->
-            E;
-        false ->
-            NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
-            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]}, Config)
+            #ant{pos = Pos,
+                 state = {model:random_ant_state(Config),
+                          model:initial_cell_state(Config)}};
+        _ ->
+            #ant{pos = Pos,
+                 state = {empty,
+                          model:initial_cell_state(Config)}}
     end.
 
--spec update_cell(position(), environment(), config()) -> environment().
-update_cell(Pos, E = #env{world = World}, Config) ->
-    E#env{world = world_impl:update_cell(Pos, World, Config)}.
+-spec apply_move({ant(), ant()}, environment(), config()) -> environment().
+apply_move({Same, Same}, E, _Config) ->
+    E;
+apply_move({Old, New}, E, Config) ->
+    io:format("Old: ~p, New: ~p~n", [Old, New]),
+    IsPosTaken = fun(#ant{pos = P, state = {Dir, _Cell}}) ->
+                         P == New#ant.pos andalso Dir /= empty
+                 end,
+    case lists:any(IsPosTaken, E#env.agents) of
+        true ->
+            io:format("true~n"),
+            E;
+        false ->
+            io:format("false~n"),
+            update_cells(Old, New, E, Config)
+    end.
+
+-spec update_cells(ant(), ant(), environment(), config()) -> environment().
+update_cells(Old, New, E = #env{agents = Agents}, Config) ->
+    #ant{pos = OPos, state = {_ODir, _OCell}} = Old,
+    #ant{pos = NPos, state = {NDir, _NCell}} = New,
+    FlipCell = fun (A = #ant{pos = APos, state = {_Dir, Cell}})
+                     when APos == OPos ->
+                       NewCell = model:update_cell(Cell, Config),
+                       A#ant{state = {empty, NewCell}};
+                   (A = #ant{pos = APos, state = {_Dir, Cell}})
+                     when APos == NPos ->
+                       A#ant{state = {NDir, Cell}};
+                   (A) ->
+                       A
+               end,
+    E#env{agents = lists:map(FlipCell, Agents)}.
 
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].

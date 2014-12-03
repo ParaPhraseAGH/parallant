@@ -1,4 +1,4 @@
--module(model_langton).
+-module(model_forams).
 -behaviour(model).
 
 -include("parallant.hrl").
@@ -12,7 +12,7 @@
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
 
-% model specific functions
+% copied from langton's ant model
 
 -spec initial_cell_state() -> cell().
 initial_cell_state() ->
@@ -40,13 +40,11 @@ update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
 -spec move_agent(ant(), environment(), config()) -> ant().
-move_agent(Ant = #ant{state = {empty, _Cell}}, #env{}, _C) ->
-    Ant;
-move_agent(#ant{pos = Pos, state = {Dir, {Cell}}}, #env{world = World}, _C) ->
-    %% {AgentCellState} = world_impl:get_cell(C#config.world_impl, Pos, World),
-    NewDir = turn(Dir, Cell),
+move_agent(#ant{pos = Pos, state = Dir}, #env{world = World}, C) ->
+    {AgentCellState} = world_impl:get_cell(C#config.world_impl, Pos, World),
+    NewDir = turn(Dir, AgentCellState),
     NewPos = forward(Pos, NewDir, World),
-    #ant{pos = NewPos, state = {NewDir, {Cell}}}.
+    #ant{pos = NewPos, state = NewDir}.
 
 
 -spec forward(position(), direction(), world()) -> position().

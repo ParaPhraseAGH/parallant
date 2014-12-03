@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([get_cell/3, move_all/2, get_moves/2, apply_moves/3]).
+-export([move_all/2, get_moves/2, apply_moves/3]).
 
 -include("parallant.hrl").
 
@@ -74,9 +74,10 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
--spec get_cell(world_impl(), position(), world()) -> cell().
-get_cell(Impl, {X, Y}, World) ->
-    world_impl:get_cell(Impl, {X, Y}, World).
+%% -spec get_cell(world_impl(), position(), world()) -> cell().
+%% get_cell(Impl, {X, Y}, World) ->
+%%     %% TODO get cell from
+%%     world_impl:get_cell(Impl, {X, Y}, World).
 
 -spec move_all(environment(), config()) -> environment().
 move_all(Env, Config) ->
@@ -101,8 +102,8 @@ apply_moves(Moves, Env, Config) ->
 create_ants(PopSize, W, H, Config) ->
     ants_impl:create_ants(PopSize, W, H, Config).
 
-create_world(W, H, Config)->
-    Board = world_impl:create_board(W, H, Config),
+create_world(W, H, _Config)->
+    Board = nothing, %% world_impl:create_board(W, H, Config),
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->
