@@ -26,15 +26,15 @@ test() ->
 display(Env, WorldImpl) ->
     world_impl:display(WorldImpl, Env).
 
--spec run(pos_integer(), environment(), config()) -> environment().
+-spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
     {ok, Pool} = poolboy:start([{worker_module, tile_worker},
                                 {size, 4}, % TODO from config.n _parts
                                 {max_overflow, 4}]),
     step(1, Steps, Env, Pool, Config).
 
--spec step(pos_integer(), pos_integer(), environment(), poolboy:pool(),
-           config()) -> environment().
+-spec step(T :: pos_integer(), MaxT :: pos_integer(),
+           environment(), poolboy:pool(), config()) -> environment().
 step(MaxT, MaxT, Env, _Pool, _Config) ->
     Env;
 step(T, MaxT, Env, Pool, Config) ->
@@ -64,7 +64,7 @@ send_to_work(Pool, Agents, Env, Config) ->
 
 
 poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
-                                                % TODO do we need transaction at this point?
+    %% TODO do we need transaction at this point?
     poolboy:transaction(Pool,
                         mk_worker(Caller, Agents, Env, Config)).
 

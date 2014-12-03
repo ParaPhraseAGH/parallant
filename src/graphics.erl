@@ -39,7 +39,8 @@ display_cell(I, Cell, AntsWithIndex) ->
     RestOfAnts.
 
 %% @doc display/4 expects list of cells in the following (lexicographic) order:
-%% [{1,1}, {1,2}, {1,3}, {1,4}, ... {1, H}, {2,1}, {2,2} ... {W,1}, {W,2}, ..., {W, H}]
+%% [{1,1}, {1,2}, {1,3}, {1,4}, ... {1, H}, {2,1}, {2,2} ... {W,1}, {W,2},
+%% ..., {W, H}]
 %% and displays the board in a natural way:
 %% ^ y (up to max=H)
 %% |
@@ -54,7 +55,8 @@ display(Ants, #world{board = Board, w = W, h = H}) ->
     %%   io:format("RawBoard: ~p~n",[Board]),
     %%   io:format("ChunkedBoard: ~p~n",[ChunkedBoard]),
     %%   io:format("TransposedBoard: ~p~n",[TransposedBoard]),
-    display(lists:keysort(1, AntsWithIndex), lists:flatten(TransposedBoard), W, H, 1).
+    display(lists:keysort(1, AntsWithIndex),
+            lists:flatten(TransposedBoard), W, H, 1).
 
 transpose_board([[]|_]) -> [];
 transpose_board(M) ->

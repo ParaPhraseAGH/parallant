@@ -18,7 +18,8 @@
     [[ant()]].
 
 
--spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
+-spec create_ants(PopulationSize :: pos_integer(), Width :: dimension(),
+                  Height :: dimension(), config()) -> [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->
     Impl = Config#config.ants_impl,
     Impl:create_ants(PopulationSize, Width, Height, Config).
@@ -28,8 +29,8 @@ apply_move(Move, E, Config) ->
     Impl = Config#config.ants_impl,
     Impl:apply_move(Move, E, Config).
 
--spec partition(environment(), pos_integer(), pos_integer(), config()) ->
-                       [[ant()]].
+-spec partition(environment(), NumberOfColours :: pos_integer(),
+                NumberOfParts :: pos_integer(), config()) -> [[ant()]].
 partition(Env, NColours, NParts, Config) ->
     Impl = Config#config.ants_impl,
     Impl:partition(Env, NColours, NParts).

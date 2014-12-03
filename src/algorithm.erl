@@ -26,7 +26,7 @@ test(Alg) ->
 display(Alg, Env, WorldImpl) ->
     Alg:display(Env, WorldImpl).
 
--spec run(pos_integer(), environment(), config()) ->  environment().
+-spec run(Steps :: pos_integer(), environment(), config()) ->  environment().
 run(Steps, Env, Config) ->
     Alg = Config#config.algorithm,
     Alg:run(Steps, Env, Config).

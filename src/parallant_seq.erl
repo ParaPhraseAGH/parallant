@@ -23,12 +23,12 @@ display(Env, WorldImpl) ->
     world_impl:display(WorldImpl, Env).
 
 
--spec run(pos_integer(), environment(), config()) -> environment().
+-spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
     step(1, Steps, Env, Config).
 
--spec step(pos_integer(), pos_integer(), environment(), config()) ->
-                  environment().
+-spec step(T :: pos_integer(), MaxT :: pos_integer(),
+           environment(), config()) -> environment().
 step(MaxT, MaxT, Env, _Config) ->
     Env;
 step(T, MaxT, Env, Config) ->

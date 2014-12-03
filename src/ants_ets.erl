@@ -17,9 +17,13 @@
 -define(LOAD(Attribute, Proplist, Default),
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
--spec create_ants(pos_integer(), dimension(), dimension(), config()) -> atom().
+-spec create_ants(PopulationSize :: pos_integer(),
+                  Width :: dimension(),
+                  Height :: dimension(),
+                  config()) ->
+                         TableID :: pos_integer().
 create_ants(PopulationSize, Width, Height, Config) ->
-    TID = ets:new(antsETS, [ordered_set, protected, {keypos, 2}]), %% unnamed ETS
+    TID = ets:new(antsETS, [ordered_set, protected, {keypos, 2}]),
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
     ShuffledCellPositions = shuffle(AllPositions),
@@ -34,7 +38,7 @@ apply_move({Old, New}, E, Config) ->
     case ets:lookup(E#env.agents, New#ant.pos) of
         [] ->
             ets:insert(E#env.agents, New),
-            ets:delete(E#env.agents, Old),
+            ets:delete(E#env.agents, Old#ant.pos),
             update_cell(Old#ant.pos, E, Config);
         [{ant, Pos, State}] when is_atom(State), is_tuple(Pos)->
             E
@@ -54,7 +58,7 @@ group_by(List) ->
 
 -spec group_by_colour([[ant()]], pos_integer()) -> [[ant()]].
 group_by_colour(Tiles, N) ->
-    N = 2, % dividing in stripes
+    N = 2,
     EveryNth = fun (Rest) ->
                        [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
                                                  Tiles),
@@ -65,7 +69,7 @@ group_by_colour(Tiles, N) ->
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->
-    [ets:tab2list(Env#env.agents)]; %added: Conversion into list
+    [ets:tab2list(Env#env.agents)];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
@@ -75,7 +79,7 @@ partition(Env, NColours, NParts) ->
                               ITile = trunc((X-1)/D)*D+1,
                               {ITile, [A]}
                       end,
-    TiledAnts = lists:map(AssignTileToAnt, ets:tab2list(Env#env.agents)), %added: Conversion into list
+    TiledAnts = lists:map(AssignTileToAnt, ets:tab2list(Env#env.agents)),
     TagTiles = group_by(TiledAnts ++ Zeros),
     Tiles = [T || {_, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),

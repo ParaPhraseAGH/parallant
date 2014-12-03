@@ -5,7 +5,7 @@
 -export([create_board/3, update_board/3, update_cell/3, get_cell/3, display/2]).
 
 
-                                                % Callbacks
+%% Callbacks
 
 -callback create_board(dimension(), dimension(), config()) ->
     board().
@@ -22,8 +22,11 @@
 -callback display([ant()], world()) ->
     ok.
 
-                                                % Exported functions
--spec create_board(dimension(), dimension(), config()) -> board().
+%% Exported functions
+-spec create_board(Width :: dimension(),
+                   Height :: dimension(),
+                   config()) ->
+                          board().
 create_board(Width, Height, Config) ->
     Impl = Config#config.world_impl,
     Impl:create_board(Width, Height, Config).

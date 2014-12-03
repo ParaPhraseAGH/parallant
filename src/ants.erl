@@ -6,7 +6,11 @@
 
 -export([create_ants/4, apply_move/3, partition/3]).
 
--spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
+-spec create_ants(PopulationSize :: pos_integer(),
+                  Width :: dimension(),
+                  Height :: dimension(),
+                  config()) ->
+                         [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],

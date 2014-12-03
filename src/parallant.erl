@@ -16,7 +16,8 @@
 -define(LOAD(Attribute, Proplist, Default),
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
--spec test(dimension(), dimension(), pos_integer(), pos_integer()) -> ok.
+-spec test(Width :: dimension(), Height :: dimension(),
+           NumberOfAnts :: pos_integer(), Steps :: pos_integer()) -> ok.
 test(Width, Height, NAnts, Steps) ->
     Seed = erlang:now(),
     io:format("Parallant_seq:~n"),
@@ -33,8 +34,9 @@ test(Algorithm) ->
     Seed = erlang:now(),
     test(Algorithm, Seed, 50, 30, 5, 500, false).
 
--spec test(algorithm(), any(), dimension(), dimension(),
-           pos_integer(), pos_integer(), boolean()) -> ok.
+-spec test(algorithm(), Seed :: any(), Width :: dimension(),
+           Height :: dimension(), NumberOfAnts :: pos_integer(),
+           Steps :: pos_integer(), Log :: boolean()) -> ok.
 test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
     io:format("ListBasedWorld & ListBasedAntsImpl:~n"),
     random:seed(Seed),
@@ -74,12 +76,14 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
                                         {log, Log}]).
 
 
--spec start(dimension(), dimension(), pos_integer()) -> ok.
+-spec start(Width :: dimension(), Height :: dimension(),
+            Steps :: pos_integer()) -> ok.
 start(Width, Height, Steps) ->
     start(Width, Height, 1, Steps, []).
 
--spec start(dimension(), dimension(), pos_integer(), pos_integer(),
-            proplists:proplist()) -> ok.
+-spec start(Width :: dimension(), Height :: dimension(),
+            PopulationSize :: pos_integer(), Steps :: pos_integer(),
+            ConfigOptions :: proplists:proplist()) -> ok.
 start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
 
@@ -114,7 +118,7 @@ apply_moves(Moves, Env, Config) ->
     ApplyMove = fun (Move, E) -> ants_impl:apply_move(Move, E, Config) end,
     lists:foldl(ApplyMove, Env, Moves).
 
-                                                % internal functions
+%% internal functions
 
 create_ants(PopSize, W, H, Config) ->
     ants_impl:create_ants(PopSize, W, H, Config).

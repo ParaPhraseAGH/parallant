@@ -14,15 +14,20 @@
 
 -include("parallant.hrl").
 
--spec create_ants(pos_integer(), dimension(), dimension(), config()) -> gb_trees:tree().
+-spec create_ants(PopulationSize :: pos_integer(),
+                  Width :: dimension(),
+                  Height :: dimension(),
+                  config()) ->
+                         Ants :: gb_trees:tree().
 create_ants(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
     ShuffledCellPositions = shuffle(AllPositions),
     AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    gb_trees:from_orddict([{Pos,
-                            #ant{pos = Pos, state = model:random_ant_state(Config)}} ||
-                              Pos <- lists:sort(AntPositions)]).
+    AntsWithKeys = [{Pos,
+                     #ant{pos = Pos, state = model:random_ant_state(Config)}} ||
+                       Pos <- lists:sort(AntPositions)],
+    gb_trees:from_orddict(AntsWithKeys).
 
 
 -spec apply_move({ant(), ant()}, environment(), config()) -> environment().
@@ -50,7 +55,7 @@ group_by(List) ->
 
 -spec group_by_colour([[ant()]], pos_integer()) -> [[ant()]].
 group_by_colour(Tiles, N) ->
-    N = 2, % dividing in stripes
+    N = 2,
     EveryNth = fun (Rest) ->
                        [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
                                                  Tiles),
@@ -61,7 +66,7 @@ group_by_colour(Tiles, N) ->
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->
-    [gb_trees:values(Env#env.agents)]; %added: Conversion into list
+    [gb_trees:values(Env#env.agents)];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
@@ -71,7 +76,7 @@ partition(Env, NColours, NParts) ->
                               ITile = trunc((X-1)/D)*D+1,
                               {ITile, [A]}
                       end,
-    TiledAnts = lists:map(AssignTileToAnt, gb_trees:values(Env#env.agents)), %added: Conversion into list
+    TiledAnts = lists:map(AssignTileToAnt, gb_trees:values(Env#env.agents)),
     TagTiles = group_by(TiledAnts ++ Zeros),
     Tiles = [T || {_, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
