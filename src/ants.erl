@@ -4,20 +4,23 @@
 
 -behaviour(ants_impl).
 
--export([create_ants/4, apply_move/3, partition/3]).
+-export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
 
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->
-    Pop = model_langton:initial_population(PopulationSize,
+    Pop = model:initial_population(PopulationSize,
                                            Width,
                                            Height,
                                            Config),
     [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
 
+-spec get_agent(position(), environment(), config()) -> ant_state().
 get_agent(Position, Env, _Config) ->
     hd([State || #ant{pos = Pos, state = State} <- Env#env.agents,
                  Pos == Position]).
 
+-spec update_agent(position(), ant_state(), environment(), config()) ->
+                          environment().
 update_agent(Position, NewState, Env, _Config) ->
     Update = fun (A = #ant{pos = Pos})
                    when Pos == Position ->
@@ -25,41 +28,6 @@ update_agent(Position, NewState, Env, _Config) ->
                  (A) -> A
              end,
     Env#env{agents = lists:map(Update, Env#env.agents)}.
-
-
--spec apply_move({ant(), ant()}, environment(), config()) -> environment().
-apply_move({Same, Same}, E, _Config) ->
-    E;
-apply_move({Old, New}, E, Config) ->
-    io:format("Old: ~p, New: ~p~n", [Old, New]),
-    IsPosTaken = fun(#ant{pos = P, state = {Dir, _Cell}}) ->
-                         P == New#ant.pos andalso Dir /= empty
-                 end,
-    case lists:any(IsPosTaken, E#env.agents) of
-        true ->
-            io:format("true~n"),
-            E;
-        false ->
-            io:format("false~n"),
-            update_cells(Old, New, E, Config)
-    end.
-
--spec update_cells(ant(), ant(), environment(), config()) -> environment().
-update_cells(Old, New, E = #env{agents = Agents}, Config) ->
-    #ant{pos = OPos, state = {_ODir, _OCell}} = Old,
-    #ant{pos = NPos, state = {NDir, _NCell}} = New,
-    FlipCell = fun (A = #ant{pos = APos, state = {_Dir, Cell}})
-                     when APos == OPos ->
-                       NewCell = model:update_cell(Cell, Config),
-                       A#ant{state = {empty, NewCell}};
-                   (A = #ant{pos = APos, state = {_Dir, Cell}})
-                     when APos == NPos ->
-                       A#ant{state = {NDir, Cell}};
-                   (A) ->
-                       A
-               end,
-    E#env{agents = lists:map(FlipCell, Agents)}.
-
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->

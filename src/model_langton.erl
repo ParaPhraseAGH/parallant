@@ -3,9 +3,7 @@
 
 -include("parallant.hrl").
 
--export([initial_cell_state/0,
-         random_ant_state/0,
-         initial_population/4,
+-export([initial_population/4,
          get_move/3,
          move/3,
          update_cell/1]).
@@ -29,14 +27,14 @@ initial_population(PopulationSize, Width, Height, Config) ->
     [populate_cell(Pos, Members, Config)
      || {Pos, Members} <- ants:group_by(All)].
 
-populate_cell(Pos, Members, Config) ->
+populate_cell(Pos, Members, _Config) ->
     AntState = case lists:member(ant, Members) of
                 true ->
-                    model:random_ant_state(Config);
+                    random_ant_state();
                 _ ->
                     empty
             end,
-    {Pos, {AntState, model:initial_cell_state(Config)}}.
+    {Pos, {AntState, initial_cell_state()}}.
 
 -spec shuffle(list()) -> list().
 shuffle(L) ->
@@ -55,8 +53,19 @@ move(A, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% langton's ant
-    M = get_move(A, E, Config),
-    ants_impl:apply_move(M, E, Config).
+    {Old, New} = get_move(A, E, Config),
+    #ant{pos = OPos, state = {ODir, OCell}} = Old,
+    #ant{pos = NPos, state = {NDir, _}} = New,
+    case {ODir, ants_impl:get_agent(New#ant.pos, E, Config)} of
+        {empty, _} ->
+            E;
+        {_, {empty, CellState}} ->
+            E1 = ants_impl:update_agent(NPos, {NDir, CellState}, E, Config),
+            OldState = {empty, update_cell(OCell)},
+            ants_impl:update_agent(OPos, OldState, E1, Config);
+        {_, _} ->
+            E
+    end.
 
 -spec get_move(ant(), environment(), config()) -> {ant(), ant()}.
 get_move(A, E, Config) ->

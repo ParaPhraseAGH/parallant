@@ -5,6 +5,7 @@
 
 -export([initial_cell_state/0,
          random_ant_state/0,
+         initial_population/4,
          get_move/3,
          move/3,
          update_cell/1]).
@@ -13,6 +14,33 @@
 -type cell_state() :: dead | alive.
 
 % copied from langton's ant model
+-spec initial_population(PopulationSize :: pos_integer(),
+                         Width :: dimension(),
+                         Height :: dimension(),
+                         Config :: config()) ->
+                                [{position(), ant_state()}].
+initial_population(PopulationSize, Width, Height, Config) ->
+    AllPositions = [{I, J} || I <- lists:seq(1, Width),
+                              J <- lists:seq(1, Height)],
+    AntPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
+    CellPositions = AllPositions,
+    All = [{Pos, [ant]} || Pos <- AntPositions]
+        ++ [{Pos, [cell]} || Pos <- CellPositions],
+    [populate_cell(Pos, Members, Config)
+     || {Pos, Members} <- ants:group_by(All)].
+
+populate_cell(Pos, Members, Config) ->
+    AntState = case lists:member(ant, Members) of
+                true ->
+                    model:random_ant_state(Config);
+                _ ->
+                    empty
+            end,
+    {Pos, {AntState, model:initial_cell_state(Config)}}.
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 -spec initial_cell_state() -> cell().
 initial_cell_state() ->
@@ -27,8 +55,19 @@ move(A, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% langton's ant
-    M = get_move(A, E, Config),
-    ants_impl:apply_move(M, E, Config).
+    {Old, New} = get_move(A, E, Config),
+    #ant{pos = OPos, state = {ODir, OCell}} = Old,
+    #ant{pos = NPos, state = {NDir, _}} = New,
+    case {ODir, ants_impl:get_agent(New#ant.pos, E, Config)} of
+        {empty, _} ->
+            E;
+        {_, {empty, CellState}} ->
+            E1 = ants_impl:update_agent(NPos, {NDir, CellState}, E, Config),
+            OldState = {empty, update_cell(OCell)},
+            ants_impl:update_agent(OPos, OldState, E1, Config);
+        {_, _} ->
+            E
+    end.
 
 -spec get_move(ant(), environment(), config()) -> {ant(), ant()}.
 get_move(A, E, Config) ->
