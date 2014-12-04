@@ -22,21 +22,34 @@
 initial_population(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
-    AntPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
+    %% AntPositions = lists:sublist(shuffle(AllPositions),
+    %%                              1,
+    %%                              PopulationSize),
+    AlgaePositions = lists:sublist(shuffle(AllPositions),
+                                   1,
+                                   PopulationSize * 1),
     CellPositions = AllPositions,
-    All = [{Pos, [ant]} || Pos <- AntPositions]
-        ++ [{Pos, [cell]} || Pos <- CellPositions],
+    All = %%[{Pos, [ant]} || Pos <- AntPositions] ++
+        [{Pos, [cell]} || Pos <- CellPositions]
+        ++ [{Pos, [alga]} || Pos <- AlgaePositions],
     [populate_cell(Pos, Members, Config)
      || {Pos, Members} <- ants:group_by(All)].
 
-populate_cell(Pos, Members, Config) ->
-    AntState = case lists:member(ant, Members) of
-                true ->
-                    model:random_ant_state(Config);
-                _ ->
-                    empty
-            end,
-    {Pos, {AntState, model:initial_cell_state(Config)}}.
+populate_cell(Pos, Members, _Config) ->
+    InitialAlgaeLevel = 3,
+    %% _AntState = case lists:member(ant, Members) of
+    %%                true ->
+    %%                    random_ant_state();
+    %%                _ ->
+    %%                    empty
+    %%            end,
+    AlgaState = case lists:member(alga, Members) of
+                    true ->
+                        InitialAlgaeLevel;
+                    _ ->
+                        0
+                end,
+    {Pos, {AlgaState}}.
 
 -spec shuffle(list()) -> list().
 shuffle(L) ->
@@ -54,20 +67,30 @@ random_ant_state() ->
 move(A, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
-    %% langton's ant
-    {Old, New} = get_move(A, E, Config),
-    #ant{pos = OPos, state = {ODir, OCell}} = Old,
-    #ant{pos = NPos, state = {NDir, _}} = New,
-    case {ODir, ants_impl:get_agent(New#ant.pos, E, Config)} of
-        {empty, _} ->
-            E;
-        {_, {empty, CellState}} ->
-            E1 = ants_impl:update_agent(NPos, {NDir, CellState}, E, Config),
-            OldState = {empty, update_cell(OCell)},
-            ants_impl:update_agent(OPos, OldState, E1, Config);
-        {_, _} ->
-            E
-    end.
+    %% algae dispersion
+    #env{world = #world{w = W, h = H}} = E,
+    Pos = A#ant.pos,
+    UpdateNeighbour =
+        fun(NPos, Env) ->
+                {Level} = ants_impl:get_agent(NPos, Env, Config),
+                ants_impl:update_agent(NPos, {Level + 1}, Env, Config)
+        end,
+
+    State = ants_impl:get_agent(Pos, E, Config),
+    NewEnv = case State of
+                 {Level} when Level > 4 ->
+                     Ns = neighbours_4(Pos, W, H),
+                     E1 = lists:foldl(UpdateNeighbour, E, Ns),
+                     ants_impl:update_agent(Pos,
+                                            {Level - length(Ns)},
+                                            E1,
+                                            Config);
+                 {Level} when Level =< 0 orelse Level >= 10 ->
+                     E;
+                 {Level} ->
+                     ants_impl:update_agent(Pos, {Level+1}, E, Config)
+             end,
+    NewEnv.
 
 -spec get_move(ant(), environment(), config()) -> {ant(), ant()}.
 get_move(A, E, Config) ->
@@ -94,6 +117,13 @@ forward({X, Y}, Dir, #world{w = W, h = H}) ->
     NewX = torus_bounds(X + DX, W),
     NewY = torus_bounds(Y + DY, H),
     {NewX, NewY}.
+
+neighbours_4({X,Y}, W, H) ->
+    [{torus_bounds(X+1, W), Y},
+     {torus_bounds(X-1, W), Y},
+     {X, torus_bounds(Y+1, H)},
+     {X, torus_bounds(Y-1, H)}].
+
 
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
