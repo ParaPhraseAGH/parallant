@@ -8,26 +8,24 @@
 
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->
-    AllPositions = [{I, J} || I <- lists:seq(1, Width),
-                              J <- lists:seq(1, Height)],
-    AntPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
-    CellPositions = AllPositions,
-    All = [{Pos, [ant]} || Pos <- AntPositions]
-        ++ [{Pos, [cell]} || Pos <- CellPositions],
+    Pop = model_langton:initial_population(PopulationSize,
+                                           Width,
+                                           Height,
+                                           Config),
+    [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
 
-    [populate_cell(Pos, Members, Config) || {Pos, Members} <- group_by(All)].
+get_agent(Position, Env, _Config) ->
+    hd([State || #ant{pos = Pos, state = State} <- Env#env.agents,
+                 Pos == Position]).
 
-populate_cell(Pos, Members, Config) ->
-    case lists:member(ant, Members) of
-        true ->
-            #ant{pos = Pos,
-                 state = {model:random_ant_state(Config),
-                          model:initial_cell_state(Config)}};
-        _ ->
-            #ant{pos = Pos,
-                 state = {empty,
-                          model:initial_cell_state(Config)}}
-    end.
+update_agent(Position, NewState, Env, _Config) ->
+    Update = fun (A = #ant{pos = Pos})
+                   when Pos == Position ->
+                     A#ant{state = NewState};
+                 (A) -> A
+             end,
+    Env#env{agents = lists:map(Update, Env#env.agents)}.
+
 
 -spec apply_move({ant(), ant()}, environment(), config()) -> environment().
 apply_move({Same, Same}, E, _Config) ->
@@ -97,8 +95,3 @@ group_by_colour(Tiles, N) ->
                              I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
-
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

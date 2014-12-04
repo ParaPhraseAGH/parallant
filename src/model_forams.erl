@@ -40,11 +40,13 @@ update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
 -spec move_agent(ant(), environment(), config()) -> ant().
-move_agent(#ant{pos = Pos, state = Dir}, #env{world = World}, C) ->
-    {AgentCellState} = world_impl:get_cell(C#config.world_impl, Pos, World),
-    NewDir = turn(Dir, AgentCellState),
+move_agent(Ant = #ant{state = {empty, _Cell}}, #env{}, _C) ->
+    Ant;
+move_agent(#ant{pos = Pos, state = {Dir, {Cell}}}, #env{world = World}, _C) ->
+    %% {AgentCellState} = world_impl:get_cell(C#config.world_impl, Pos, World),
+    NewDir = turn(Dir, Cell),
     NewPos = forward(Pos, NewDir, World),
-    #ant{pos = NewPos, state = NewDir}.
+    #ant{pos = NewPos, state = {NewDir, {Cell}}}.
 
 
 -spec forward(position(), direction(), world()) -> position().

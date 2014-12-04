@@ -5,6 +5,7 @@
 
 -export([initial_cell_state/0,
          random_ant_state/0,
+         initial_population/4,
          get_move/3,
          move/3,
          update_cell/1]).
@@ -13,6 +14,33 @@
 -type cell_state() :: dead | alive.
 
 % model specific functions
+-spec initial_population(PopulationSize :: pos_integer(),
+                         Width :: dimension(),
+                         Height :: dimension(),
+                         Config :: config()) ->
+                                [{position(), ant_state()}].
+initial_population(PopulationSize, Width, Height, Config) ->
+    AllPositions = [{I, J} || I <- lists:seq(1, Width),
+                              J <- lists:seq(1, Height)],
+    AntPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
+    CellPositions = AllPositions,
+    All = [{Pos, [ant]} || Pos <- AntPositions]
+        ++ [{Pos, [cell]} || Pos <- CellPositions],
+    [populate_cell(Pos, Members, Config)
+     || {Pos, Members} <- ants:group_by(All)].
+
+populate_cell(Pos, Members, Config) ->
+    AntState = case lists:member(ant, Members) of
+                true ->
+                    model:random_ant_state(Config);
+                _ ->
+                    empty
+            end,
+    {Pos, {AntState, model:initial_cell_state(Config)}}.
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 -spec initial_cell_state() -> cell().
 initial_cell_state() ->
