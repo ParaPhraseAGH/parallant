@@ -6,6 +6,7 @@
          random_ant_state/1,
          initial_population/4,
          get_move/3,
+         get_agent_char/2,
          move/3,
          update_cell/2]).
 
@@ -25,6 +26,9 @@
 
 -callback move(ant(), environment(), config()) ->
     environment().
+
+-callback get_agent_char(ant_state(), config()) ->
+    char().
 
 
 -spec initial_cell_state(config()) -> cell().
@@ -60,3 +64,8 @@ initial_population(PopulationSize, Width, Height, Config) ->
 move(A, E, Config) ->
     Model = Config#config.model,
     Model:move(A, E, Config).
+
+-spec get_agent_char(ant_state(), config()) -> char().
+get_agent_char(State, Config) ->
+    Model = Config#config.model,
+    Model:get_agent_char(State, Config).

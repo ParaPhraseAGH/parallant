@@ -8,6 +8,7 @@
          initial_population/4,
          get_move/3,
          move/3,
+         get_agent_char/2,
          update_cell/1]).
 
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
@@ -156,3 +157,16 @@ random_direction() ->
     Dirs = [north, south, east, west],
     Idx = random:uniform(length(Dirs)),
     lists:nth(Idx, Dirs).
+
+%% displaying agents
+
+-spec get_agent_char(ant_state(), config()) -> char().
+get_agent_char(empty, _Config) ->
+    $.;
+get_agent_char({Level}, _Config) ->
+    algae_char(Level).
+
+algae_char(0) ->
+    $.;
+algae_char(Level) ->
+    Level + $0.

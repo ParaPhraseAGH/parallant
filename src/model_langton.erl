@@ -6,6 +6,7 @@
 -export([initial_population/4,
          get_move/3,
          move/3,
+         get_agent_char/2,
          update_cell/1]).
 
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
@@ -124,3 +125,25 @@ random_direction() ->
     Dirs = [north, south, east, west],
     Idx = random:uniform(length(Dirs)),
     lists:nth(Idx, Dirs).
+
+%% displaying agents
+
+-spec get_agent_char(ant_state(), config()) -> char().
+get_agent_char(empty, _Config) ->
+    $$;
+get_agent_char({empty, CellState}, _Config) ->
+    cell_char(CellState);
+get_agent_char({Dir, _}, _Config) ->
+    ant_char(Dir).
+
+-spec ant_char(ant_state()) -> char().
+ant_char(west) -> $<;
+ant_char(east) -> $>;
+ant_char(north) -> $^;
+ant_char(south) -> $v.
+
+-spec cell_char(cell()) -> char().
+cell_char({alive}) -> $o;
+cell_char({dead}) -> $.;
+cell_char({I}) -> I;
+cell_char(_V) -> _V.

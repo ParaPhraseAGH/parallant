@@ -15,7 +15,7 @@
 -record(state, {algorithm :: algorithm(),
                 env :: environment(),
                 step = 1 :: pos_integer(),
-                world_impl :: world_impl(),
+                config :: config(),
                 log = false :: boolean(),
                 animate = true :: boolean()}).
 
@@ -40,8 +40,7 @@ log(Env) ->
     gen_server:cast(?SERVER, {log, Env}).
 
 start(Env, C) ->
-    start_link([C#config.algorithm, Env, C#config.world_impl,
-                C#config.log, C#config.animate]).
+    start_link([Env, C]).
 
 stop(EndEnv) ->
     gen_server:call(?SERVER, {stop, EndEnv}, infinity).
@@ -62,16 +61,11 @@ stop(EndEnv) ->
 %%                     {stop, Reason}
 %% @end
 %%--------------------------------------------------------------------
-init([Algorithm, Env, WorldImpl]) ->
-    init([Algorithm, Env, WorldImpl, false, true]);
-init([Algorithm, Env, WorldImpl, Log]) ->
-    init([Algorithm, Env, WorldImpl, Log, true]);
-init([Algorithm, Env, WorldImpl, Log, Animate]) ->
-    print(Algorithm, Env, WorldImpl, 1),
-    {ok, #state{algorithm = Algorithm,
-                log = Log,
-                world_impl = WorldImpl,
-                animate = Animate,
+init([Env, Config]) ->
+    print(Env, Config, 1),
+    {ok, #state{log = Config#config.log,
+                config = Config,
+                animate = Config#config.animate,
                 env = Env}}.
 
 %%--------------------------------------------------------------------
@@ -89,7 +83,7 @@ init([Algorithm, Env, WorldImpl, Log, Animate]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({stop, Env}, _From, State) ->
-    print(State#state.algorithm, Env, State#state.world_impl, State#state.step),
+    print(Env, State#state.config, State#state.step),
     {stop, normal, ok, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -108,8 +102,7 @@ handle_call(_Request, _From, State) ->
 handle_cast({log, Env}, S = #state{log = false}) ->
     noreply_log(S#state{env = Env});
 handle_cast({log, Env}, S) ->
-    log(S#state.algorithm, Env, S#state.world_impl,
-        S#state.step, S#state.animate),
+    log(Env, S#state.config, S#state.step, S#state.animate),
     noreply_log(S#state{env = Env});
 handle_cast(_Msg, S) ->
     {noreply, S}.
@@ -166,24 +159,26 @@ overwrite_display(true, Height) ->
 overwrite_display(false, _) ->
     ok.
 
--spec log(algorithm(), environment(), world_impl(), pos_integer(), boolean()) ->
-                 ok.
-log(Algorithm, Env, WorldImpl, Step, Animate) ->
+-spec log(environment(), config(), pos_integer(), boolean()) -> ok.
+log(Env = #env{world = W}, Config, Step, Animate) ->
     io:format("Step ~p:~n", [Step + 1]),
     %% algorithm:display(Algorithm, Env, WorldImpl),
-    io:format("Agents:~n~p~n",[lists:sort(Env#env.agents)]),
+    %% io:format("Agents:~n~p~n",[lists:sort(Env#env.agents)]),
+    #world{w = Width, h = Height} = W,
+    graphics:print(Env, Width, Height, Config),
     timer:sleep(?LOG_DELAY),
     overwrite_display(Animate, get_height(Env)).
 
--spec print(algorithm(), environment(), world_impl(), pos_integer()) -> ok.
-print(Algorithm, E = #env{world = W}, WorldImpl, Steps) ->
-    #world{w = Width} = W,
+-spec print(environment(), config(), pos_integer()) -> ok.
+print(E = #env{world = W}, Config, Steps) ->
+    #world{w = Width, h = Height} = W,
     case Width < ?MAX_WIDTH_TO_SHOW of
         true ->
             %% io:format("Ants: ~p~n", [E#env.agents]),
             io:format("Step ~p:~n", [Steps]), %%,
             %% algorithm:display(Algorithm, E, WorldImpl)
-            io:format("Agents:~n~p~n",[lists:sort(E#env.agents)]);
+            %% io:format("Agents:~n~p~n",[lists:sort(E#env.agents)]);
+            graphics:print(E, Width, Height, Config);
         false -> ok
     end.
 
