@@ -36,6 +36,10 @@ step(T, MaxT, Env, Config) ->
 
     %% Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
     %% NewEnv = parallant:apply_moves(Moves, Env, Config),
-    NewEnv = parallant:move_all(Env#env{agents = Ants}, Config),
+    NewEnv = parallant:move_all(Env#env{agents = shuffle(Ants)}, Config),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Config).
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

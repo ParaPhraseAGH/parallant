@@ -16,18 +16,33 @@ create_ants(PopulationSize, Width, Height, Config) ->
 
 -spec get_agent(position(), environment(), config()) -> ant_state().
 get_agent(Position, Env, _Config) ->
-    hd([State || #ant{pos = Pos, state = State} <- Env#env.agents,
-                 Pos == Position]).
+    Filtered = [State || #ant{pos = Pos, state = State} <- Env#env.agents,
+                         Pos == Position],
+    case Filtered of
+        [] ->
+            empty;
+        _ ->
+            hd(Filtered)
+    end.
 
 -spec update_agent(position(), ant_state(), environment(), config()) ->
                           environment().
-update_agent(Position, NewState, Env, _Config) ->
+update_agent(Position, empty, Env, _Config) ->
+    Filtered = [A || A = #ant{pos = Pos} <- Env#env.agents, Pos /= Position],
+    Env#env{agents = Filtered};
+update_agent(Position, NewState, Env, Config) ->
     Update = fun (A = #ant{pos = Pos})
                    when Pos == Position ->
                      A#ant{state = NewState};
                  (A) -> A
              end,
-    Env#env{agents = lists:map(Update, Env#env.agents)}.
+    case get_agent(Position, Env, Config) of
+        empty ->
+            NewAgent = #ant{pos = Position, state = NewState},
+            Env#env{agents = [NewAgent | Env#env.agents]};
+        _ ->
+            Env#env{agents = lists:map(Update, Env#env.agents)}
+    end.
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->

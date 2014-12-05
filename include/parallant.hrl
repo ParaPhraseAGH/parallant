@@ -32,7 +32,7 @@
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 -type direction() :: north | south | east | west.
--type ant_state() :: direction().
+-type ant_state() :: direction() | empty.
 -type model() :: 'model'.
 -type cell() :: {dead} | {alive}.
 -type ant() :: #ant{}.
