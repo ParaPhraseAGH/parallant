@@ -8,10 +8,7 @@
 
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->
-    Pop = model:initial_population(PopulationSize,
-                                           Width,
-                                           Height,
-                                           Config),
+    Pop = model:initial_population(PopulationSize, Width, Height, Config),
     [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
 
 -spec get_agent(position(), environment(), config()) -> ant_state().
@@ -21,8 +18,8 @@ get_agent(Position, Env, _Config) ->
     case Filtered of
         [] ->
             empty;
-        _ ->
-            hd(Filtered)
+        [Agent] ->
+            Agent
     end.
 
 -spec update_agent(position(), ant_state(), environment(), config()) ->
