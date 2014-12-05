@@ -10,7 +10,7 @@ Height=${2:-$DefaultHeight}
 Ants=${3:-$DefaultAnts}
 Steps=${4:-$DefaultSteps}
 
-algorithms="parallant_seq parallant_tiled"
+algorithms="parallant_seq" # parallant_tiled
 world_impls="list_based gbtree_based"
 ants_impls="ants" # ants_gbt
 models="model_langton model_forams"

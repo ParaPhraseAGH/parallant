@@ -2,18 +2,11 @@
 
 -include("parallant.hrl").
 
--export([initial_cell_state/1,
-         random_ant_state/1,
-         initial_population/4,
-         get_move/3,
+-export([initial_population/4,
          get_agent_char/2,
-         move/3,
-         update_cell/2]).
+         move/3]).
 
 % callbacks
-
--callback get_move(ant(), environment(), config()) ->
-    {ant(), ant()}.
 
 -callback initial_population(PopulationSize :: pos_integer(),
                              Width :: dimension(),
@@ -21,8 +14,6 @@
                              Config :: config()) ->
     [{position(), ant_state()}].
 
--callback update_cell(cell()) ->
-     cell().
 
 -callback move(ant(), environment(), config()) ->
     environment().
@@ -30,26 +21,7 @@
 -callback get_agent_char(ant_state(), config()) ->
     char().
 
-
--spec initial_cell_state(config()) -> cell().
-initial_cell_state(Config) ->
-    Model = Config#config.model,
-    Model:initial_cell_state().
-
--spec random_ant_state(config()) -> ant_state().
-random_ant_state(Config) ->
-    Model = Config#config.model,
-    Model:random_ant_state().
-
--spec update_cell(cell(), config()) -> cell().
-update_cell(CellState, Config) ->
-    Model = Config#config.model,
-    Model:update_cell(CellState).
-
--spec get_move(ant(), environment(), config()) -> {ant(), ant()}.
-get_move(A, E, Config) ->
-    Model = Config#config.model,
-    Model:get_move(A, E, Config).
+% API
 
 -spec initial_population(PopulationSize :: pos_integer(),
                          Width :: dimension(),
@@ -57,15 +29,21 @@ get_move(A, E, Config) ->
                          Config :: config()) ->
                                 [{position(), ant_state()}].
 initial_population(PopulationSize, Width, Height, Config) ->
-    Model = Config#config.model,
+    Model = get_model(Config),
     Model:initial_population(PopulationSize, Width, Height, Config).
 
 -spec move(ant(), environment(), config()) -> environment().
 move(A, E, Config) ->
-    Model = Config#config.model,
+    Model = get_model(Config),
     Model:move(A, E, Config).
 
 -spec get_agent_char(ant_state(), config()) -> char().
 get_agent_char(State, Config) ->
-    Model = Config#config.model,
+    Model = get_model(Config),
     Model:get_agent_char(State, Config).
+
+%% internal
+
+-spec get_model(config()) -> model().
+get_model(Config) ->
+    Config#config.model.

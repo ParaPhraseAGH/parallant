@@ -39,5 +39,9 @@ update_agent(Position, NewState, Env, Config) ->
 -spec partition(environment(), pos_integer(), pos_integer(), config()) ->
                        [[ant()]].
 partition(Env, NColours, NParts, Config) ->
-    Impl = Config#config.ants_impl,
+    Impl = get_impl(Config),
     Impl:partition(Env, NColours, NParts).
+
+-spec get_impl(config()) -> ants_impl().
+get_impl(Config) ->
+    Config#config.ants_impl.

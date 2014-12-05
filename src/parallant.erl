@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([move_all/2, get_moves/2, apply_moves/3]).
+-export([move_all/2]).
 
 -include("parallant.hrl").
 
@@ -39,12 +39,10 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, list_based},
                                         {log, Log}]),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, gbtree_based},
                                         {log, Log}]).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
@@ -74,11 +72,6 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
-%% -spec get_cell(world_impl(), position(), world()) -> cell().
-%% get_cell(Impl, {X, Y}, World) ->
-%%     %% TODO get cell from
-%%     world_impl:get_cell(Impl, {X, Y}, World).
-
 -spec move_all(environment(), config()) -> environment().
 move_all(Env, Config) ->
     MoveAgent = fun (Agent, E) ->
@@ -88,28 +81,18 @@ move_all(Env, Config) ->
                 end,
     lists:foldl(MoveAgent, Env, Env#env.agents).
 
--spec get_moves(environment(), config()) -> [{Old :: ant(), New :: ant()}].
-get_moves(E = #env{agents = Agents}, Config) ->
-    [model:get_move(A, E, Config) || A <- Agents].
-
--spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
-apply_moves(Moves, Env, Config) ->
-    ApplyMove = fun (Move, E) -> ants_impl:apply_move(Move, E, Config) end,
-    lists:foldl(ApplyMove, Env, Moves).
-
 % internal functions
 
 create_ants(PopSize, W, H, Config) ->
     ants_impl:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, _Config)->
-    Board = nothing, %% world_impl:create_board(W, H, Config),
+    Board = nothing,
     #world{board = Board, w = W, h = H}.
 
 create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),
             ?LOAD(algorithm, ConfigProps, parallant_seq),
-            ?LOAD(world_impl, ConfigProps, gbtree_based),
             ?LOAD(ants_impl, ConfigProps, ants),
             ?LOAD(log, ConfigProps, true),
             ?LOAD(animate, ConfigProps, true)}.

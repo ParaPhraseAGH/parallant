@@ -4,10 +4,8 @@
 -include("parallant.hrl").
 
 -export([initial_population/4,
-         get_move/3,
          move/3,
-         get_agent_char/2,
-         update_cell/1]).
+         get_agent_char/2]).
 
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
@@ -81,7 +79,6 @@ update_cell({alive}) -> {dead}.
 move_agent(Ant = #ant{state = {empty, _Cell}}, #env{}, _C) ->
     Ant;
 move_agent(#ant{pos = Pos, state = {Dir, {Cell}}}, #env{world = World}, _C) ->
-    %% {AgentCellState} = world_impl:get_cell(C#config.world_impl, Pos, World),
     NewDir = turn(Dir, Cell),
     NewPos = forward(Pos, NewDir, World),
     #ant{pos = NewPos, state = {NewDir, {Cell}}}.
