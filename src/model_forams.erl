@@ -59,7 +59,7 @@ move(Pos, E, Config) ->
     NewEnv.
 
 -spec neighbours_4(position(), dimension(), dimension()) -> [position()].
-neighbours_4({X,Y}, W, H) ->
+neighbours_4({X, Y}, W, H) ->
     [{torus_bounds(X+1, W), Y},
      {torus_bounds(X-1, W), Y},
      {X, torus_bounds(Y+1, H)},

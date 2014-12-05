@@ -142,6 +142,4 @@ ant_char(south) -> $v.
 
 -spec cell_char(cell()) -> char().
 cell_char({alive}) -> $o;
-cell_char({dead}) -> $.;
-cell_char({I}) -> I;
-cell_char(_V) -> _V.
+cell_char({dead}) -> $..
