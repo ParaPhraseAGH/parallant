@@ -77,7 +77,7 @@ move_all(Env, Config) ->
     MoveAgent = fun (Agent, E) ->
                         %% Move = model:get_move(Agent, E, Config),
                         %% ants_impl:apply_move(Move, E, Config)
-                        model:move(Agent, E, Config)
+                        model:move(Agent#ant.pos, E, Config)
                 end,
     lists:foldl(MoveAgent, Env, Env#env.agents).
 

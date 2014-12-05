@@ -47,11 +47,12 @@ initial_cell_state() ->
 random_ant_state() ->
     random_direction().
 
--spec move(ant(), environment(), config()) -> environment().
-move(A, E, Config) ->
+-spec move(position(), environment(), config()) -> environment().
+move(Position, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% langton's ant
+    A = #ant{pos = Position, state = ants_impl:get_agent(Position, E, Config)},
     {Old, New} = get_move(A, E, Config),
     #ant{pos = OPos, state = {ODir, OCell}} = Old,
     #ant{pos = NPos, state = {NDir, _}} = New,

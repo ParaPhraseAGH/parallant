@@ -15,7 +15,7 @@
     [{position(), ant_state()}].
 
 
--callback move(ant(), environment(), config()) ->
+-callback move(position(), environment(), config()) ->
     environment().
 
 -callback get_agent_char(ant_state(), config()) ->
@@ -32,10 +32,10 @@ initial_population(PopulationSize, Width, Height, Config) ->
     Model = get_model(Config),
     Model:initial_population(PopulationSize, Width, Height, Config).
 
--spec move(ant(), environment(), config()) -> environment().
-move(A, E, Config) ->
+-spec move(position(), environment(), config()) -> environment().
+move(Pos, E, Config) ->
     Model = get_model(Config),
-    Model:move(A, E, Config).
+    Model:move(Pos, E, Config).
 
 -spec get_agent_char(ant_state(), config()) -> char().
 get_agent_char(State, Config) ->

@@ -27,13 +27,12 @@ shuffle(L) ->
     [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 
--spec move(ant(), environment(), config()) -> environment().
-move(A, E, Config) ->
+-spec move(position(), environment(), config()) -> environment().
+move(Pos, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% algae dispersion
     #env{world = #world{w = W, h = H}} = E,
-    Pos = A#ant.pos,
     UpdateNeighbour =
         fun(NPos, Env) ->
                 Neighbour = ants_impl:get_agent(NPos, Env, Config),
