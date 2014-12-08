@@ -2,6 +2,8 @@
 
 -export([create_ants/4, partition/4, get_agent/3, update_agent/4]).
 
+-type ant_state() :: parallant:ant_state().
+
 -include("parallant.hrl").
 
 

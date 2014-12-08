@@ -1,10 +1,11 @@
 -module(ants).
-
--include("parallant.hrl").
-
 -behaviour(ants_impl).
 
 -export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
+
+-type ant_state() :: parallant:ant_state().
+
+-include("parallant.hrl").
 
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->

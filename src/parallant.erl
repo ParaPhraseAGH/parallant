@@ -11,6 +11,11 @@
 -export([test/0, test/1, test/4, start/3, start/5]).
 -export([move_all/2]).
 
+-export_type([ant_state/0, ant_state/1]).
+
+-type ant_state(Any) :: Any.
+-type ant_state() :: empty | ant_state(any()).
+
 -include("parallant.hrl").
 
 -define(LOAD(Attribute, Proplist, Default),
@@ -54,10 +59,10 @@ start(Width, Height, Steps) ->
 start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
 
-    Board = create_world(Width, Height, Config),
+    World = create_world(Width, Height, Config),
     Ants = create_ants(PopulationSize, Width, Height, Config),
     Env = #env{agents = Ants,
-               world = Board},
+               world = World},
 
     logger:start(Env, Config),
     T1 = erlang:now(),
@@ -87,8 +92,7 @@ create_ants(PopSize, W, H, Config) ->
     ants_impl:create_ants(PopSize, W, H, Config).
 
 create_world(W, H, _Config)->
-    Board = nothing,
-    #world{board = Board, w = W, h = H}.
+    #world{w = W, h = H}.
 
 create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),

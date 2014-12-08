@@ -7,8 +7,12 @@
          move/3,
          get_agent_char/2]).
 
--type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 -type cell_state() :: dead | alive.
+-type cell() :: {cell_state()}.
+-type direction() :: north | south | east | west.
+-type langton_agent_state() :: {direction(), cell()}.
+-type ant_state() :: parallant:ant_state(langton_agent_state()).
+-type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 
 % model specific functions
 -spec initial_population(PopulationSize :: pos_integer(),
@@ -43,7 +47,7 @@ shuffle(L) ->
 initial_cell_state() ->
     {dead}.
 
--spec random_ant_state() -> ant_state().
+-spec random_ant_state() -> direction().
 random_ant_state() ->
     random_direction().
 
@@ -134,7 +138,7 @@ get_agent_char({empty, CellState}, _Config) ->
 get_agent_char({Dir, _}, _Config) ->
     ant_char(Dir).
 
--spec ant_char(ant_state()) -> char().
+-spec ant_char(direction()) -> char().
 ant_char(west) -> $<;
 ant_char(east) -> $>;
 ant_char(north) -> $^;

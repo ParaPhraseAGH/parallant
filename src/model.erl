@@ -1,10 +1,12 @@
 -module(model).
 
--include("parallant.hrl").
-
 -export([initial_population/4,
          get_agent_char/2,
          move/3]).
+
+-type ant_state() :: parallant:ant_state().
+
+-include("parallant.hrl").
 
 % callbacks
 

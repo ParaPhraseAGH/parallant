@@ -7,6 +7,10 @@
          move/3,
          get_agent_char/2]).
 
+-type algae_level() :: non_neg_integer().
+-type foram_agent_state() :: {algae_level()}.
+-type ant_state() :: parallant:ant_state(foram_agent_state()).
+
 -spec initial_population(PopulationSize :: pos_integer(),
                          Width :: dimension(),
                          Height :: dimension(),
@@ -78,7 +82,7 @@ get_agent_char(empty, _Config) ->
 get_agent_char({Level}, _Config) ->
     algae_char(Level).
 
--spec algae_char(pos_integer()) -> char().
+-spec algae_char(algae_level()) -> char().
 algae_char(Level) when Level > 9 ->
     $#;
 algae_char(Level) ->
