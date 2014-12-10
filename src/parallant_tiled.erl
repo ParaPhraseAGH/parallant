@@ -67,17 +67,21 @@ poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
     poolboy:transaction(Pool, mk_worker(Caller, Agents, Env, Config)).
 
 
-mk_worker(Caller, {_Tile, Agents}, Env, Config) ->
+mk_worker(Caller, {Tile, Agents}, Env, Config) ->
     fun (Worker) ->
-            Result = tile_worker:move_all(Worker, shuffle(Agents), Env, Config),
-            Caller ! {agents, Result}
+            Shuffled = shuffle(Agents),
+            Result = tile_worker:move_all(Worker,
+                                          {Tile, Shuffled},
+                                          Env,
+                                          Config),
+            Caller ! {agents, {Tile, Result}}
     end.
 
 
 collect_results(Args) ->
     lists:map(fun (_) ->
                       receive
-                          {agents, Result} -> Result
+                          {agents, R} -> R
                       end
               end, Args).
 
