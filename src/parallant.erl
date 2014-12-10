@@ -9,7 +9,12 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([get_cell/3, get_moves/2, apply_moves/3]).
+-export([move_all/2]).
+
+-export_type([ant_state/0, ant_state/1]).
+
+-type ant_state(Any) :: Any.
+-type ant_state() :: empty | ant_state(any()).
 
 -include("parallant.hrl").
 
@@ -39,12 +44,10 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
     io:format("ListBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, list_based},
                                         {log, Log}]),
     io:format("Gb_treeBased:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {world_impl, gbtree_based},
                                         {log, Log}]).
 
 -spec start(dimension(), dimension(), pos_integer()) -> ok.
@@ -56,10 +59,10 @@ start(Width, Height, Steps) ->
 start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
 
-    Board = create_world(Width, Height, Config),
+    World = create_world(Width, Height, Config),
     Ants = create_ants(PopulationSize, Width, Height, Config),
     Env = #env{agents = Ants,
-               world = Board},
+               world = World},
 
     logger:start(Env, Config),
     T1 = erlang:now(),
@@ -74,32 +77,26 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
--spec get_cell(world_impl(), position(), world()) -> cell().
-get_cell(Impl, {X, Y}, World) ->
-    world_impl:get_cell(Impl, {X, Y}, World).
-
--spec get_moves(environment(), config()) -> [{Old :: ant(), New :: ant()}].
-get_moves(E = #env{agents = Agents}, Config) ->
-    [model:get_move(A, E, Config) || A <- Agents].
-
--spec apply_moves([{ant(), ant()}], environment(), config()) -> environment().
-apply_moves(Moves, Env, Config) ->
-    ApplyMove = fun (Move, E) -> ants:apply_move(Move, E, Config) end,
-    lists:foldl(ApplyMove, Env, Moves).
+-spec move_all(environment(), config()) -> environment().
+move_all(Env, Config) ->
+    MoveAgent = fun (Agent, E) ->
+                        %% Move = model:get_move(Agent, E, Config),
+                        %% ants_impl:apply_move(Move, E, Config)
+                        model:move(Agent#ant.pos, E, Config)
+                end,
+    lists:foldl(MoveAgent, Env, Env#env.agents).
 
 % internal functions
 
 create_ants(PopSize, W, H, Config) ->
-    %% Model = Config#config.model,
-    ants:create_ants(PopSize, W, H, Config).
+    ants_impl:create_ants(PopSize, W, H, Config).
 
-create_world(W, H, Config)->
-    Board = world_impl:create_board(W, H, Config),
-    #world{board = Board, w = W, h = H}.
+create_world(W, H, _Config)->
+    #world{w = W, h = H}.
 
 create_config(ConfigProps) ->
-    #config{?LOAD(model, ConfigProps, model),
+    #config{?LOAD(model, ConfigProps, model_langton),
             ?LOAD(algorithm, ConfigProps, parallant_seq),
-            ?LOAD(world_impl, ConfigProps, gbtree_based),
+            ?LOAD(ants_impl, ConfigProps, ants),
             ?LOAD(log, ConfigProps, true),
             ?LOAD(animate, ConfigProps, true)}.

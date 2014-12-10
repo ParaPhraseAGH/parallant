@@ -1,33 +1,46 @@
 -module(ants).
+-behaviour(ants_impl).
+
+-export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
+
+-type ant_state() :: parallant:ant_state().
 
 -include("parallant.hrl").
 
--export([create_ants/4, apply_move/3, partition/3]).
-
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
 create_ants(PopulationSize, Width, Height, Config) ->
-    AllPositions = [{I, J} || I <- lists:seq(1, Width),
-                              J <- lists:seq(1, Height)],
-    ShuffledCellPositions = shuffle(AllPositions),
-    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    [#ant{pos = Pos, state = model:random_ant_state(Config)}
-     || Pos <- AntPositions].
+    Pop = model:initial_population(PopulationSize, Width, Height, Config),
+    [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
 
--spec apply_move({ant(), ant()}, environment(), config()) -> environment().
-apply_move({Old, New}, E, Config) ->
-    IsPosTaken = fun(#ant{pos = P}) -> P == New#ant.pos end,
-    case lists:any(IsPosTaken, E#env.agents) of
-        true ->
-            E;
-        false ->
-            NewAgents = [A || A <- E#env.agents, A#ant.pos /= Old#ant.pos],
-            update_cell(Old#ant.pos, E#env{agents = [New | NewAgents]}, Config)
+-spec get_agent(position(), environment(), config()) -> ant_state().
+get_agent(Position, Env, _Config) ->
+    Filtered = [State || #ant{pos = Pos, state = State} <- Env#env.agents,
+                         Pos == Position],
+    case Filtered of
+        [] ->
+            empty;
+        [Agent] ->
+            Agent
     end.
 
--spec update_cell(position(), environment(), config()) -> environment().
-update_cell(Pos, E = #env{world = World}, Config) ->
-    E#env{world = world_impl:update_cell(Pos, World, Config)}.
-
+-spec update_agent(position(), ant_state(), environment(), config()) ->
+                          environment().
+update_agent(Position, empty, Env, _Config) ->
+    Filtered = [A || A = #ant{pos = Pos} <- Env#env.agents, Pos /= Position],
+    Env#env{agents = Filtered};
+update_agent(Position, NewState, Env, Config) ->
+    Update = fun (A = #ant{pos = Pos})
+                   when Pos == Position ->
+                     A#ant{state = NewState};
+                 (A) -> A
+             end,
+    case get_agent(Position, Env, Config) of
+        empty ->
+            NewAgent = #ant{pos = Position, state = NewState},
+            Env#env{agents = [NewAgent | Env#env.agents]};
+        _ ->
+            Env#env{agents = lists:map(Update, Env#env.agents)}
+    end.
 
 -spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
 partition(Env, 1, 1) ->
@@ -63,8 +76,3 @@ group_by_colour(Tiles, N) ->
                              I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
-
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

@@ -10,20 +10,13 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0,
-         display/2,
-         run/3,
-         poolboy_transaction/5]).
+-export([test/0, run/3, poolboy_transaction/5]).
 
 -include("parallant.hrl").
 
 -spec test() -> ok.
 test() ->
     parallant:test(?MODULE).
-
--spec display(environment(), world_impl()) -> ok.
-display(E = #env{agents = Ants}, WorldImpl) when is_list(Ants) ->
-    WorldImpl:display(Ants, E#env.world).
 
 -spec run(pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
@@ -39,7 +32,7 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
     NParts = 4, % TODO move to config
-    Partitioned = ants:partition(Env, NColours, NParts),
+    Partitioned = ants_impl:partition(Env, NColours, NParts, Config),
 
     ProcessTile =
         fun(Tile, E) ->

@@ -9,35 +9,28 @@
 -author("piotr").
 
 -record(ant, {pos :: position(),
-              state :: ant_state()}).
+              state :: parallant:ant_state()}).
 
--record(world, {board :: board(),
-                w :: dimension(),
+-record(world, {w :: dimension(),
                 h :: dimension()}).
 
--record(env, {
-          agents :: [ant()],
-          world :: world()
-         }).
+-record(env, {agents :: [ant()],
+              world :: world()}).
 
--record(config, {
-          world_impl :: world_impl(),
-          model :: model(),
-          algorithm  :: algorithm(),
-          log :: boolean(),
-          animate :: boolean()
-         }).
+-record(config, {ants_impl :: ants_impl(),
+                 model :: model(),
+                 algorithm  :: algorithm(),
+                 log :: boolean(),
+                 animate :: boolean()}).
+
+-type ant() :: #ant{}.
+-type world() :: #world{}.
+-type environment() :: #env{}.
+-type config() :: #config{}.
 
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
--type direction() :: north | south | east | west.
--type ant_state() :: direction().
--type model() :: 'model'.
--type cell() :: {dead} | {alive}.
--type ant() :: #ant{}.
--type board() :: [cell()] | gb_trees:tree().
--type world() :: #world{}.
+
 -type algorithm() :: parallant_seq | parallant_tiled.
--type world_impl() :: list_based | gbtree_based.
--type environment() :: #env{}.
--type config() :: #config{}.
+-type model() :: model_langton | model_forams.
+-type ants_impl() :: ants | ants_gbt.
