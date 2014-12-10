@@ -41,11 +41,6 @@ step(T, MaxT, Env, Pool, Config) ->
                              end,
                 lists:map(SendToWork, Colour),
                 NewEnvs = collect_results(Colour),
-                %% io:format("~nColour: ~p~n",[Colour]),
-                %% io:format("~nUpdated: ~p~n",[NewEnvs]),
-                %% apply updated environments for every agent
-                %% in the tile and its neighbourhood
-                %% parallant:apply_moves(Moves, E, Config)
                 ApplyEnv = mk_apply_env(Config),
                 lists:foldl(ApplyEnv, E, NewEnvs)
         end,
@@ -54,17 +49,13 @@ step(T, MaxT, Env, Pool, Config) ->
     step(T+1, MaxT, NewEnv, Pool, Config).
 
 mk_apply_env(Config) ->
-     fun({Tile, NewEnv}, EAcc) ->
-             %% for every agent from tile in env,
-             %% apply its state to the accumulated E
+     fun({Tile, TileEnv}, EAcc) ->
              UpdateAgent =
                  fun(Pos, EAcc2) ->
-                         NewState = ants_impl:get_agent(Pos, NewEnv, Config),
-                         %% io:format("move pos:~p ~p~n", [Pos, NewState]),
+                         NewState = ants_impl:get_agent(Pos, TileEnv, Config),
                          ants_impl:update_agent(Pos, NewState, EAcc2, Config)
                  end,
-             Neighbours = ants_impl:neighbourhood(Tile, NewEnv, Config),
-             %% io:format("~nTile ~p~n, Neigh: ~p~n", [Tile, Neighbours]),
+             Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
              lists:foldl(UpdateAgent, EAcc, Neighbours)
      end.
 
