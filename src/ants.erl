@@ -1,10 +1,15 @@
 -module(ants).
 -behaviour(ants_impl).
 
--export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
+-export([create_ants/4,
+         partition/3,
+         get_agent/3,
+         update_agent/4,
+         group_by/1,
+         neighbourhood/2]).
 
 -type ant_state() :: parallant:ant_state().
--type tile() :: {Start :: dimension(), End :: dimension()}.
+-type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
 
 -include("parallant.hrl").
 
@@ -78,3 +83,18 @@ group_by_colour(Tiles, N) ->
                              I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
+
+-spec neighbourhood(tile(), environment()) -> [position()].
+neighbourhood(Tile, #env{world = #world{w = W, h = H}}) ->
+    {Start, End} = Tile,
+    R = 1,
+    Xs = lists:seq(Start, End) ++ [torus_bounds(Start - R, W),
+                                   torus_bounds(End + R, W)],
+    [{I, J} || I <- Xs, J <- lists:seq(1, H)].
+
+torus_bounds(X, Max) when X > Max ->
+    X - Max;
+torus_bounds(X, Max) when X < 1 ->
+    X + Max;
+torus_bounds(X, _Max) ->
+    X.
