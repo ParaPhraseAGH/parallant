@@ -34,23 +34,39 @@ step(T, MaxT, Env, Pool, Config) ->
     NParts = 2, % TODO move to config
     Partitioned = ants_impl:partition(Env, NColours, NParts, Config),
 
-    ProcessTile =
-        fun(Tile, E) ->
+    ProcessColour =
+        fun(Colour, E) ->
                 SendToWork = fun(Agents) ->
                                      send_to_work(Pool, Agents, E, Config)
                              end,
-                lists:map(SendToWork, Tile),
-                UpdatedEnvs = collect_results(Tile),
-                %% io:format("~nTile: ~p~n",[Tile]),
-                %% io:format("~nUpdated: ~p~n",[UpdatedEnvs]),
+                lists:map(SendToWork, Colour),
+                NewEnvs = collect_results(Colour),
+                %% io:format("~nColour: ~p~n",[Colour]),
+                %% io:format("~nUpdated: ~p~n",[NewEnvs]),
                 %% apply updated environments for every agent
                 %% in the tile and its neighbourhood
                 %% parallant:apply_moves(Moves, E, Config)
-                E
+                ApplyEnv = mk_apply_env(Config),
+                lists:foldl(ApplyEnv, E, NewEnvs)
         end,
-    NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
+    NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Pool, Config).
+
+mk_apply_env(Config) ->
+     fun({Tile, NewEnv}, EAcc) ->
+             %% for every agent from tile in env,
+             %% apply its state to the accumulated E
+             UpdateAgent =
+                 fun(Pos, EAcc2) ->
+                         NewState = ants_impl:get_agent(Pos, NewEnv, Config),
+                         %% io:format("move pos:~p ~p~n", [Pos, NewState]),
+                         ants_impl:update_agent(Pos, NewState, EAcc2, Config)
+                 end,
+             Neighbours = ants_impl:neighbourhood(Tile, NewEnv, Config),
+             %% io:format("~nTile ~p~n, Neigh: ~p~n", [Tile, Neighbours]),
+             lists:foldl(UpdateAgent, EAcc, Neighbours)
+     end.
 
 send_to_work(Pool, Agents, Env, Config) ->
     proc_lib:spawn_link(?MODULE,
