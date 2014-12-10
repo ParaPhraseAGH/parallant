@@ -1,6 +1,6 @@
 # parallant #
 
-[![Build Status](https://secure.travis-ci.org/ParaPhraseAGH/parallant.svg?branch=gb_trees "Build Status")](http://travis-ci.org/ParaPhraseAGH/parallant)
+[![Build Status](https://secure.travis-ci.org/ParaPhraseAGH/parallant.svg?branch=master "Build Status")](http://travis-ci.org/ParaPhraseAGH/parallant)
 
 ### Compilation ###
 
