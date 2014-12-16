@@ -43,6 +43,11 @@ Therefore, you need to implement three callback functions:
 * `move/3` - takes a position of a current agent and current environment and returns updated environment
 * `get_agent_char/2` - takes an agent state and returns a character that represents this agent on the displayed grid.
 
+Current agents' states can be fetched and updated by means of functions from the `ants_impl` module:
+* `ants_impl:get_agent/3` - returns current agent state on given position or `empty` if there is no agent on this position
+* `ants_impl:update_agent/4` - updates given position with given agent state; pass empty as the agent_state to delete the agent; returns updated environment
+
+
 Examples of this behaviour: `model_langton`, `model_forams`
 
 In order to run it, you should provide the name of your module in the `Options` proplist. e.g. `[{model, my_custom_model}]`.
