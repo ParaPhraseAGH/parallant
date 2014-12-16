@@ -11,6 +11,7 @@
 -behaviour(algorithm).
 %% API
 -export([test/0, run/3, poolboy_transaction/5]).
+-type tile() :: ants_impl:tile().
 
 -include("parallant.hrl").
 
@@ -65,7 +66,7 @@ send_to_work(Pool, Agents, Env, Config) ->
                         [Pool, Agents, _Caller = self(), Env, Config]).
 
 -spec poolboy_transaction(poolboy:pool(),
-                          [ant()],
+                          {tile(), [ant()]},
                           pid(),
                           environment(),
                           config()) -> any().

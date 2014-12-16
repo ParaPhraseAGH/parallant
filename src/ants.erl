@@ -49,9 +49,9 @@ update_agent(Position, NewState, Env, Config) ->
     end.
 
 -spec partition(environment(), pos_integer(), pos_integer()) ->
-                       [{tile(), [ant()]}].
+                       [[{tile(), [ant()]}]].
 partition(Env, 1, 1) ->
-    [{unique, Env#env.agents}];
+    [[{unique, Env#env.agents}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,

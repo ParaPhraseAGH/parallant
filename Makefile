@@ -36,6 +36,7 @@ compile:
 
 test: all
 	./test.sh
+	make dialyzer
 
 clean:
 	$(REBAR) clean skip_deps=true
