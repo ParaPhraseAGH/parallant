@@ -67,6 +67,9 @@ move(Position, E, Config) ->
             E1 = ants_impl:update_agent(NPos, {NDir, CellState}, E, Config),
             OldState = {empty, update_cell(OCell)},
             ants_impl:update_agent(OPos, OldState, E1, Config);
+        {_, empty} ->
+            io:format("no agent on pos: ~p~n", [Position]),
+            E;
         {_, _} ->
             E
     end.

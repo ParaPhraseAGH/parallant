@@ -1,8 +1,13 @@
 -module(ants_impl).
 
 -export([create_ants/4, partition/4, get_agent/3, update_agent/4]).
+-export([neighbourhood/3]).
+
+-export_type([tile/1, tile/0]).
 
 -type ant_state() :: parallant:ant_state().
+-type tile(Any) :: Any.
+-type tile() :: tile(any()).
 
 -include("parallant.hrl").
 
@@ -19,7 +24,10 @@
 -callback partition(environment(),
                     Colours :: pos_integer(),
                     Parts :: pos_integer()) ->
-    [[ant()]].
+    [[{tile(), [ant()]}]].
+
+-callback neighbourhood(tile(), environment()) ->
+    [position()].
 
 
 -spec create_ants(pos_integer(), dimension(), dimension(), config()) -> [ant()].
@@ -39,10 +47,15 @@ update_agent(Position, NewState, Env, Config) ->
     Impl:update_agent(Position, NewState, Env, Config).
 
 -spec partition(environment(), pos_integer(), pos_integer(), config()) ->
-                       [[ant()]].
+                       [[{tile(), [ant()]}]].
 partition(Env, NColours, NParts, Config) ->
     Impl = get_impl(Config),
     Impl:partition(Env, NColours, NParts).
+
+-spec neighbourhood(tile(), environment(), config()) -> [position()].
+neighbourhood(Tile, Env, Config) ->
+    Impl = get_impl(Config),
+    Impl:neighbourhood(Tile, Env).
 
 -spec get_impl(config()) -> ants_impl().
 get_impl(Config) ->

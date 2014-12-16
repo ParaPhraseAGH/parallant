@@ -11,6 +11,7 @@
 -behaviour(algorithm).
 %% API
 -export([test/0, run/3, poolboy_transaction/5]).
+-type tile() :: ants_impl:tile().
 
 -include("parallant.hrl").
 
@@ -31,46 +32,67 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
     Env;
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
-    NParts = 4, % TODO move to config
+    NParts = 2, % TODO move to config
     Partitioned = ants_impl:partition(Env, NColours, NParts, Config),
 
-    ProcessTile =
-        fun(Tile, E) ->
-                SendToWork =
-                    fun(Agents) ->
-                            send_to_work(Pool, Agents, E, Config)
-                    end,
-                lists:map(SendToWork,
-                          Tile),
-                Moves = collect_results(Tile),
-                parallant:apply_moves(Moves, E, Config)
+    ProcessColour =
+        fun(Colour, E) ->
+                SendToWork = fun(Agents) ->
+                                     send_to_work(Pool, Agents, E, Config)
+                             end,
+                lists:map(SendToWork, Colour),
+                NewEnvs = collect_results(Colour),
+                ApplyEnv = mk_apply_env(Config),
+                lists:foldl(ApplyEnv, E, NewEnvs)
         end,
-    NewEnv = lists:foldl(ProcessTile, Env, Partitioned),
+    NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Pool, Config).
+
+mk_apply_env(Config) ->
+     fun({Tile, TileEnv}, EAcc) ->
+             UpdateAgent =
+                 fun(Pos, EAcc2) ->
+                         NewState = ants_impl:get_agent(Pos, TileEnv, Config),
+                         ants_impl:update_agent(Pos, NewState, EAcc2, Config)
+                 end,
+             Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
+             lists:foldl(UpdateAgent, EAcc, Neighbours)
+     end.
 
 send_to_work(Pool, Agents, Env, Config) ->
     proc_lib:spawn_link(?MODULE,
                         poolboy_transaction,
                         [Pool, Agents, _Caller = self(), Env, Config]).
 
-
+-spec poolboy_transaction(poolboy:pool(),
+                          {tile(), [ant()]},
+                          pid(),
+                          environment(),
+                          config()) -> any().
 poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
-    % TODO do we need transaction at this point?
-    poolboy:transaction(Pool,
-                        mk_worker(Caller, Agents, Env, Config)).
+    %% TODO do we need transaction at this point?
+    poolboy:transaction(Pool, mk_worker(Caller, Agents, Env, Config)).
 
 
-mk_worker(Caller, Agents, Env, Config) ->
+mk_worker(Caller, {Tile, Agents}, Env, Config) ->
     fun (Worker) ->
-            Result = tile_worker:get_moves(Worker, Agents, Env, Config),
-            Caller ! {agents, Result}
+            Shuffled = shuffle(Agents),
+            Result = tile_worker:move_all(Worker,
+                                          {Tile, Shuffled},
+                                          Env,
+                                          Config),
+            Caller ! {agents, {Tile, Result}}
     end.
 
 
 collect_results(Args) ->
-    lists:flatmap(fun (_) ->
-                          receive
-                              {agents, Result} -> Result
-                          end
-                  end, Args).
+    lists:map(fun (_) ->
+                      receive
+                          {agents, R} -> R
+                      end
+              end, Args).
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
