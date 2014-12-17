@@ -9,19 +9,13 @@
 -module(parallant_seq).
 -behaviour(algorithm).
 %% API
--export([test/0, display/2, run/3]).
+-export([test/0, run/3]).
 
 -include("parallant.hrl").
 
 -spec test() -> ok.
 test() ->
     parallant:test(?MODULE).
-
-
--spec display(environment(), world_impl()) -> ok.
-display(Env, WorldImpl) ->
-    world_impl:display(WorldImpl, Env).
-
 
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
@@ -34,9 +28,14 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [AntList] = ants_impl:partition(Env, NColours, NParts, Config),
+    [Ants] = ants_impl:partition(Env, NColours, NParts, Config),
 
-    Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
-    NewEnv = parallant:apply_moves(Moves, Env, Config),
+    %% Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
+    %% NewEnv = parallant:apply_moves(Moves, Env, Config),
+    NewEnv = parallant:move_all(Env#env{agents = shuffle(Ants)}, Config),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Config).
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

@@ -10,21 +10,13 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0,
-         display/2,
-         run/3,
-         poolboy_transaction/5]).
+-export([test/0, run/3, poolboy_transaction/5]).
 
 -include("parallant.hrl").
 
 -spec test() -> ok.
 test() ->
     parallant:test(?MODULE).
-
-
--spec display(environment(), world_impl()) -> ok.
-display(Env, WorldImpl) ->
-    world_impl:display(WorldImpl, Env).
 
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
