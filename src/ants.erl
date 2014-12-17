@@ -1,9 +1,15 @@
 -module(ants).
 -behaviour(ants_impl).
 
--export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
+-export([create_ants/4,
+         partition/3,
+         get_agent/3,
+         update_agent/4,
+         group_by/1,
+         neighbourhood/2]).
 
 -type ant_state() :: parallant:ant_state().
+-type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
 
 -include("parallant.hrl").
 
@@ -46,9 +52,10 @@ update_agent(Position, NewState, Env, Config) ->
             Env#env{agents = lists:map(Update, Env#env.agents)}
     end.
 
--spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
+-spec partition(environment(), pos_integer(), pos_integer()) ->
+                       [[{tile(), [ant()]}]].
 partition(Env, 1, 1) ->
-    [Env#env.agents];
+    [[{unique, Env#env.agents}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
@@ -60,7 +67,7 @@ partition(Env, NColours, NParts) ->
                       end,
     TiledAnts = lists:map(AssignTileToAnt, Env#env.agents),
     TagTiles = group_by(TiledAnts ++ Zeros),
-    Tiles = [T || {_, T} <- TagTiles],
+    Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
 
@@ -80,3 +87,18 @@ group_by_colour(Tiles, N) ->
                              I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
+
+-spec neighbourhood(tile(), environment()) -> [position()].
+neighbourhood(Tile, #env{world = #world{w = W, h = H}}) ->
+    {Start, End} = Tile,
+    R = 1,
+    Xs = lists:seq(Start, End) ++ [torus_bounds(Start - R, W),
+                                   torus_bounds(End + R, W)],
+    [{I, J} || I <- Xs, J <- lists:seq(1, H)].
+
+torus_bounds(X, Max) when X > Max ->
+    X - Max;
+torus_bounds(X, Max) when X < 1 ->
+    X + Max;
+torus_bounds(X, _Max) ->
+    X.

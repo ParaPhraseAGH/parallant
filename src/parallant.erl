@@ -9,7 +9,7 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([move_all/2]).
+-export([move_all/3]).
 
 -export_type([ant_state/0, ant_state/1]).
 
@@ -89,14 +89,12 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
--spec move_all(environment(), config()) -> environment().
-move_all(Env, Config) ->
-    MoveAgent = fun (Agent, E) ->
-                        %% Move = model:get_move(Agent, E, Config),
-                        %% ants_impl:apply_move(Move, E, Config)
-                        model:move(Agent#ant.pos, E, Config)
+-spec move_all([position()], environment(), config()) -> environment().
+move_all(Positions, Env, Config) ->
+    MoveAgent = fun (Pos, E) ->
+                        model:move(Pos, E, Config)
                 end,
-    lists:foldl(MoveAgent, Env, Env#env.agents).
+    lists:foldl(MoveAgent, Env, Positions).
 
 %% internal functions
 
