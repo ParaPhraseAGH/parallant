@@ -53,21 +53,21 @@ update_agent(Position, NewState, Env, Config) ->
     end.
 
 -spec partition(environment(), pos_integer(), pos_integer()) ->
-                       [[{tile(), ants()}]].
+                       [[{tile(), [position()]}]].
 partition(Env, 1, 1) ->
-    [[{unique, Env#env.agents}]];
+    [[{unique, [Pos || #ant{pos = Pos} <- Env#env.agents]}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
     D = round(W/NParts),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAnt = fun(A = #ant{pos={X, _}}) ->
+    AssignTileToAnt = fun(#ant{pos = {X, _} = Pos}) ->
                               ITile = trunc((X-1)/D)*D+1,
-                              {ITile, [A]}
+                              {ITile, [Pos]}
                       end,
     TiledAnts = lists:map(AssignTileToAnt, Env#env.agents),
     TagTiles = group_by(TiledAnts ++ Zeros),
-    Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
+    Tiles = [{{I, I+D-1}, Tile} || {I, Tile} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
 

@@ -27,8 +27,7 @@ init([]) ->
 handle_call(die, _From, State) ->
     {stop, {error, died}, dead, State};
 
-handle_call({move_all, {_Tile, Agents}, Env, Config}, _From, State) ->
-    Positions = [A#ant.pos || A <- Agents],
+handle_call({move_all, {_Tile, Positions}, Env, Config}, _From, State) ->
     Moves = parallant:move_all(Positions, Env, Config),
     {reply, Moves, State}.
 

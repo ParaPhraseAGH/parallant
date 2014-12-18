@@ -28,10 +28,8 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [[{_Tile, Ants}]] = ants_impl:partition(Env, NColours, NParts, Config),
-
-    Positions = shuffle([A#ant.pos || A <- Ants]),
-    NewEnv = parallant:move_all(Positions, Env, Config),
+    [[{_Tile, Positions}]] = ants_impl:partition(Env, NColours, NParts, Config),
+    NewEnv = parallant:move_all(shuffle(Positions), Env, Config),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Config).
 
