@@ -3,9 +3,12 @@
 -export([create_ants/4, partition/4, get_agent/3, update_agent/4]).
 -export([neighbourhood/3]).
 
--export_type([tile/1, tile/0]).
+-export_type([tile/1, tile/0, ants/0, ants/1]).
 
 -type ant_state() :: parallant:ant_state().
+
+-type ants(Any) :: Any.
+-type ants() :: ants(any()).
 -type tile(Any) :: Any.
 -type tile() :: tile(any()).
 
@@ -24,11 +27,11 @@
 -callback partition(environment(),
                     Colours :: pos_integer(),
                     Parts :: pos_integer()) ->
-    [[{tile(), [ant()]}]].
+    [[{tile(), ants()}]].
 
 
 -spec create_ants(PopulationSize :: pos_integer(), Width :: dimension(),
-                  Height :: dimension(), config()) -> [ant()].
+                  Height :: dimension(), config()) -> ants().
 create_ants(PopulationSize, Width, Height, Config) ->
     Impl = Config#config.ants_impl,
     Impl:create_ants(PopulationSize, Width, Height, Config).
@@ -48,7 +51,7 @@ update_agent(Position, NewState, Env, Config) ->
                 NumberOfColours :: pos_integer(),
                 NumberOfParts :: pos_integer(),
                 config()) ->
-                       [[{tile(), [ant()]}]].
+                       [[{tile(), ants()}]].
 partition(Env, NColours, NParts, Config) ->
     Impl = get_impl(Config),
     Impl:partition(Env, NColours, NParts).

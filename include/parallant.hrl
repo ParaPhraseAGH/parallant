@@ -14,10 +14,8 @@
 -record(world, {w :: dimension(),
                 h :: dimension()}).
 
--record(env, {
-          agents :: [ant()] | atom() | gb_trees:tree(),
-          world :: world()
-         }).
+-record(env, {agents :: ants_impl:ants(),
+              world :: world()}).
 
 -record(config, {ants_impl :: ants_impl(),
                  model :: model(),
