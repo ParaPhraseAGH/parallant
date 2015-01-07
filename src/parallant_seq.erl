@@ -29,9 +29,9 @@ step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
     [[{_Tile, Ants}]] = ants_impl:partition(Env, NColours, NParts, Config),
-
     %% Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
     %% NewEnv = parallant:apply_moves(Moves, Env, Config),
+
     Positions = shuffle([A#ant.pos || A <- Ants]),
     NewEnv = parallant:move_all(Positions, Env, Config),
     logger:log(NewEnv),

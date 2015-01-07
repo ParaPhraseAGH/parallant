@@ -11,7 +11,7 @@
     ok.
 
 -callback run(Steps, environment(), config()) -> environment()
-        when Steps :: pos_integer().
+                                                     when Steps :: pos_integer().
 
 %% Exported functions
 

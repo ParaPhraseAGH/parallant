@@ -14,7 +14,7 @@
 -type ant_state() :: parallant:ant_state(langton_agent_state()).
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 
-% model specific functions
+%% model specific functions
 -spec initial_population(PopulationSize :: pos_integer(),
                          Width :: dimension(),
                          Height :: dimension(),
@@ -32,11 +32,11 @@ initial_population(PopulationSize, Width, Height, Config) ->
 
 populate_cell(Pos, Members, _Config) ->
     AntState = case lists:member(ant, Members) of
-                true ->
-                    random_ant_state();
-                _ ->
-                    empty
-            end,
+                   true ->
+                       random_ant_state();
+                   _ ->
+                       empty
+               end,
     {Pos, {AntState, initial_cell_state()}}.
 
 -spec shuffle(list()) -> list().

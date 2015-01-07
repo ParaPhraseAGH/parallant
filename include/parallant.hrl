@@ -15,7 +15,7 @@
                 h :: dimension()}).
 
 -record(env, {
-          agents :: [ant()] | atom(),
+          agents :: [ant()] | atom() | gb_trees:tree(),
           world :: world()
          }).
 

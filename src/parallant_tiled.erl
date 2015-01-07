@@ -50,15 +50,15 @@ step(T, MaxT, Env, Pool, Config) ->
     step(T+1, MaxT, NewEnv, Pool, Config).
 
 mk_apply_env(Config) ->
-     fun({Tile, TileEnv}, EAcc) ->
-             UpdateAgent =
-                 fun(Pos, EAcc2) ->
-                         NewState = ants_impl:get_agent(Pos, TileEnv, Config),
-                         ants_impl:update_agent(Pos, NewState, EAcc2, Config)
-                 end,
-             Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
-             lists:foldl(UpdateAgent, EAcc, Neighbours)
-     end.
+    fun({Tile, TileEnv}, EAcc) ->
+            UpdateAgent =
+                fun(Pos, EAcc2) ->
+                        NewState = ants_impl:get_agent(Pos, TileEnv, Config),
+                        ants_impl:update_agent(Pos, NewState, EAcc2, Config)
+                end,
+            Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
+            lists:foldl(UpdateAgent, EAcc, Neighbours)
+    end.
 
 send_to_work(Pool, Agents, Env, Config) ->
     proc_lib:spawn_link(?MODULE,

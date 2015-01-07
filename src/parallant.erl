@@ -26,9 +26,9 @@
 test(Width, Height, NAnts, Steps) ->
     Seed = erlang:now(),
     io:format("Parallant_seq:~n"),
-    test(parallant_seq, Seed, Width, Height, NAnts, Steps, false),
-    io:format("Parallant_tiled:~n"),
-    test(parallant_tiled, Seed, Width, Height, NAnts, Steps, false).
+    test(parallant_seq, Seed, Width, Height, NAnts, Steps, false).
+%%     io:format("Parallant_tiled:~n"),
+%%     test(parallant_tiled, Seed, Width, Height, NAnts, Steps, false).
 
 -spec test() -> ok.
 test() ->
@@ -43,11 +43,11 @@ test(Algorithm) ->
            Height :: dimension(), NumberOfAnts :: pos_integer(),
            Steps :: pos_integer(), Log :: boolean()) -> ok.
 test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
-    io:format("ListBasedAntsImpl:~n"),
-    random:seed(Seed),
-    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},                                        {world_impl, list_based},
-                                        {ants_impl, ants},
-                                        {log, Log}]),
+    %%         io:format("ListBasedAntsImpl:~n"),
+    %%         random:seed(Seed),
+    %%         start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+    %%                                             {ants_impl, ants},
+    %%                                             {log, Log}]),
     io:format("Gb_treeBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
