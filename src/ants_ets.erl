@@ -21,7 +21,7 @@
                   Width :: dimension(),
                   Height :: dimension(),
                   config()) ->
-                         TableID :: pos_integer().
+                         TableID :: ets:tid().
 create_ants(PopulationSize, Width, Height, Config) ->
     TID = ets:new(antsETS, [ordered_set, protected, {keypos, 2}]),
     AllPositions = [{I, J} || I <- lists:seq(1, Width),

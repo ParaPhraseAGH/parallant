@@ -10,8 +10,8 @@
 -callback test() ->
     ok.
 
--callback run(Steps, environment(), config()) -> environment()
-                                                     when Steps :: pos_integer().
+-callback run(Steps, environment(), config()) -> environment() when
+      Steps :: pos_integer().
 
 %% Exported functions
 

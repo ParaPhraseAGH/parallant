@@ -26,8 +26,6 @@
                     Parts :: pos_integer()) ->
     [[{tile(), [ant()]}]].
 
-%% -callback neighbourhood(tile(), environment()) ->
-    %% [position()].
 
 -spec create_ants(PopulationSize :: pos_integer(), Width :: dimension(),
                   Height :: dimension(), config()) -> [ant()].
@@ -46,18 +44,20 @@ update_agent(Position, NewState, Env, Config) ->
     Impl = Config#config.ants_impl,
     Impl:update_agent(Position, NewState, Env, Config).
 
--spec partition(environment(), NumberOfColours :: pos_integer(),
-                NumberOfParts :: pos_integer(), config()) -> [[ant()]].
+-spec partition(environment(),
+                NumberOfColours :: pos_integer(),
+                NumberOfParts :: pos_integer(),
+                config()) ->
+                       [[{tile(), [ant()]}]].
 partition(Env, NColours, NParts, Config) ->
     Impl = get_impl(Config),
     Impl:partition(Env, NColours, NParts).
 
 -spec neighbourhood(tile(), environment(), config()) -> [position()].
 neighbourhood(Tile, Env, _Config) ->
-    %% Impl = get_impl(Config),
     neighbourhood(Tile, Env).
 
-% internal functions
+%% internal functions
 
 -spec get_impl(config()) -> ants_impl().
 get_impl(Config) ->
