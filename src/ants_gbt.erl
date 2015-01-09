@@ -11,6 +11,8 @@
 
 %% API
 -export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
+
+-type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
 -type ant_state() :: parallant:ant_state().
 
 -include("parallant.hrl").
@@ -25,53 +27,35 @@ create_ants(PopulationSize, Width, Height, Config) ->
     IndividualsWithKeys = [{Pos,
                             #ant{pos = Pos, state = State}}
                            || {Pos, State} <- Pop],
-    gb_trees:from_orddict(IndividualsWithKeys).
-
-%% -spec get_agent(position(), environment(), config()) -> ant_state().
-%% get_agent(Position, Env, _Config) ->
-%% case gb_trees:lookup(Position,  Env#env.agents) of
-%%   {value, Value} ->
-%%     #ant{state = State} = Value,
-%%     State;
-%%   none ->
-%%     empty
-%% end.
+    gb_trees:from_orddict(lists:sort(IndividualsWithKeys)).
 
 -spec get_agent(position(), environment(), config()) -> ant_state().
 get_agent(Position, Env, _Config) ->
-    io:format("~n***********~n"),
-    io:format("Position: ~p~n", [Position]),
-    io:format("Agents: ~p~n", [gb_trees:values(Env#env.agents)]),
-    io:format("AgentsTree: ~p~n", [Env#env.agents]),
-    Filtered = [State || #ant{pos = Pos, state = State} <- gb_trees:values(Env#env.agents),
-                         Pos == Position],
     TreeRes = gb_trees:lookup(Position,  Env#env.agents),
-    io:format("ListRes: ~p~n", [Filtered]),
-    io:format("TreeRes: ~p~n", [TreeRes]),
-    case Filtered of
-        [] ->
-            empty;
-        [Agent] ->
-            Agent
+    case TreeRes of
+        {value, #ant{state = State}} ->
+            State;
+        none ->
+            empty
     end.
-
 
 -spec update_agent(position(), ant_state(), environment(), config()) ->
                           environment().
 update_agent(Position, empty, Env, _Config) ->
-    gb_trees:delete(Position, Env#env.agents);
+    Env#env{agents = gb_trees:delete_any(Position, Env#env.agents)};
 update_agent(Position, NewState, Env, Config) ->
+    NewAgent = #ant{pos = Position, state = NewState},
     case get_agent(Position, Env, Config) of
         empty ->
-            NewAgent = #ant{pos = Position, state = NewState},
             NewAgents = gb_trees:insert(Position, NewAgent, Env#env.agents),
             Env#env{agents = NewAgents};
         _ ->
-            NewAgents = gb_trees:update(Position, NewState, Env#env.agents),
+            NewAgents = gb_trees:update(Position, NewAgent, Env#env.agents),
             Env#env{agents = NewAgents}
     end.
 
--spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
+-spec partition(environment(), pos_integer(), pos_integer()) ->
+                       [[{tile(), [ant()]}]].
 partition(Env, 1, 1) ->
     [[{unique, gb_trees:values(Env#env.agents)}]];
 partition(Env, NColours, NParts) ->
@@ -85,7 +69,7 @@ partition(Env, NColours, NParts) ->
                       end,
     TiledAnts = lists:map(AssignTileToAnt, gb_trees:values(Env#env.agents)),
     TagTiles = group_by(TiledAnts ++ Zeros),
-    Tiles = [T || {_, T} <- TagTiles],
+    Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
 

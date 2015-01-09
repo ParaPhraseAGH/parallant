@@ -53,10 +53,10 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
                                         {ants_impl, ants_gbt},
                                         {log, Log}]),
-    io:format("ETSBasedAntsImpl:~n"),
+    io:format("ListBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {ants_impl, ants_ets},
+                                        {ants_impl, ants},
                                         {log, Log}]).
 
 
