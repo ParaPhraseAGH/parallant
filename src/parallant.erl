@@ -25,10 +25,10 @@
            NumberOfAnts :: pos_integer(), Steps :: pos_integer()) -> ok.
 test(Width, Height, NAnts, Steps) ->
     Seed = erlang:now(),
-    io:format("Parallant_seq:~n"),
-    test(parallant_seq, Seed, Width, Height, NAnts, Steps, false).
-%%     io:format("Parallant_tiled:~n"),
-%%     test(parallant_tiled, Seed, Width, Height, NAnts, Steps, false).
+%%     io:format("Parallant_seq:~n"),
+%%     test(parallant_seq, Seed, Width, Height, NAnts, Steps, false).
+    io:format("Parallant_tiled:~n"),
+    test(parallant_tiled, Seed, Width, Height, NAnts, Steps, false).
 
 -spec test() -> ok.
 test() ->

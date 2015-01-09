@@ -26,7 +26,7 @@
                   config()) ->
                          TableID :: ets:tid().
 create_ants(PopulationSize, Width, Height, Config) ->
-    TID = ets:new(antsETS, [ordered_set, protected, {keypos, #ant.pos}]),
+    TID = ets:new(antsETS, [ordered_set, public, {keypos, #ant.pos}]),
     Pop = model:initial_population(PopulationSize, Width, Height, Config),
     Agents=[#ant{pos = Pos, state = State} || {Pos, State} <- Pop],
     ets:insert(TID, Agents),
@@ -87,6 +87,6 @@ partition(Env, NColours, NParts) ->
                       end,
     TiledAnts = lists:map(AssignTileToAnt, ets:tab2list(Env#env.agents)),
     TagTiles = group_by(TiledAnts ++ Zeros),
-    Tiles = [T || {_, T} <- TagTiles],
+    Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
