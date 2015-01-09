@@ -17,12 +17,12 @@
 test() ->
     parallant:test(?MODULE).
 
--spec run(pos_integer(), environment(), config()) -> environment().
+-spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
     step(1, Steps, Env, Config).
 
--spec step(pos_integer(), pos_integer(), environment(), config()) ->
-                  environment().
+-spec step(T :: pos_integer(), MaxT :: pos_integer(),
+           environment(), config()) -> environment().
 step(MaxT, MaxT, Env, _Config) ->
     Env;
 step(T, MaxT, Env, Config) ->
@@ -30,8 +30,6 @@ step(T, MaxT, Env, Config) ->
     NParts = 1,
     [[{_Tile, Ants}]] = ants_impl:partition(Env, NColours, NParts, Config),
 
-    %% Moves = parallant:get_moves(Env#env{agents = AntList}, Config),
-    %% NewEnv = parallant:apply_moves(Moves, Env, Config),
     Positions = shuffle([A#ant.pos || A <- Ants]),
     NewEnv = parallant:move_all(Positions, Env, Config),
     logger:log(NewEnv),

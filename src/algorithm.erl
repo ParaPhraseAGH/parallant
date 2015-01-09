@@ -5,21 +5,21 @@
 -include("parallant.hrl").
 
 
-% Callbacks
+%% Callbacks
 
 -callback test() ->
     ok.
 
--callback run(Steps, environment(), config()) -> environment()
-        when Steps :: pos_integer().
+-callback run(Steps, environment(), config()) -> environment() when
+      Steps :: pos_integer().
 
-% Exported functions
+%% Exported functions
 
 -spec test(algorithm()) -> ok.
 test(Alg) ->
     Alg:test().
 
--spec run(pos_integer(), environment(), config()) ->  environment().
+-spec run(Steps :: pos_integer(), environment(), config()) ->  environment().
 run(Steps, Env, Config) ->
     Alg = Config#config.algorithm,
     Alg:run(Steps, Env, Config).

@@ -154,7 +154,7 @@ code_change(_OldVsn, State, _Extra) ->
 
 -spec overwrite_display(boolean(), pos_integer()) -> ok.
 overwrite_display(true, Height) ->
-    % display in the same place as the previous step
+    %% display in the same place as the previous step
     io:format("\033[~pA", [Height + 2]);
 overwrite_display(false, _) ->
     ok.

@@ -8,7 +8,7 @@
 
 -include("parallant.hrl").
 
-% callbacks
+%% callbacks
 
 -callback initial_population(PopulationSize :: pos_integer(),
                              Width :: dimension(),
@@ -23,7 +23,7 @@
 -callback get_agent_char(ant_state(), config()) ->
     char().
 
-% API
+%% API
 
 -spec initial_population(PopulationSize :: pos_integer(),
                          Width :: dimension(),

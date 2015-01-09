@@ -19,20 +19,20 @@
 test() ->
     parallant:test(?MODULE).
 
--spec run(pos_integer(), environment(), config()) -> environment().
+-spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
     {ok, Pool} = poolboy:start([{worker_module, tile_worker},
                                 {size, 4}, % TODO from config.n _parts
                                 {max_overflow, 4}]),
     step(1, Steps, Env, Pool, Config).
 
--spec step(pos_integer(), pos_integer(), environment(), poolboy:pool(),
-           config()) -> environment().
+-spec step(T :: pos_integer(), MaxT :: pos_integer(),
+           environment(), poolboy:pool(), config()) -> environment().
 step(MaxT, MaxT, Env, _Pool, _Config) ->
     Env;
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
-    NParts = 2, % TODO move to config
+    NParts = 8, % TODO move to config
     Partitioned = ants_impl:partition(Env, NColours, NParts, Config),
 
     ProcessColour =
@@ -50,15 +50,15 @@ step(T, MaxT, Env, Pool, Config) ->
     step(T+1, MaxT, NewEnv, Pool, Config).
 
 mk_apply_env(Config) ->
-     fun({Tile, TileEnv}, EAcc) ->
-             UpdateAgent =
-                 fun(Pos, EAcc2) ->
-                         NewState = ants_impl:get_agent(Pos, TileEnv, Config),
-                         ants_impl:update_agent(Pos, NewState, EAcc2, Config)
-                 end,
-             Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
-             lists:foldl(UpdateAgent, EAcc, Neighbours)
-     end.
+    fun({Tile, TileEnv}, EAcc) ->
+            UpdateAgent =
+                fun(Pos, EAcc2) ->
+                        NewState = ants_impl:get_agent(Pos, TileEnv, Config),
+                        ants_impl:update_agent(Pos, NewState, EAcc2, Config)
+                end,
+            Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
+            lists:foldl(UpdateAgent, EAcc, Neighbours)
+    end.
 
 send_to_work(Pool, Agents, Env, Config) ->
     proc_lib:spawn_link(?MODULE,

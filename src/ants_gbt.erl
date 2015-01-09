@@ -1,14 +1,19 @@
--module(ants).
--behaviour(ants_impl).
+%%%-------------------------------------------------------------------
+%%% @author Daniel Grzonka
+%%% @copyright (C) 2014, <COMPANY>
+%%% @doc
+%%% Ants gb_trees based approach
+%%% @end
+%%% Created : 07. lis 2014 15:56
+%%%-------------------------------------------------------------------
+-module(ants_gbt).
+-author("Daniel").
 
--export([create_ants/4,
-         partition/3,
-         get_agent/3,
-         update_agent/4,
-         group_by/1]).
+%% API
+-export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
 
--type ant_state() :: parallant:ant_state().
 -type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
+-type ant_state() :: parallant:ant_state().
 
 -include("parallant.hrl").
 
@@ -16,45 +21,43 @@
                   Width :: dimension(),
                   Height :: dimension(),
                   config()) ->
-                         [ant()].
+                         Ants :: gb_trees:tree().
 create_ants(PopulationSize, Width, Height, Config) ->
     Pop = model:initial_population(PopulationSize, Width, Height, Config),
-    [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
+    IndividualsWithKeys = [{Pos,
+                            #ant{pos = Pos, state = State}}
+                           || {Pos, State} <- Pop],
+    gb_trees:from_orddict(lists:sort(IndividualsWithKeys)).
 
 -spec get_agent(position(), environment(), config()) -> ant_state().
 get_agent(Position, Env, _Config) ->
-    Filtered = [State || #ant{pos = Pos, state = State} <- Env#env.agents,
-                         Pos == Position],
-    case Filtered of
-        [] ->
-            empty;
-        [Agent] ->
-            Agent
+    TreeRes = gb_trees:lookup(Position,  Env#env.agents),
+    case TreeRes of
+        {value, #ant{state = State}} ->
+            State;
+        none ->
+            empty
     end.
 
 -spec update_agent(position(), ant_state(), environment(), config()) ->
                           environment().
 update_agent(Position, empty, Env, _Config) ->
-    Filtered = [A || A = #ant{pos = Pos} <- Env#env.agents, Pos /= Position],
-    Env#env{agents = Filtered};
+    Env#env{agents = gb_trees:delete_any(Position, Env#env.agents)};
 update_agent(Position, NewState, Env, Config) ->
-    Update = fun (A = #ant{pos = Pos})
-                   when Pos == Position ->
-                     A#ant{state = NewState};
-                 (A) -> A
-             end,
+    NewAgent = #ant{pos = Position, state = NewState},
     case get_agent(Position, Env, Config) of
         empty ->
-            NewAgent = #ant{pos = Position, state = NewState},
-            Env#env{agents = [NewAgent | Env#env.agents]};
+            NewAgents = gb_trees:insert(Position, NewAgent, Env#env.agents),
+            Env#env{agents = NewAgents};
         _ ->
-            Env#env{agents = lists:map(Update, Env#env.agents)}
+            NewAgents = gb_trees:update(Position, NewAgent, Env#env.agents),
+            Env#env{agents = NewAgents}
     end.
 
 -spec partition(environment(), pos_integer(), pos_integer()) ->
                        [[{tile(), [ant()]}]].
 partition(Env, 1, 1) ->
-    [[{unique, Env#env.agents}]];
+    [[{unique, gb_trees:values(Env#env.agents)}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
@@ -64,7 +67,7 @@ partition(Env, NColours, NParts) ->
                               ITile = trunc((X-1)/D)*D+1,
                               {ITile, [A]}
                       end,
-    TiledAnts = lists:map(AssignTileToAnt, Env#env.agents),
+    TiledAnts = lists:map(AssignTileToAnt, gb_trees:values(Env#env.agents)),
     TagTiles = group_by(TiledAnts ++ Zeros),
     Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
