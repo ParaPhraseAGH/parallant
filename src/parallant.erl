@@ -43,20 +43,20 @@ test(Algorithm) ->
            Height :: dimension(), NumberOfAnts :: pos_integer(),
            Steps :: pos_integer(), Log :: boolean()) -> ok.
 test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
-    %%         io:format("ListBasedAntsImpl:~n"),
-    %%         random:seed(Seed),
-    %%         start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-    %%                                             {ants_impl, ants},
-    %%                                             {log, Log}]),
+    io:format("ListBasedAntsImpl:~n"),
+    random:seed(Seed),
+    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
+                                        {ants_impl, ants},
+                                        {log, Log}]),
     io:format("Gb_treeBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
                                         {ants_impl, ants_gbt},
                                         {log, Log}]),
-    io:format("ListBasedAntsImpl:~n"),
+    io:format("ETSBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {ants_impl, ants},
+                                        {ants_impl, ants_ets},
                                         {log, Log}]).
 
 

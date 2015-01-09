@@ -10,12 +10,15 @@
 -author("Daniel").
 
 %% API
--export([create_ants/4, apply_move/3, partition/3]).
+-export([create_ants/4, partition/3, update_agent/4, get_agent/3]).
 
 -include("parallant.hrl").
 
 -define(LOAD(Attribute, Proplist, Default),
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
+
+-type ant_state() :: parallant:ant_state().
+-type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
 
 -spec create_ants(PopulationSize :: pos_integer(),
                   Width :: dimension(),
@@ -23,30 +26,30 @@
                   config()) ->
                          TableID :: ets:tid().
 create_ants(PopulationSize, Width, Height, Config) ->
-    TID = ets:new(antsETS, [ordered_set, protected, {keypos, 2}]),
-    AllPositions = [{I, J} || I <- lists:seq(1, Width),
-                              J <- lists:seq(1, Height)],
-    ShuffledCellPositions = shuffle(AllPositions),
-    AntPositions = lists:sublist(ShuffledCellPositions, 1, PopulationSize),
-    ets:insert(TID, [#ant{pos = Pos, state = model:random_ant_state(Config)} ||
-                        Pos <- lists:sort(AntPositions)]),
+    TID = ets:new(antsETS, [ordered_set, protected, {keypos, #ant.pos}]),
+    Pop = model:initial_population(PopulationSize, Width, Height, Config),
+    Agents=[#ant{pos = Pos, state = State} || {Pos, State} <- Pop],
+    ets:insert(TID, Agents),
     TID.
 
-
--spec apply_move({ant(), ant()}, environment(), config()) -> environment().
-apply_move({Old, New}, E, Config) ->
-    case ets:lookup(E#env.agents, New#ant.pos) of
+-spec get_agent(position(), environment(), config()) ->
+                       ant_state().
+get_agent(Pos, Env, _Config) ->
+    case ets:lookup(Env#env.agents, Pos) of
         [] ->
-            ets:insert(E#env.agents, New),
-            ets:delete(E#env.agents, Old#ant.pos),
-            update_cell(Old#ant.pos, E, Config);
-        [{ant, Pos, State}] when is_atom(State), is_tuple(Pos)->
-            E
+            empty;
+        [A] ->
+            A#ant.state
     end.
 
--spec update_cell(position(), environment(), config()) -> environment().
-update_cell(Pos, E = #env{world = World}, Config) ->
-    E#env{world = world_impl:update_cell(Pos, World, Config)}.
+-spec update_agent(position(), ant_state(), environment(), config()) ->
+                          environment().
+update_agent(Position, empty, Env, _Config) ->
+    ets:delete(Env#env.agents, Position),
+    Env;
+update_agent(Position, NewState, Env, _Config) ->
+    ets:insert(Env#env.agents, #ant{pos=Position, state = NewState}),
+    Env.
 
 
 -spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
@@ -67,9 +70,12 @@ group_by_colour(Tiles, N) ->
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
 
 
--spec partition(environment(), pos_integer(), pos_integer()) -> [[ant()]].
+-spec partition(environment(),
+                Colours :: pos_integer(),
+                Parts :: pos_integer()) ->
+                       [[{tile(), [ant()]}]].
 partition(Env, 1, 1) ->
-    [ets:tab2list(Env#env.agents)];
+    [[{unique, ets:tab2list(Env#env.agents)}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
@@ -84,8 +90,3 @@ partition(Env, NColours, NParts) ->
     Tiles = [T || {_, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
-
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
