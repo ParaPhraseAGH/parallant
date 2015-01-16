@@ -95,8 +95,9 @@ partition(Env, NColours, NParts) ->
 
 -spec select_positions(ants()) -> [position()].
 select_positions(TableId) ->
-    ets:select(TableId,
-               [{#ant{pos = '$1',
-                      state = '_'},
-                 [],
-                 ['$1']}]).
+    ets:select(TableId, [{explicit_ant_record(), [], ['$1']}]).
+
+%% work around dialyzer not understanding match specs
+-spec explicit_ant_record() -> tuple().
+explicit_ant_record() ->
+    list_to_tuple([ant, '$1', '_']).
