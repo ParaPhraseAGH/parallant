@@ -27,7 +27,7 @@
 -callback partition(environment(),
                     Colours :: pos_integer(),
                     Parts :: pos_integer()) ->
-    [[{tile(), ants()}]].
+    [[{tile(), [position()]}]].
 
 
 -spec create_ants(PopulationSize :: pos_integer(), Width :: dimension(),
@@ -51,7 +51,7 @@ update_agent(Position, NewState, Env, Config) ->
                 NumberOfColours :: pos_integer(),
                 NumberOfParts :: pos_integer(),
                 config()) ->
-                       [[{tile(), ants()}]].
+                       [[{tile(), [position()]}]].
 partition(Env, NColours, NParts, Config) ->
     Impl = get_impl(Config),
     Impl:partition(Env, NColours, NParts).

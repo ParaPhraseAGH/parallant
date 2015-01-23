@@ -17,6 +17,7 @@
 -define(LOAD(Attribute, Proplist, Default),
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
+-type ants() :: ants_impl:ants(ets:tid()).
 -type ant_state() :: parallant:ant_state().
 -type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
 
@@ -24,7 +25,7 @@
                   Width :: dimension(),
                   Height :: dimension(),
                   config()) ->
-                         TableID :: ets:tid().
+                         TableID :: ants().
 create_ants(PopulationSize, Width, Height, Config) ->
     TID = ets:new(antsETS, [ordered_set, public, {keypos, #ant.pos}]),
     Pop = model:initial_population(PopulationSize, Width, Height, Config),
@@ -73,20 +74,30 @@ group_by_colour(Tiles, N) ->
 -spec partition(environment(),
                 Colours :: pos_integer(),
                 Parts :: pos_integer()) ->
-                       [[{tile(), [ant()]}]].
+                       [[{tile(), [position()]}]].
 partition(Env, 1, 1) ->
-    [[{unique, ets:tab2list(Env#env.agents)}]];
+    [[{unique, select_positions(Env#env.agents)}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
     D = round(W/NParts),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAnt = fun(A = #ant{pos={X, _}}) ->
+    AssignTileToAnt = fun(Pos = {X, _}) ->
                               ITile = trunc((X-1)/D)*D+1,
-                              {ITile, [A]}
+                              {ITile, [Pos]}
                       end,
-    TiledAnts = lists:map(AssignTileToAnt, ets:tab2list(Env#env.agents)),
+    TiledAnts = lists:map(AssignTileToAnt, select_positions(Env#env.agents)),
     TagTiles = group_by(TiledAnts ++ Zeros),
     Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
+
+
+-spec select_positions(ants()) -> [position()].
+select_positions(TableId) ->
+    ets:select(TableId, [{explicit_ant_record(), [], ['$1']}]).
+
+%% work around dialyzer not understanding match specs
+-spec explicit_ant_record() -> tuple().
+explicit_ant_record() ->
+    list_to_tuple([ant, '$1', '_']).
