@@ -6,12 +6,12 @@
 %%% @end
 %%% Created : 30. May 2014 10:29 AM
 %%%-------------------------------------------------------------------
--module(parallant_tiled).
+-module(algorithm_tiled).
 
 -behaviour(algorithm).
 %% API
 -export([test/0, run/3, poolboy_transaction/5]).
--type tile() :: ants_impl:tile().
+-type tile() :: agents:tile().
 
 -include("parallant.hrl").
 
@@ -33,7 +33,7 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
     NParts = 8, % TODO move to config
-    Partitioned = ants_impl:partition(Env, NColours, NParts, Config),
+    Partitioned = agents:partition(Env, NColours, NParts, Config),
 
     ProcessColour =
         fun(Colour, E) ->
@@ -53,10 +53,10 @@ mk_apply_env(Config) ->
     fun({Tile, TileEnv}, EAcc) ->
             UpdateAgent =
                 fun(Pos, EAcc2) ->
-                        NewState = ants_impl:get_agent(Pos, TileEnv, Config),
-                        ants_impl:update_agent(Pos, NewState, EAcc2, Config)
+                        NewState = agents:get_agent(Pos, TileEnv, Config),
+                        agents:update_agent(Pos, NewState, EAcc2, Config)
                 end,
-            Neighbours = ants_impl:neighbourhood(Tile, TileEnv, Config),
+            Neighbours = agents:neighbourhood(Tile, TileEnv, Config),
             lists:foldl(UpdateAgent, EAcc, Neighbours)
     end.
 

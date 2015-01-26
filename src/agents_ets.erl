@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 28. lis 2014 13:31
 %%%-------------------------------------------------------------------
--module(ants_ets).
+-module(agents_ets).
 -author("Daniel").
 
 %% API
@@ -18,7 +18,7 @@
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
 -type ant_state() :: parallant:ant_state().
--type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
+-type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -spec create_ants(PopulationSize :: pos_integer(),
                   Width :: dimension(),

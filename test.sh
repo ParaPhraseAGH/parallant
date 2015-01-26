@@ -10,8 +10,8 @@ Height=${2:-$DefaultHeight}
 Ants=${3:-$DefaultAnts}
 Steps=${4:-$DefaultSteps}
 
-algorithms="parallant_seq parallant_tiled"
-ants_impls="ants ants_gbt ants_ets"
+algorithms="algorithm_seq algorithm_tiled"
+ants_impls="agents_lists agents_gbtree agents_ets"
 models="model_langton model_forams"
 
 for algorithm in $algorithms; do

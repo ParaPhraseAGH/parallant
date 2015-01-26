@@ -6,13 +6,13 @@
 %%% @end
 %%% Created : 07. lis 2014 15:56
 %%%-------------------------------------------------------------------
--module(ants_gbt).
+-module(agents_gbtree).
 -author("Daniel").
 
 %% API
 -export([create_ants/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
 
--type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
+-type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 -type ant_state() :: parallant:ant_state().
 
 -include("parallant.hrl").

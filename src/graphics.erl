@@ -20,7 +20,7 @@
             config()) -> ok.
 print(Env, Width, Height, Config) ->
     PrintCell = fun ({I, J}) ->
-                        Agent = ants_impl:get_agent({I, J}, Env, Config),
+                        Agent = agents:get_agent({I, J}, Env, Config),
                         io:format("~c ", [model:get_agent_char(Agent, Config)])
                 end,
     [begin

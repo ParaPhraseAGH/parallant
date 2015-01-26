@@ -1,24 +1,24 @@
--module(ants).
--behaviour(ants_impl).
+-module(agents_lists).
+-behaviour(agents).
 
--export([create_ants/4,
+-export([create_agents/4,
          partition/3,
          get_agent/3,
          update_agent/4,
          group_by/1]).
 
 -type ant_state() :: parallant:ant_state().
--type ants() :: ants_impl:ants([ant()]).
--type tile() :: ants_impl:tile({Start :: dimension(), End :: dimension()}).
+-type agents() :: agents:agents([ant()]).
+-type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -include("parallant.hrl").
 
--spec create_ants(PopulationSize :: pos_integer(),
-                  Width :: dimension(),
-                  Height :: dimension(),
-                  config()) ->
-                         ants().
-create_ants(PopulationSize, Width, Height, Config) ->
+-spec create_agents(PopulationSize :: pos_integer(),
+                    Width :: dimension(),
+                    Height :: dimension(),
+                    config()) ->
+                           agents().
+create_agents(PopulationSize, Width, Height, Config) ->
     Pop = model:initial_population(PopulationSize, Width, Height, Config),
     [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
 
@@ -53,7 +53,7 @@ update_agent(Position, NewState, Env, Config) ->
     end.
 
 -spec partition(environment(), pos_integer(), pos_integer()) ->
-                       [[{tile(), ants()}]].
+                       [[{tile(), agents()}]].
 partition(Env, 1, 1) ->
     [[{unique, Env#env.agents}]];
 partition(Env, NColours, NParts) ->
@@ -78,7 +78,7 @@ group_by(List) ->
                           dict:append_list(K, V, D)
                   end, dict:new(), List)).
 
--spec group_by_colour([ants()], pos_integer()) -> [ants()].
+-spec group_by_colour([agents()], pos_integer()) -> [agents()].
 group_by_colour(Tiles, N) ->
     N = 2, % dividing in stripes
     EveryNth = fun (Rest) ->

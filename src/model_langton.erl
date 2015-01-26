@@ -28,7 +28,7 @@ initial_population(PopulationSize, Width, Height, Config) ->
     All = [{Pos, [ant]} || Pos <- AntPositions]
         ++ [{Pos, [cell]} || Pos <- CellPositions],
     [populate_cell(Pos, Members, Config)
-     || {Pos, Members} <- ants:group_by(All)].
+     || {Pos, Members} <- agents_lists:group_by(All)].
 
 populate_cell(Pos, Members, _Config) ->
     AntState = case lists:member(ant, Members) of
@@ -56,17 +56,17 @@ move(Position, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% langton's ant
-    A = #ant{pos = Position, state = ants_impl:get_agent(Position, E, Config)},
+    A = #ant{pos = Position, state = agents:get_agent(Position, E, Config)},
     {Old, New} = get_move(A, E, Config),
     #ant{pos = OPos, state = {ODir, OCell}} = Old,
     #ant{pos = NPos, state = {NDir, _}} = New,
-    case {ODir, ants_impl:get_agent(New#ant.pos, E, Config)} of
+    case {ODir, agents:get_agent(New#ant.pos, E, Config)} of
         {empty, _} ->
             E;
         {_, {empty, CellState}} ->
-            E1 = ants_impl:update_agent(NPos, {NDir, CellState}, E, Config),
+            E1 = agents:update_agent(NPos, {NDir, CellState}, E, Config),
             OldState = {empty, update_cell(OCell)},
-            ants_impl:update_agent(OPos, OldState, E1, Config);
+            agents:update_agent(OPos, OldState, E1, Config);
         {_, empty} ->
             io:format("no agent on pos: ~p~n", [Position]),
             E;

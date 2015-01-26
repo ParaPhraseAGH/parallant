@@ -39,14 +39,14 @@ move(Pos, E, Config) ->
     #env{world = #world{w = W, h = H}} = E,
     UpdateNeighbour =
         fun(NPos, Env) ->
-                Neighbour = ants_impl:get_agent(NPos, Env, Config),
+                Neighbour = agents:get_agent(NPos, Env, Config),
                 Level = case Neighbour of
                             empty -> 0;
                             {PreviousLevel} -> PreviousLevel
                         end,
-                ants_impl:update_agent(NPos, {Level + 1}, Env, Config)
+                agents:update_agent(NPos, {Level + 1}, Env, Config)
         end,
-    State = ants_impl:get_agent(Pos, E, Config),
+    State = agents:get_agent(Pos, E, Config),
     NewEnv = case State of
                  empty ->
                      E;
@@ -56,9 +56,9 @@ move(Pos, E, Config) ->
                      Ns = neighbours_4(Pos, W, H),
                      E1 = lists:foldl(UpdateNeighbour, E, Ns),
                      NewLevel = Level - length(Ns),
-                     ants_impl:update_agent(Pos, {NewLevel}, E1, Config);
+                     agents:update_agent(Pos, {NewLevel}, E1, Config);
                  {Level} ->
-                     ants_impl:update_agent(Pos, {Level+1}, E, Config)
+                     agents:update_agent(Pos, {Level+1}, E, Config)
              end,
     NewEnv.
 

@@ -25,10 +25,10 @@
            NumberOfAnts :: pos_integer(), Steps :: pos_integer()) -> ok.
 test(Width, Height, NAnts, Steps) ->
     Seed = erlang:now(),
-%%     io:format("Parallant_seq:~n"),
-%%     test(parallant_seq, Seed, Width, Height, NAnts, Steps, false).
-    io:format("Parallant_tiled:~n"),
-    test(parallant_tiled, Seed, Width, Height, NAnts, Steps, false).
+%%     io:format("Algorithm_seq:~n"),
+%%     test(algorithm_seq, Seed, Width, Height, NAnts, Steps, false).
+    io:format("Algorithm_tiled:~n"),
+    test(algorithm_tiled, Seed, Width, Height, NAnts, Steps, false).
 
 -spec test() -> ok.
 test() ->
@@ -46,17 +46,17 @@ test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
     io:format("ListBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {ants_impl, ants},
+                                        {agents, ants},
                                         {log, Log}]),
     io:format("Gb_treeBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {ants_impl, ants_gbt},
+                                        {agents, ants_gbt},
                                         {log, Log}]),
     io:format("ETSBasedAntsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {ants_impl, ants_ets},
+                                        {agents, ants_ets},
                                         {log, Log}]).
 
 
@@ -99,14 +99,14 @@ move_all(Positions, Env, Config) ->
 %% internal functions
 
 create_ants(PopSize, W, H, Config) ->
-    ants_impl:create_ants(PopSize, W, H, Config).
+    agents:create_agents(PopSize, W, H, Config).
 
 create_world(W, H, _Config)->
     #world{w = W, h = H}.
 
 create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),
-            ?LOAD(algorithm, ConfigProps, parallant_seq),
-            ?LOAD(ants_impl, ConfigProps, ants),
+            ?LOAD(algorithm, ConfigProps, algorithm_seq),
+            ?LOAD(agents, ConfigProps, agents_lists),
             ?LOAD(log, ConfigProps, true),
             ?LOAD(animate, ConfigProps, true)}.

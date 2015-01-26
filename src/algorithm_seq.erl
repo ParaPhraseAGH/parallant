@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 30. May 2014 10:29 AM
 %%%-------------------------------------------------------------------
--module(parallant_seq).
+-module(algorithm_seq).
 -behaviour(algorithm).
 %% API
 -export([test/0, run/3]).
@@ -28,7 +28,7 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [[{_Tile, Ants}]] = ants_impl:partition(Env, NColours, NParts, Config),
+    [[{_Tile, Ants}]] = agents:partition(Env, NColours, NParts, Config),
 
     Positions = shuffle([A#ant.pos || A <- Ants]),
     NewEnv = parallant:move_all(Positions, Env, Config),

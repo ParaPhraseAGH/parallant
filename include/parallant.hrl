@@ -14,10 +14,10 @@
 -record(world, {w :: dimension(),
                 h :: dimension()}).
 
--record(env, {agents :: ants_impl:ants(),
+-record(env, {agents :: agents:agents(),
               world :: world()}).
 
--record(config, {ants_impl :: ants_impl(),
+-record(config, {agents :: agents_impl(),
                  model :: model(),
                  algorithm  :: algorithm(),
                  log :: boolean(),
@@ -31,6 +31,6 @@
 -type dimension() :: pos_integer().
 -type position() :: {dimension(), dimension()}.
 
--type algorithm() :: parallant_seq | parallant_tiled.
+-type algorithm() :: algorithm_seq | algorithm_tiled.
 -type model() :: model_langton | model_forams.
--type ants_impl() :: ants | ants_gbt | ants_ets.
+-type agents_impl() :: agents | agents_gbtree | agents_ets.
