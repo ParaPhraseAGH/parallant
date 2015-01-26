@@ -7,8 +7,8 @@
          update_agent/4,
          group_by/1]).
 
--type ant_state() :: parallant:ant_state().
--type agents() :: agents:agents([ant()]).
+-type agent_state() :: parallant:agent_state().
+-type agents() :: agents:agents([agent()]).
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -include("parallant.hrl").
@@ -20,11 +20,11 @@
                            agents().
 create_agents(PopulationSize, Width, Height, Config) ->
     Pop = model:initial_population(PopulationSize, Width, Height, Config),
-    [#ant{pos = Pos, state = State} || {Pos, State} <- Pop].
+    [#agent{pos = Pos, state = State} || {Pos, State} <- Pop].
 
--spec get_agent(position(), environment(), config()) -> ant_state().
+-spec get_agent(position(), environment(), config()) -> agent_state().
 get_agent(Position, Env, _Config) ->
-    Filtered = [State || #ant{pos = Pos, state = State} <- Env#env.agents,
+    Filtered = [State || #agent{pos = Pos, state = State} <- Env#env.agents,
                          Pos == Position],
     case Filtered of
         [] ->
@@ -33,20 +33,20 @@ get_agent(Position, Env, _Config) ->
             Agent
     end.
 
--spec update_agent(position(), ant_state(), environment(), config()) ->
+-spec update_agent(position(), agent_state(), environment(), config()) ->
                           environment().
 update_agent(Position, empty, Env, _Config) ->
-    Filtered = [A || A = #ant{pos = Pos} <- Env#env.agents, Pos /= Position],
+    Filtered = [A || A = #agent{pos = Pos} <- Env#env.agents, Pos /= Position],
     Env#env{agents = Filtered};
 update_agent(Position, NewState, Env, Config) ->
-    Update = fun (A = #ant{pos = Pos})
+    Update = fun (A = #agent{pos = Pos})
                    when Pos == Position ->
-                     A#ant{state = NewState};
+                     A#agent{state = NewState};
                  (A) -> A
              end,
     case get_agent(Position, Env, Config) of
         empty ->
-            NewAgent = #ant{pos = Position, state = NewState},
+            NewAgent = #agent{pos = Position, state = NewState},
             Env#env{agents = [NewAgent | Env#env.agents]};
         _ ->
             Env#env{agents = lists:map(Update, Env#env.agents)}
@@ -61,12 +61,12 @@ partition(Env, NColours, NParts) ->
     %% H = 5,
     D = round(W/NParts),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAnt = fun(A = #ant{pos={X, _}}) ->
-                              ITile = trunc((X-1)/D)*D+1,
-                              {ITile, [A]}
-                      end,
-    TiledAnts = lists:map(AssignTileToAnt, Env#env.agents),
-    TagTiles = group_by(TiledAnts ++ Zeros),
+    AssignTileToAgent = fun(A = #agent{pos={X, _}}) ->
+                                ITile = trunc((X-1)/D)*D+1,
+                                {ITile, [A]}
+                        end,
+    TiledAgents = lists:map(AssignTileToAgent, Env#env.agents),
+    TagTiles = group_by(TiledAgents ++ Zeros),
     Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.

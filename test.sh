@@ -2,32 +2,26 @@
 
 DefaultWidth=20
 DefaultHeight=10
-DefaultAnts=10
+DefaultAgents=10
 DefaultSteps=100
 
 Width=${1:-$DefaultWidth}
 Height=${2:-$DefaultHeight}
-Ants=${3:-$DefaultAnts}
+Agents=${3:-$DefaultAgents}
 Steps=${4:-$DefaultSteps}
 
 algorithms="algorithm_seq algorithm_tiled"
-ants_impls="agents_lists agents_gbtree agents_ets"
+agents_impls="agents_lists agents_gbtree agents_ets"
 models="model_langton model_forams"
 
 for algorithm in $algorithms; do
     for model in $models; do
-    	for ants_impl in $ants_impls; do
+    	for agents_impl in $agents_impls; do
         	echo ""
-        	echo "# version $algorithm with $model and ants stored with $ants_impl"
+        	echo "# version $algorithm with $model and agents stored with $agents_impl"
         	erl -pa ebin -pa deps/*/ebin \
-            	-eval "parallant:start($Width,$Height,$Ants,$Steps,[{algorithm,$algorithm},{model,$model},{ants_impl,$ants_impl},{log,false}])." \
+            	-eval "parallant:start($Width,$Height,$Agents,$Steps,[{algorithm,$algorithm},{model,$model},{agents_impl,$agents_impl},{log,false}])." \
             	-run init stop -noshell || exit 1
     	done
     done
 done
-
-# make clean
-# ./rebar clean compile -D skel
-# echo ""
-# echo "# version tiled skel"
-# erl -pa ebin -pa deps/skel/ebin -eval "parallant:start(parallant_tiled, gbtree_based,$Width,$Height,$Ants,$Steps,false)." -run init stop -noshell

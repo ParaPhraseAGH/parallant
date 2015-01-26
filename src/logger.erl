@@ -174,7 +174,7 @@ print(E = #env{world = W}, Config, Steps) ->
     #world{w = Width, h = Height} = W,
     case Width < ?MAX_WIDTH_TO_SHOW of
         true ->
-            %% io:format("Ants: ~p~n", [E#env.agents]),
+            %% io:format("Agents: ~p~n", [E#env.agents]),
             io:format("Step ~p:~n", [Steps]), %%,
             %% algorithm:display(Algorithm, E, WorldImpl)
             %% io:format("Agents:~n~p~n",[lists:sort(E#env.agents)]);

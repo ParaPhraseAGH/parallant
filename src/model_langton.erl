@@ -11,7 +11,7 @@
 -type cell() :: {cell_state()}.
 -type direction() :: north | south | east | west.
 -type langton_agent_state() :: {direction(), cell()}.
--type ant_state() :: parallant:ant_state(langton_agent_state()).
+-type agent_state() :: parallant:agent_state(langton_agent_state()).
 -type move() :: {0, 1} | {1, 0} | {0, -1} | {-1, 0}.
 
 %% model specific functions
@@ -19,25 +19,25 @@
                          Width :: dimension(),
                          Height :: dimension(),
                          Config :: config()) ->
-                                [{position(), ant_state()}].
+                                [{position(), agent_state()}].
 initial_population(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
-    AntPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
+    AgentPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
     CellPositions = AllPositions,
-    All = [{Pos, [ant]} || Pos <- AntPositions]
+    All = [{Pos, [agent]} || Pos <- AgentPositions]
         ++ [{Pos, [cell]} || Pos <- CellPositions],
     [populate_cell(Pos, Members, Config)
      || {Pos, Members} <- agents_lists:group_by(All)].
 
 populate_cell(Pos, Members, _Config) ->
-    AntState = case lists:member(ant, Members) of
-                   true ->
-                       random_ant_state();
-                   _ ->
-                       empty
-               end,
-    {Pos, {AntState, initial_cell_state()}}.
+    AgentState = case lists:member(agent, Members) of
+                     true ->
+                         random_agent_state();
+                     _ ->
+                         empty
+                 end,
+    {Pos, {AgentState, initial_cell_state()}}.
 
 -spec shuffle(list()) -> list().
 shuffle(L) ->
@@ -47,8 +47,8 @@ shuffle(L) ->
 initial_cell_state() ->
     {dead}.
 
--spec random_ant_state() -> direction().
-random_ant_state() ->
+-spec random_agent_state() -> direction().
+random_agent_state() ->
     random_direction().
 
 -spec move(position(), environment(), config()) -> environment().
@@ -56,11 +56,11 @@ move(Position, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% langton's ant
-    A = #ant{pos = Position, state = agents:get_agent(Position, E, Config)},
+    A = #agent{pos = Position, state = agents:get_agent(Position, E, Config)},
     {Old, New} = get_move(A, E, Config),
-    #ant{pos = OPos, state = {ODir, OCell}} = Old,
-    #ant{pos = NPos, state = {NDir, _}} = New,
-    case {ODir, agents:get_agent(New#ant.pos, E, Config)} of
+    #agent{pos = OPos, state = {ODir, OCell}} = Old,
+    #agent{pos = NPos, state = {NDir, _}} = New,
+    case {ODir, agents:get_agent(New#agent.pos, E, Config)} of
         {empty, _} ->
             E;
         {_, {empty, CellState}} ->
@@ -74,22 +74,22 @@ move(Position, E, Config) ->
             E
     end.
 
--spec get_move(ant(), environment(), config()) -> {ant(), ant()}.
+-spec get_move(agent(), environment(), config()) -> {agent(), agent()}.
 get_move(A, E, Config) ->
     New = move_agent(A, E, Config),
-    {A#ant{state = New#ant.state}, New}.
+    {A#agent{state = New#agent.state}, New}.
 
 -spec update_cell(cell()) -> cell().
 update_cell({dead}) -> {alive};
 update_cell({alive}) -> {dead}.
 
--spec move_agent(ant(), environment(), config()) -> ant().
-move_agent(Ant = #ant{state = {empty, _Cell}}, #env{}, _C) ->
-    Ant;
-move_agent(#ant{pos = Pos, state = {Dir, {Cell}}}, #env{world = World}, _C) ->
+-spec move_agent(agent(), environment(), config()) -> agent().
+move_agent(Agent = #agent{state = {empty, _Cell}}, #env{}, _C) ->
+    Agent;
+move_agent(#agent{pos = Pos, state = {Dir, {Cell}}}, #env{world = World}, _C) ->
     NewDir = turn(Dir, Cell),
     NewPos = forward(Pos, NewDir, World),
-    #ant{pos = NewPos, state = {NewDir, {Cell}}}.
+    #agent{pos = NewPos, state = {NewDir, {Cell}}}.
 
 
 -spec forward(position(), direction(), world()) -> position().
@@ -133,19 +133,19 @@ random_direction() ->
 
 %% displaying agents
 
--spec get_agent_char(ant_state(), config()) -> char().
+-spec get_agent_char(agent_state(), config()) -> char().
 get_agent_char(empty, _Config) ->
     $$;
 get_agent_char({empty, CellState}, _Config) ->
     cell_char(CellState);
 get_agent_char({Dir, _}, _Config) ->
-    ant_char(Dir).
+    agent_char(Dir).
 
--spec ant_char(direction()) -> char().
-ant_char(west) -> $<;
-ant_char(east) -> $>;
-ant_char(north) -> $^;
-ant_char(south) -> $v.
+-spec agent_char(direction()) -> char().
+agent_char(west) -> $<;
+agent_char(east) -> $>;
+agent_char(north) -> $^;
+agent_char(south) -> $v.
 
 -spec cell_char(cell()) -> char().
 cell_char({alive}) -> $o;

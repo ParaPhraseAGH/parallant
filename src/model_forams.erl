@@ -9,13 +9,13 @@
 
 -type algae_level() :: non_neg_integer().
 -type foram_agent_state() :: {algae_level()}.
--type ant_state() :: parallant:ant_state(foram_agent_state()).
+-type agent_state() :: parallant:agent_state(foram_agent_state()).
 
 -spec initial_population(PopulationSize :: pos_integer(),
                          Width :: dimension(),
                          Height :: dimension(),
                          Config :: config()) ->
-                                [{position(), ant_state()}].
+                                [{position(), agent_state()}].
 initial_population(PopulationSize, Width, Height, _Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
@@ -76,7 +76,7 @@ torus_bounds(Val, _Max) -> Val.
 
 %% displaying agents
 
--spec get_agent_char(ant_state(), config()) -> char().
+-spec get_agent_char(agent_state(), config()) -> char().
 get_agent_char(empty, _Config) ->
     $.;
 get_agent_char({Level}, _Config) ->

@@ -66,7 +66,7 @@ send_to_work(Pool, Agents, Env, Config) ->
                         [Pool, Agents, _Caller = self(), Env, Config]).
 
 -spec poolboy_transaction(poolboy:pool(),
-                          {tile(), [ant()]},
+                          {tile(), [agent()]},
                           pid(),
                           environment(),
                           config()) -> any().

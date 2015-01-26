@@ -28,9 +28,9 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [[{_Tile, Ants}]] = agents:partition(Env, NColours, NParts, Config),
+    [[{_Tile, Agents}]] = agents:partition(Env, NColours, NParts, Config),
 
-    Positions = shuffle([A#ant.pos || A <- Ants]),
+    Positions = shuffle([A#agent.pos || A <- Agents]),
     NewEnv = parallant:move_all(Positions, Env, Config),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Config).

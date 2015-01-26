@@ -4,7 +4,7 @@
          get_agent_char/2,
          move/3]).
 
--type ant_state() :: parallant:ant_state().
+-type agent_state() :: parallant:agent_state().
 
 -include("parallant.hrl").
 
@@ -14,13 +14,13 @@
                              Width :: dimension(),
                              Height :: dimension(),
                              Config :: config()) ->
-    [{position(), ant_state()}].
+    [{position(), agent_state()}].
 
 
 -callback move(position(), environment(), config()) ->
     environment().
 
--callback get_agent_char(ant_state(), config()) ->
+-callback get_agent_char(agent_state(), config()) ->
     char().
 
 %% API
@@ -29,7 +29,7 @@
                          Width :: dimension(),
                          Height :: dimension(),
                          Config :: config()) ->
-                                [{position(), ant_state()}].
+                                [{position(), agent_state()}].
 initial_population(PopulationSize, Width, Height, Config) ->
     Model = get_model(Config),
     Model:initial_population(PopulationSize, Width, Height, Config).
@@ -39,7 +39,7 @@ move(Pos, E, Config) ->
     Model = get_model(Config),
     Model:move(Pos, E, Config).
 
--spec get_agent_char(ant_state(), config()) -> char().
+-spec get_agent_char(agent_state(), config()) -> char().
 get_agent_char(State, Config) ->
     Model = get_model(Config),
     Model:get_agent_char(State, Config).

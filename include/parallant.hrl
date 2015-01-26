@@ -8,8 +8,8 @@
 %%%-------------------------------------------------------------------
 -author("piotr").
 
--record(ant, {pos :: position(),
-              state :: parallant:ant_state()}).
+-record(agent, {pos :: position(),
+                state :: parallant:agent_state()}).
 
 -record(world, {w :: dimension(),
                 h :: dimension()}).
@@ -23,7 +23,7 @@
                  log :: boolean(),
                  animate :: boolean()}).
 
--type ant() :: #ant{}.
+-type agent() :: #agent{}.
 -type world() :: #world{}.
 -type environment() :: #env{}.
 -type config() :: #config{}.

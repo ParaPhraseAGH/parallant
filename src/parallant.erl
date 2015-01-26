@@ -11,10 +11,10 @@
 -export([test/0, test/1, test/4, start/3, start/5]).
 -export([move_all/3]).
 
--export_type([ant_state/0, ant_state/1]).
+-export_type([agent_state/0, agent_state/1]).
 
--type ant_state(Any) :: Any.
--type ant_state() :: empty | ant_state(any()).
+-type agent_state(Any) :: Any.
+-type agent_state() :: empty | agent_state(any()).
 
 -include("parallant.hrl").
 
@@ -22,13 +22,13 @@
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
 -spec test(Width :: dimension(), Height :: dimension(),
-           NumberOfAnts :: pos_integer(), Steps :: pos_integer()) -> ok.
-test(Width, Height, NAnts, Steps) ->
+           NumberOfAgents :: pos_integer(), Steps :: pos_integer()) -> ok.
+test(Width, Height, NAgents, Steps) ->
     Seed = erlang:now(),
-%%     io:format("Algorithm_seq:~n"),
-%%     test(algorithm_seq, Seed, Width, Height, NAnts, Steps, false).
+    %%     io:format("Algorithm_seq:~n"),
+    %%     test(algorithm_seq, Seed, Width, Height, NAgents, Steps, false).
     io:format("Algorithm_tiled:~n"),
-    test(algorithm_tiled, Seed, Width, Height, NAnts, Steps, false).
+    test(algorithm_tiled, Seed, Width, Height, NAgents, Steps, false).
 
 -spec test() -> ok.
 test() ->
@@ -40,24 +40,24 @@ test(Algorithm) ->
     test(Algorithm, Seed, 50, 30, 5, 500, false).
 
 -spec test(algorithm(), Seed :: any(), Width :: dimension(),
-           Height :: dimension(), NumberOfAnts :: pos_integer(),
+           Height :: dimension(), NumberOfAgents :: pos_integer(),
            Steps :: pos_integer(), Log :: boolean()) -> ok.
-test(Algorithm, Seed, Width, Height, NAnts, Steps, Log) ->
-    io:format("ListBasedAntsImpl:~n"),
+test(Algorithm, Seed, Width, Height, NAgents, Steps, Log) ->
+    io:format("ListBasedAgentsImpl:~n"),
     random:seed(Seed),
-    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {agents, ants},
-                                        {log, Log}]),
-    io:format("Gb_treeBasedAntsImpl:~n"),
+    start(Width, Height, NAgents, Steps, [{algorithm, Algorithm},
+                                          {agents, agents},
+                                          {log, Log}]),
+    io:format("Gb_treeBasedAgentsImpl:~n"),
     random:seed(Seed),
-    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {agents, ants_gbt},
-                                        {log, Log}]),
-    io:format("ETSBasedAntsImpl:~n"),
+    start(Width, Height, NAgents, Steps, [{algorithm, Algorithm},
+                                          {agents, agents_gbt},
+                                          {log, Log}]),
+    io:format("ETSBasedAgentsImpl:~n"),
     random:seed(Seed),
-    start(Width, Height, NAnts, Steps, [{algorithm, Algorithm},
-                                        {agents, ants_ets},
-                                        {log, Log}]).
+    start(Width, Height, NAgents, Steps, [{algorithm, Algorithm},
+                                          {agents, agents_ets},
+                                          {log, Log}]).
 
 
 -spec start(Width :: dimension(), Height :: dimension(),
@@ -72,8 +72,8 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
 
     World = create_world(Width, Height, Config),
-    Ants = create_ants(PopulationSize, Width, Height, Config),
-    Env = #env{agents = Ants,
+    Agents = create_agents(PopulationSize, Width, Height, Config),
+    Env = #env{agents = Agents,
                world = World},
 
     logger:start(Env, Config),
@@ -98,7 +98,7 @@ move_all(Positions, Env, Config) ->
 
 %% internal functions
 
-create_ants(PopSize, W, H, Config) ->
+create_agents(PopSize, W, H, Config) ->
     agents:create_agents(PopSize, W, H, Config).
 
 create_world(W, H, _Config)->

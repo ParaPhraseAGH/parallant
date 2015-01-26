@@ -5,7 +5,7 @@
 
 -export_type([tile/1, tile/0, agents/0, agents/1]).
 
--type ant_state() :: parallant:ant_state().
+-type agent_state() :: parallant:agent_state().
 
 -type agents(Any) :: Any.
 -type agents() :: agents(any()).
@@ -16,12 +16,12 @@
 
 
 -callback create_agents(pos_integer(), dimension(), dimension(), config()) ->
-    [ant()].
+    [agent()].
 
 -callback get_agent(position(), environment(), config()) ->
-    ant_state().
+    agent_state().
 
--callback update_agent(position(), ant_state(), environment(), config()) ->
+-callback update_agent(position(), agent_state(), environment(), config()) ->
     environment().
 
 -callback partition(environment(),
@@ -36,12 +36,12 @@ create_agents(PopulationSize, Width, Height, Config) ->
     Impl = Config#config.agents,
     Impl:create_agents(PopulationSize, Width, Height, Config).
 
--spec get_agent(position(), environment(), config()) -> ant_state().
+-spec get_agent(position(), environment(), config()) -> agent_state().
 get_agent(Position, Env, Config) ->
     Impl = Config#config.agents,
     Impl:get_agent(Position, Env, Config).
 
--spec update_agent(position(), ant_state(), environment(), config()) ->
+-spec update_agent(position(), agent_state(), environment(), config()) ->
                           environment().
 update_agent(Position, NewState, Env, Config) ->
     Impl = Config#config.agents,
