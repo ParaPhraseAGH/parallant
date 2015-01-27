@@ -77,7 +77,7 @@ poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
 
 mk_worker(Caller, {Tile, Agents}, Env, Config) ->
     fun (Worker) ->
-            Shuffled = shuffle(Agents),
+            Shuffled = algorithm:shuffle(Agents),
             Result = tile_worker:move_all(Worker,
                                           {Tile, Shuffled},
                                           Env,
@@ -92,7 +92,3 @@ collect_results(Args) ->
                           {agents, R} -> R
                       end
               end, Args).
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

@@ -1,6 +1,6 @@
 -module(algorithm).
 
--export([test/1, run/3]).
+-export([test/1, run/3, shuffle/1, move_all/3]).
 
 -include("parallant.hrl").
 
@@ -23,3 +23,14 @@ test(Alg) ->
 run(Steps, Env, Config) ->
     Alg = Config#config.algorithm,
     Alg:run(Steps, Env, Config).
+
+-spec move_all([position()], environment(), config()) -> environment().
+move_all(Positions, Env, Config) ->
+    MoveAgent = fun (Pos, E) ->
+                        model:move(Pos, E, Config)
+                end,
+    lists:foldl(MoveAgent, Env, Positions).
+
+-spec shuffle(list()) -> list().
+shuffle(L) ->
+    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

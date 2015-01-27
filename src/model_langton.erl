@@ -23,7 +23,8 @@
 initial_population(PopulationSize, Width, Height, Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
-    AgentPositions = lists:sublist(shuffle(AllPositions), 1, PopulationSize),
+    ShuffledPositions = algorithm:shuffle(AllPositions),
+    AgentPositions = lists:sublist(ShuffledPositions, 1, PopulationSize),
     CellPositions = AllPositions,
     All = [{Pos, [agent]} || Pos <- AgentPositions]
         ++ [{Pos, [cell]} || Pos <- CellPositions],
@@ -38,10 +39,6 @@ populate_cell(Pos, Members, _Config) ->
                          empty
                  end,
     {Pos, {AgentState, initial_cell_state()}}.
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 -spec initial_cell_state() -> cell().
 initial_cell_state() ->

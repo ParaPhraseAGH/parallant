@@ -30,11 +30,7 @@ step(T, MaxT, Env, Config) ->
     NParts = 1,
     [[{_Tile, Agents}]] = agents:partition(Env, NColours, NParts, Config),
 
-    Positions = shuffle([A#agent.pos || A <- Agents]),
-    NewEnv = parallant:move_all(Positions, Env, Config),
+    Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
+    NewEnv = algorithm:move_all(Positions, Env, Config),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Config).
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].

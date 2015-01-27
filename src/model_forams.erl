@@ -19,16 +19,11 @@
 initial_population(PopulationSize, Width, Height, _Config) ->
     AllPositions = [{I, J} || I <- lists:seq(1, Width),
                               J <- lists:seq(1, Height)],
-    AlgaePositions = lists:sublist(shuffle(AllPositions),
+    AlgaePositions = lists:sublist(algorithm:shuffle(AllPositions),
                                    1,
                                    PopulationSize * 1),
     InitialAlgaeLevel = 3,
     [{Pos, {InitialAlgaeLevel}} || Pos <- AlgaePositions].
-
-
--spec shuffle(list()) -> list().
-shuffle(L) ->
-    [X || {_, X} <- lists:sort([{random:uniform(), N} || N <- L])].
 
 
 -spec move(position(), environment(), config()) -> environment().

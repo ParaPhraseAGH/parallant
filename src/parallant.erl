@@ -9,7 +9,6 @@
 -module(parallant).
 %% API
 -export([test/0, test/1, test/4, start/3, start/5]).
--export([move_all/3]).
 
 -export_type([agent_state/0, agent_state/1]).
 
@@ -89,12 +88,6 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",
               [TimeInSecs, TimeInSecs / Steps]).
 
--spec move_all([position()], environment(), config()) -> environment().
-move_all(Positions, Env, Config) ->
-    MoveAgent = fun (Pos, E) ->
-                        model:move(Pos, E, Config)
-                end,
-    lists:foldl(MoveAgent, Env, Positions).
 
 %% internal functions
 
