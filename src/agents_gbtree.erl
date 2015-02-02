@@ -10,7 +10,11 @@
 -author("Daniel").
 
 %% API
--export([create_agents/3, partition/3, get_agent/3, update_agent/4, group_by/1]).
+-export([create_agents/3,
+         partition/3,
+         get_agent/3,
+         update_agent/4,
+         group_by/1]).
 
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 -type agent_state() :: parallant:agent_state().
