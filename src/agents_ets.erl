@@ -10,7 +10,7 @@
 -author("Daniel").
 
 %% API
--export([create_agents/4, partition/3, update_agent/4, get_agent/3]).
+-export([create_agents/3, partition/3, update_agent/4, get_agent/3]).
 
 -include("parallant.hrl").
 
@@ -21,13 +21,12 @@
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -spec create_agents(PopulationSize :: pos_integer(),
-                    Width :: dimension(),
-                    Height :: dimension(),
+                    World :: world(),
                     config()) ->
                            TableID :: ets:tid().
-create_agents(PopulationSize, Width, Height, Config) ->
+create_agents(PopulationSize, World, Config) ->
     TID = ets:new(agentsETS, [ordered_set, public, {keypos, #agent.pos}]),
-    Pop = model:initial_population(PopulationSize, Width, Height, Config),
+    Pop = model:initial_population(PopulationSize, World, Config),
     Agents = [#agent{pos = Pos, state = State} || {Pos, State} <- Pop],
     ets:insert(TID, Agents),
     TID.
@@ -81,7 +80,7 @@ partition(Env, NColours, NParts) ->
     %% H = 5,
     D = round(W/NParts),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAgent = fun(A = #agent{pos = {X, _}}) ->
+    AssignTileToAgent = fun(A = #agent{pos = {X, _, _}}) ->
                                 ITile = trunc((X-1)/D)*D+1,
                                 {ITile, [A]}
                         end,

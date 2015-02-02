@@ -71,7 +71,7 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
 
     World = create_world(Width, Height, Config),
-    Agents = create_agents(PopulationSize, Width, Height, Config),
+    Agents = create_agents(PopulationSize, World, Config),
     Env = #env{agents = Agents,
                world = World},
 
@@ -91,11 +91,11 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
 
 %% internal functions
 
-create_agents(PopSize, W, H, Config) ->
-    agents:create_agents(PopSize, W, H, Config).
+create_agents(PopSize, World, Config) ->
+    agents:create_agents(PopSize, World, Config).
 
 create_world(W, H, _Config)->
-    #world{w = W, h = H}.
+    #world{w = W, h = H, d = 1}.
 
 create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),

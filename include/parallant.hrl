@@ -12,7 +12,8 @@
                 state :: parallant:agent_state()}).
 
 -record(world, {w :: dimension(),
-                h :: dimension()}).
+                h :: dimension(),
+                d :: dimension()}).
 
 -record(env, {agents :: agents:agents(),
               world :: world()}).
@@ -29,7 +30,7 @@
 -type config() :: #config{}.
 
 -type dimension() :: pos_integer().
--type position() :: {dimension(), dimension()}.
+-type position() :: {dimension(), dimension(), dimension()}.
 
 -type algorithm() :: algorithm_seq | algorithm_tiled.
 -type model() :: model_langton | model_forams.

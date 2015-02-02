@@ -10,7 +10,7 @@
 -author("Daniel").
 
 %% API
--export([create_agents/4, partition/3, get_agent/3, update_agent/4, group_by/1]).
+-export([create_agents/3, partition/3, get_agent/3, update_agent/4, group_by/1]).
 
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 -type agent_state() :: parallant:agent_state().
@@ -18,12 +18,11 @@
 -include("parallant.hrl").
 
 -spec create_agents(PopulationSize :: pos_integer(),
-                    Width :: dimension(),
-                    Height :: dimension(),
+                    World :: world(),
                     config()) ->
                            Agents :: gb_trees:tree().
-create_agents(PopulationSize, Width, Height, Config) ->
-    Pop = model:initial_population(PopulationSize, Width, Height, Config),
+create_agents(PopulationSize, World, Config) ->
+    Pop = model:initial_population(PopulationSize, World, Config),
     IndividualsWithKeys = [{Pos,
                             #agent{pos = Pos, state = State}}
                            || {Pos, State} <- Pop],
@@ -63,7 +62,7 @@ partition(Env, NColours, NParts) ->
     %% H = 5,
     D = round(W/NParts),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAgent = fun(A = #agent{pos={X, _}}) ->
+    AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
                                 ITile = trunc((X-1)/D)*D+1,
                                 {ITile, [A]}
                         end,

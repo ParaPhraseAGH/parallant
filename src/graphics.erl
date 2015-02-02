@@ -19,12 +19,13 @@
             Height :: dimension(),
             config()) -> ok.
 print(Env, Width, Height, Config) ->
-    PrintCell = fun ({I, J}) ->
-                        Agent = agents:get_agent({I, J}, Env, Config),
+    PrintCell = fun ({I, J, K}) ->
+                        Agent = agents:get_agent({I, J, K}, Env, Config),
                         io:format("~c ", [model:get_agent_char(Agent, Config)])
                 end,
+    K = 1,
     [begin
-         [PrintCell({I, J}) || I <- lists:seq(1, Width)],
+         [PrintCell({I, J, K}) || I <- lists:seq(1, Width)],
          io:format("~n")
      end || J <- lists:reverse(lists:seq(1, Height))],
     io:format("~n").
