@@ -102,4 +102,6 @@ create_config(ConfigProps) ->
             ?LOAD(algorithm, ConfigProps, algorithm_seq),
             ?LOAD(agents, ConfigProps, agents_lists),
             ?LOAD(log, ConfigProps, true),
-            ?LOAD(animate, ConfigProps, true)}.
+            ?LOAD(animate, ConfigProps, true),
+            ?LOAD(tiles_per_colour, ConfigProps, 4),
+            ?LOAD(workers_per_colour, ConfigProps, 4)}.

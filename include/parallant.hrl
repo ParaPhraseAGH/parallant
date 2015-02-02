@@ -22,7 +22,9 @@
                  model :: model(),
                  algorithm  :: algorithm(),
                  log :: boolean(),
-                 animate :: boolean()}).
+                 animate :: boolean(),
+                 tiles_per_colour :: pos_integer(),
+                 workers_per_colour :: pos_integer()}).
 
 -type agent() :: #agent{}.
 -type world() :: #world{}.

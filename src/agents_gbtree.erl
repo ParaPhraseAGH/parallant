@@ -64,7 +64,7 @@ partition(Env, 1, 1) ->
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
-    D = round(W/NParts),
+    D = round(W/(NParts*NColours)),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
     AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
                                 ITile = trunc((X-1)/D)*D+1,
