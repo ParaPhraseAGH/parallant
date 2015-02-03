@@ -34,8 +34,12 @@ dialyzer: $(DEPS_PLT)
 compile:
 	$(REBAR) skip_deps=true compile
 
+ct:
+	$(REBAR) ct skip_deps=true suites=parallant
+
 test: all
 	./test.sh
+	make ct
 	make dialyzer
 
 clean:
