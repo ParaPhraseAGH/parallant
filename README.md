@@ -11,21 +11,22 @@
 
 There is a script that runs `algorithm_seq` and `algorithm_tiled` versions with both available models: `model_langton` and `model_forams` versions:
 
-`./test.sh Width Height PopulationSize Iterations`
+`./test.sh Width Height Depth PopulationSize Iterations`
 
 or simply:
 
-`make test` - to run with default parameters (20, 10, 10, 100)
+`make test` - to run with default parameters (20, 10, 1, 10, 100)
 
 You can run also another configuration using erlang shell:
 
-`1> parallant:start(Width, Height, PopulationSize, Steps, Options)`
+`1> parallant:start(Width, Height, Depth, PopulationSize, Steps, Options)`
 
 where:
 
 * `Width          :: pos_integer()` - width of the world
 * `Height         :: pos_integer()` - height of the world
-* `PopulationSize :: pos_integer() < Width*Height` - how many agents
+* `Depth          :: pos_integer()` - depth of the world
+* `PopulationSize :: pos_integer() < Width*Height*Depth` - how many agents
 * `Steps          :: pos_integer()` - how many simulation steps
 * `Options        :: proplists:proplist()` - e.g. `[{model, model_langton}, {algorithm, algorithm_seq}, {log, false}]` - Run the simulation of a sequential algorithm with Langton's Ant model and don't log the state of every simulation step. The full list of possible options is described below.
   * `{algorithm, Algorithm}   :: algorithm_seq | algorithm_tiled`
@@ -39,7 +40,7 @@ where:
 
 In order to run your own model, you should provide a module implementing a behaviour `model`.
 Therefore, you need to implement three callback functions:
-* `initial_population/4` - returns initial population in a form of a list of tuples of position and desired state
+* `initial_population/3` - returns initial population in a form of a list of tuples of position and desired state
 * `move/3` - takes a position of a current agent and current environment and returns updated environment
 * `get_agent_char/2` - takes an agent state and returns a character that represents this agent on the displayed grid.
 
