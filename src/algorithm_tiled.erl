@@ -22,7 +22,7 @@ test() ->
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
     {ok, Pool} = poolboy:start([{worker_module, tile_worker},
-                                {size, 4}, % TODO from config.n _parts
+                                {size, Config#config.workers_per_colour},
                                 {max_overflow, 4}]),
     step(1, Steps, Env, Pool, Config).
 
@@ -32,7 +32,7 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
     Env;
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
-    NParts = 8, % TODO move to config
+    NParts = Config#config.tiles_per_colour,
     Partitioned = agents:partition(Env, NColours, NParts, Config),
 
     ProcessColour =

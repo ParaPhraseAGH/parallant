@@ -1,6 +1,6 @@
 -module(agents).
 
--export([create_agents/4, partition/4, get_agent/3, update_agent/4]).
+-export([create_agents/3, partition/4, get_agent/3, update_agent/4]).
 -export([neighbourhood/3]).
 
 -export_type([tile/1, tile/0, agents/0, agents/1]).
@@ -15,7 +15,7 @@
 -include("parallant.hrl").
 
 
--callback create_agents(pos_integer(), dimension(), dimension(), config()) ->
+-callback create_agents(pos_integer(), world(), config()) ->
     [agent()].
 
 -callback get_agent(position(), environment(), config()) ->
@@ -30,11 +30,12 @@
     [[{tile(), agents()}]].
 
 
--spec create_agents(PopulationSize :: pos_integer(), Width :: dimension(),
-                    Height :: dimension(), config()) -> agents().
-create_agents(PopulationSize, Width, Height, Config) ->
+-spec create_agents(PopulationSize :: pos_integer(),
+                    World :: world(),
+                    config()) -> agents().
+create_agents(PopulationSize, World, Config) ->
     Impl = Config#config.agents,
-    Impl:create_agents(PopulationSize, Width, Height, Config).
+    Impl:create_agents(PopulationSize, World, Config).
 
 -spec get_agent(position(), environment(), config()) -> agent_state().
 get_agent(Position, Env, Config) ->
@@ -67,12 +68,12 @@ get_impl(Config) ->
     Config#config.agents.
 
 -spec neighbourhood(tile(), environment()) -> [position()].
-neighbourhood(Tile, #env{world = #world{w = W, h = H}}) ->
+neighbourhood(Tile, #env{world = #world{w = W, h = H, d = D}}) ->
     {Start, End} = Tile,
     R = 1,
     Xs = lists:seq(Start, End) ++ [torus_bounds(Start - R, W),
                                    torus_bounds(End + R, W)],
-    [{I, J} || I <- Xs, J <- lists:seq(1, H)].
+    [{I, J, K} || I <- Xs, J <- lists:seq(1, H), K <- lists:seq(1, D)].
 
 torus_bounds(X, Max) when X > Max ->
     X - Max;

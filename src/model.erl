@@ -1,6 +1,6 @@
 -module(model).
 
--export([initial_population/4,
+-export([initial_population/3,
          get_agent_char/2,
          move/3]).
 
@@ -11,8 +11,7 @@
 %% callbacks
 
 -callback initial_population(PopulationSize :: pos_integer(),
-                             Width :: dimension(),
-                             Height :: dimension(),
+                             World :: world(),
                              Config :: config()) ->
     [{position(), agent_state()}].
 
@@ -26,13 +25,12 @@
 %% API
 
 -spec initial_population(PopulationSize :: pos_integer(),
-                         Width :: dimension(),
-                         Height :: dimension(),
+                         World :: world(),
                          Config :: config()) ->
                                 [{position(), agent_state()}].
-initial_population(PopulationSize, Width, Height, Config) ->
+initial_population(PopulationSize, World, Config) ->
     Model = get_model(Config),
-    Model:initial_population(PopulationSize, Width, Height, Config).
+    Model:initial_population(PopulationSize, World, Config).
 
 -spec move(position(), environment(), config()) -> environment().
 move(Pos, E, Config) ->

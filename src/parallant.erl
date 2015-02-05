@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(parallant).
 %% API
--export([test/0, test/1, test/4, start/3, start/5]).
+-export([test/0, test/1, test/4, start/3, start/6]).
 
 -export_type([agent_state/0, agent_state/1]).
 
@@ -27,7 +27,8 @@ test(Width, Height, NAgents, Steps) ->
     %%     io:format("Algorithm_seq:~n"),
     %%     test(algorithm_seq, Seed, Width, Height, NAgents, Steps, false).
     io:format("Algorithm_tiled:~n"),
-    test(algorithm_tiled, Seed, Width, Height, NAgents, Steps, false).
+    Depth = 1,
+    test(algorithm_tiled, Seed, Width, Height, Depth, NAgents, Steps, false).
 
 -spec test() -> ok.
 test() ->
@@ -36,42 +37,47 @@ test() ->
 -spec test(algorithm()) -> ok.
 test(Algorithm) ->
     Seed = erlang:now(),
-    test(Algorithm, Seed, 50, 30, 5, 500, false).
+    test(Algorithm, Seed, 50, 30, 1, 5, 500, false).
 
--spec test(algorithm(), Seed :: any(), Width :: dimension(),
-           Height :: dimension(), NumberOfAgents :: pos_integer(),
-           Steps :: pos_integer(), Log :: boolean()) -> ok.
-test(Algorithm, Seed, Width, Height, NAgents, Steps, Log) ->
+-spec test(algorithm(),
+           Seed :: any(),
+           Width :: dimension(),
+           Height :: dimension(),
+           Depth :: dimension(),
+           NumberOfAgents :: pos_integer(),
+           Steps :: pos_integer(),
+           Log :: boolean()) -> ok.
+test(Algorithm, Seed, Width, Height, Depth, NAgents, Steps, Log) ->
     io:format("ListBasedAgentsImpl:~n"),
     random:seed(Seed),
-    start(Width, Height, NAgents, Steps, [{algorithm, Algorithm},
-                                          {agents, agents},
-                                          {log, Log}]),
+    start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
+                                                 {agents, agents},
+                                                 {log, Log}]),
     io:format("Gb_treeBasedAgentsImpl:~n"),
     random:seed(Seed),
-    start(Width, Height, NAgents, Steps, [{algorithm, Algorithm},
-                                          {agents, agents_gbt},
-                                          {log, Log}]),
+    start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
+                                                 {agents, agents_gbt},
+                                                 {log, Log}]),
     io:format("ETSBasedAgentsImpl:~n"),
     random:seed(Seed),
-    start(Width, Height, NAgents, Steps, [{algorithm, Algorithm},
-                                          {agents, agents_ets},
-                                          {log, Log}]).
+    start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
+                                                 {agents, agents_ets},
+                                                 {log, Log}]).
 
 
 -spec start(Width :: dimension(), Height :: dimension(),
             Steps :: pos_integer()) -> ok.
 start(Width, Height, Steps) ->
-    start(Width, Height, 1, Steps, []).
+    start(Width, Height, 1, 1, Steps, []).
 
--spec start(Width :: dimension(), Height :: dimension(),
+-spec start(Width :: dimension(), Height :: dimension(), Depth :: dimension(),
             PopulationSize :: pos_integer(), Steps :: pos_integer(),
             ConfigOptions :: proplists:proplist()) -> ok.
-start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
+start(Width, Height, Depth, PopulationSize, Steps, ConfigOptions) ->
     Config = create_config(ConfigOptions),
 
-    World = create_world(Width, Height, Config),
-    Agents = create_agents(PopulationSize, Width, Height, Config),
+    World = create_world(Width, Height, Depth, Config),
+    Agents = create_agents(PopulationSize, World, Config),
     Env = #env{agents = Agents,
                world = World},
 
@@ -91,15 +97,17 @@ start(Width, Height, PopulationSize, Steps, ConfigOptions) ->
 
 %% internal functions
 
-create_agents(PopSize, W, H, Config) ->
-    agents:create_agents(PopSize, W, H, Config).
+create_agents(PopSize, World, Config) ->
+    agents:create_agents(PopSize, World, Config).
 
-create_world(W, H, _Config)->
-    #world{w = W, h = H}.
+create_world(W, H, D, _Config)->
+    #world{w = W, h = H, d = D}.
 
 create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),
             ?LOAD(algorithm, ConfigProps, algorithm_seq),
             ?LOAD(agents, ConfigProps, agents_lists),
             ?LOAD(log, ConfigProps, true),
-            ?LOAD(animate, ConfigProps, true)}.
+            ?LOAD(animate, ConfigProps, true),
+            ?LOAD(tiles_per_colour, ConfigProps, 4),
+            ?LOAD(workers_per_colour, ConfigProps, 4)}.

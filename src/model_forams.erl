@@ -3,7 +3,7 @@
 
 -include("parallant.hrl").
 
--export([initial_population/4,
+-export([initial_population/3,
          move/3,
          get_agent_char/2]).
 
@@ -12,13 +12,15 @@
 -type agent_state() :: parallant:agent_state(foram_agent_state()).
 
 -spec initial_population(PopulationSize :: pos_integer(),
-                         Width :: dimension(),
-                         Height :: dimension(),
+                         World :: world(),
                          Config :: config()) ->
                                 [{position(), agent_state()}].
-initial_population(PopulationSize, Width, Height, _Config) ->
-    AllPositions = [{I, J} || I <- lists:seq(1, Width),
-                              J <- lists:seq(1, Height)],
+initial_population(PopulationSize, World, _Config) ->
+    #world{w = Width, h = Height, d = _Depth} = World,
+    K = 1,
+    AllPositions = [{I, J, K} || I <- lists:seq(1, Width),
+                                 J <- lists:seq(1, Height)],
+    %% K <- lists:seq(1, Height)],
     AlgaePositions = lists:sublist(algorithm:shuffle(AllPositions),
                                    1,
                                    PopulationSize * 1),
@@ -31,7 +33,6 @@ move(Pos, E, Config) ->
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% algae dispersion
-    #env{world = #world{w = W, h = H}} = E,
     UpdateNeighbour =
         fun(NPos, Env) ->
                 Neighbour = agents:get_agent(NPos, Env, Config),
@@ -48,7 +49,7 @@ move(Pos, E, Config) ->
                  {Level} when Level =< 0 orelse Level >= 10 ->
                      E;
                  {Level} when Level > 4 ->
-                     Ns = neighbours_4(Pos, W, H),
+                     Ns = neighbours_4(Pos, E#env.world),
                      E1 = lists:foldl(UpdateNeighbour, E, Ns),
                      NewLevel = Level - length(Ns),
                      agents:update_agent(Pos, {NewLevel}, E1, Config);
@@ -57,12 +58,13 @@ move(Pos, E, Config) ->
              end,
     NewEnv.
 
--spec neighbours_4(position(), dimension(), dimension()) -> [position()].
-neighbours_4({X, Y}, W, H) ->
-    [{torus_bounds(X+1, W), Y},
-     {torus_bounds(X-1, W), Y},
-     {X, torus_bounds(Y+1, H)},
-     {X, torus_bounds(Y-1, H)}].
+%% TODO update neighbours with depth
+-spec neighbours_4(position(), world()) -> [position()].
+neighbours_4({X, Y, Z}, #world{w = W, h = H, d = _D}) ->
+    [{torus_bounds(X+1, W), Y, Z},
+     {torus_bounds(X-1, W), Y, Z},
+     {X, torus_bounds(Y+1, H), Z},
+     {X, torus_bounds(Y-1, H), Z}].
 
 -spec torus_bounds(dimension(), dimension()) -> dimension().
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;

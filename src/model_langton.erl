@@ -3,7 +3,7 @@
 
 -include("parallant.hrl").
 
--export([initial_population/4,
+-export([initial_population/3,
          move/3,
          get_agent_char/2]).
 
@@ -16,13 +16,14 @@
 
 %% model specific functions
 -spec initial_population(PopulationSize :: pos_integer(),
-                         Width :: dimension(),
-                         Height :: dimension(),
+                         World :: world(),
                          Config :: config()) ->
                                 [{position(), agent_state()}].
-initial_population(PopulationSize, Width, Height, Config) ->
-    AllPositions = [{I, J} || I <- lists:seq(1, Width),
-                              J <- lists:seq(1, Height)],
+initial_population(PopulationSize, World, Config) ->
+    #world{w = Width, h = Height, d = _Depth} = World,
+    K = 1,
+    AllPositions = [{I, J, K} || I <- lists:seq(1, Width),
+                                 J <- lists:seq(1, Height)],
     ShuffledPositions = algorithm:shuffle(AllPositions),
     AgentPositions = lists:sublist(ShuffledPositions, 1, PopulationSize),
     CellPositions = AllPositions,
@@ -90,11 +91,11 @@ move_agent(#agent{pos = Pos, state = {Dir, {Cell}}}, #env{world = World}, _C) ->
 
 
 -spec forward(position(), direction(), world()) -> position().
-forward({X, Y}, Dir, #world{w = W, h = H}) ->
+forward({X, Y, Z}, Dir, #world{w = W, h = H}) ->
     {DX, DY} = heading(Dir),
     NewX = torus_bounds(X + DX, W),
     NewY = torus_bounds(Y + DY, H),
-    {NewX, NewY}.
+    {NewX, NewY, Z}.
 
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;

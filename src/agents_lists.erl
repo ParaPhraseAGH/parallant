@@ -1,7 +1,7 @@
 -module(agents_lists).
 -behaviour(agents).
 
--export([create_agents/4,
+-export([create_agents/3,
          partition/3,
          get_agent/3,
          update_agent/4,
@@ -14,12 +14,11 @@
 -include("parallant.hrl").
 
 -spec create_agents(PopulationSize :: pos_integer(),
-                    Width :: dimension(),
-                    Height :: dimension(),
+                    World :: world(),
                     config()) ->
                            agents().
-create_agents(PopulationSize, Width, Height, Config) ->
-    Pop = model:initial_population(PopulationSize, Width, Height, Config),
+create_agents(PopulationSize, World, Config) ->
+    Pop = model:initial_population(PopulationSize, World, Config),
     [#agent{pos = Pos, state = State} || {Pos, State} <- Pop].
 
 -spec get_agent(position(), environment(), config()) -> agent_state().
@@ -52,16 +51,18 @@ update_agent(Position, NewState, Env, Config) ->
             Env#env{agents = lists:map(Update, Env#env.agents)}
     end.
 
--spec partition(environment(), pos_integer(), pos_integer()) ->
+-spec partition(environment(),
+                Colours :: pos_integer(),
+                Parts :: pos_integer()) ->
                        [[{tile(), agents()}]].
 partition(Env, 1, 1) ->
     [[{unique, Env#env.agents}]];
 partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
-    D = round(W/NParts),
+    D = round(W/(NParts*NColours)),
     Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAgent = fun(A = #agent{pos={X, _}}) ->
+    AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
                                 ITile = trunc((X-1)/D)*D+1,
                                 {ITile, [A]}
                         end,
