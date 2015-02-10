@@ -11,8 +11,8 @@
 -type cell() :: {cell_state()}.
 -type direction() :: pos_x | neg_x | pos_y | neg_y | pos_z | neg_z.
 -type langton_rule() :: [direction()].
--type langton_agent_state() :: {{langton_rule(), direction(), langton_rule()},
-                                cell()}.
+-type direction3d() :: {langton_rule(), direction(), langton_rule()}.
+-type langton_agent_state() :: {direction3d(), cell()}.
 -type agent_state() :: parallant:agent_state(langton_agent_state()).
 -type move() :: {0, 1, 0} | {1, 0, 0} | {0, -1, 0} |
                 {-1, 0, 0} | {0, 0, 1} | {0, 0, -1}.
@@ -52,7 +52,7 @@ ant_rule() ->
 initial_cell_state() ->
     {dead}.
 
--spec random_agent_state() -> direction().
+-spec random_agent_state() -> direction3d().
 random_agent_state() ->
     [H | T] = ant_rule(),
     {lists:reverse(ant_rule()), H, T}.
@@ -112,22 +112,21 @@ torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
 torus_bounds(Val, _Max) -> Val.
 
--spec turn(direction(), cell()) -> direction().
+-spec turn(direction3d(), cell_state()) -> direction3d().
 turn(Dir, dead) -> turn_left(Dir);
 turn(Dir, alive) -> turn_right(Dir).
 
--spec turn_right(direction()) -> direction().
+-spec turn_right(direction3d()) -> direction3d().
 turn_right({_B1, _Dir, []}) ->
     [H | T] = ant_rule(),
     {lists:reverse(ant_rule()), H, T};
 turn_right({B1, Dir, [H | T]}) -> {[Dir | B1], H, T}.
 
--spec turn_left(direction()) -> direction().
+-spec turn_left(direction3d()) -> direction3d().
 turn_left({[], _Dir, _B2}) ->
     [H | T] = lists:reverse(ant_rule()),
     {T, H, ant_rule()};
 turn_left({[H | T], Dir, B2}) -> {T, H, [Dir | B2]}.
-
 
 -spec direction_to_heading(direction()) -> move().
 direction_to_heading(pos_x) -> {1, 0, 0};
@@ -136,13 +135,6 @@ direction_to_heading(pos_y) -> {0, 1, 0};
 direction_to_heading(neg_y) -> {0, -1, 0};
 direction_to_heading(pos_z) -> {0, 0, 1};
 direction_to_heading(neg_z) -> {0, 0, -1}.
-
-
--spec random_direction() -> direction().
-random_direction() ->
-    Dirs = [pos_x, neg_x, pos_y, neg_y, pos_z, neg_z],
-    Idx = random:uniform(length(Dirs)),
-    lists:nth(Idx, Dirs).
 
 %% displaying agents
 
@@ -162,6 +154,6 @@ agent_char(neg_y) -> $v;
 agent_char(pos_z) -> $x;
 agent_char(neg_z) -> $*.
 
--spec cell_char(cell()) -> char().
+-spec cell_char(cell_state()) -> char().
 cell_char(dead) -> $.;
 cell_char(alive) -> $o.
