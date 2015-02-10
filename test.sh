@@ -2,7 +2,7 @@
 
 DefaultWidth=20
 DefaultHeight=10
-DefaultDepth=1
+DefaultDepth=3
 DefaultAgents=10
 DefaultSteps=100
 
@@ -14,7 +14,7 @@ Steps=${5:-$DefaultSteps}
 
 algorithms="algorithm_seq algorithm_tiled"
 agents_impls="agents_lists agents_gbtree agents_ets"
-models="model_langton model_forams"
+models="model_langton model_forams model_langton3d"
 
 tiles_per_colour=4
 workers_per_colour=4
