@@ -12,6 +12,7 @@
 %% API
 -export([test/0, run/3, poolboy_transaction/5]).
 -type tile() :: agents:tile().
+-type agents() :: agents:agents().
 
 -include("parallant.hrl").
 
@@ -34,31 +35,19 @@ step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
     Partitioned = agents:partition(Env, NColours, NParts, Config),
-
     ProcessColour =
         fun(Colour, E) ->
                 SendToWork = fun(Agents) ->
                                      send_to_work(Pool, Agents, E, Config)
                              end,
                 lists:map(SendToWork, Colour),
-                NewEnvs = collect_results(Colour),
-                ApplyEnv = mk_apply_env(Config),
-                lists:foldl(ApplyEnv, E, NewEnvs)
+                wait(Colour),
+                E
         end,
     NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Pool, Config).
 
-mk_apply_env(Config) ->
-    fun({Tile, TileEnv}, EAcc) ->
-            UpdateAgent =
-                fun(Pos, EAcc2) ->
-                        NewState = agents:get_agent(Pos, TileEnv, Config),
-                        agents:update_agent(Pos, NewState, EAcc2, Config)
-                end,
-            Neighbours = agents:neighbourhood(Tile, TileEnv, Config),
-            lists:foldl(UpdateAgent, EAcc, Neighbours)
-    end.
 
 send_to_work(Pool, Agents, Env, Config) ->
     proc_lib:spawn_link(?MODULE,
@@ -66,7 +55,7 @@ send_to_work(Pool, Agents, Env, Config) ->
                         [Pool, Agents, _Caller = self(), Env, Config]).
 
 -spec poolboy_transaction(poolboy:pool(),
-                          {tile(), [agent()]},
+                          {tile(), agents()},
                           pid(),
                           environment(),
                           config()) -> any().
@@ -77,18 +66,17 @@ poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
 
 mk_worker(Caller, {Tile, Agents}, Env, Config) ->
     fun (Worker) ->
-            Shuffled = algorithm:shuffle(Agents),
-            Result = tile_worker:move_all(Worker,
-                                          {Tile, Shuffled},
-                                          Env,
-                                          Config),
-            Caller ! {agents, {Tile, Result}}
+            %% Result = Env
+            _Result = tile_worker:move_all(Worker,
+                                           {Tile, Agents},
+                                           Env,
+                                           Config),
+            Caller ! done
     end.
 
-
-collect_results(Args) ->
+wait(Args) ->
     lists:map(fun (_) ->
                       receive
-                          {agents, R} -> R
+                          done -> ok
                       end
               end, Args).
