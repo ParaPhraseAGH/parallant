@@ -27,9 +27,10 @@ init([]) ->
 handle_call(die, _From, State) ->
     {stop, {error, died}, dead, State};
 
-handle_call({move_all, {_Tile, Agents}, Env, Config}, _From, State) ->
-    Positions = [A#agent.pos || A <- Agents],
-    Moves = algorithm:move_all(Positions, Env, Config),
+handle_call({move_all, {Tile, Agents}, Env, Config}, _From, State) ->
+    Positions = agents:get_positions(Agents, Tile, Config),
+    Shuffled = algorithm:shuffle(Positions),
+    Moves = algorithm:move_all(Shuffled, Env, Config), %% Env
     {reply, Moves, State}.
 
 handle_cast(Event, State) ->
