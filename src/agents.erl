@@ -20,7 +20,7 @@
 
 
 -callback create_agents(pos_integer(), world(), config()) ->
-    [agent()].
+    agents().
 
 -callback get_agent(position(), environment(), config()) ->
     agent_state().

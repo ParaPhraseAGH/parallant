@@ -7,6 +7,7 @@
 %%% Created : 07. lis 2014 15:56
 %%%-------------------------------------------------------------------
 -module(agents_gbtree).
+-behaviour(agents).
 -author("Daniel").
 
 %% API
@@ -14,17 +15,19 @@
          partition/3,
          get_agent/3,
          update_agent/4,
+         get_positions/2,
          group_by/1]).
+
+-include("parallant.hrl").
 
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 -type agent_state() :: parallant:agent_state().
-
--include("parallant.hrl").
+-type agents() :: agents:agents(gb_trees:tree(position(), agent_state())).
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
                     config()) ->
-                           Agents :: gb_trees:tree().
+                           Agents :: agents().
 create_agents(PopulationSize, World, Config) ->
     Pop = model:initial_population(PopulationSize, World, Config),
     IndividualsWithKeys = [{Pos,
@@ -75,6 +78,10 @@ partition(Env, NColours, NParts) ->
     Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
+
+-spec get_positions(agents_lists:agents(), tile()) -> [position()].
+get_positions(Agents, _Tile) ->
+    [A#agent.pos || A <- Agents].
 
 -spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
 group_by(List) ->

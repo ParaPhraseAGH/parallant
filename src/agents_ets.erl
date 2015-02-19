@@ -8,7 +8,7 @@
 %%%-------------------------------------------------------------------
 -module(agents_ets).
 -author("Daniel").
-
+-behaviour(agents).
 %% API
 -export([create_agents/3,
          partition/3,
@@ -22,12 +22,13 @@
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
 -type agent_state() :: parallant:agent_state().
+-type agents() :: agents:agents(ets:tid()).
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
                     config()) ->
-                           TableID :: ets:tid().
+                           TableID :: agents().
 create_agents(PopulationSize, World, Config) ->
     TableName = agentsETS,
     clean(TableName),
