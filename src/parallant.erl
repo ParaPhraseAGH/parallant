@@ -91,7 +91,6 @@ start(Width, Height, Depth, PopulationSize, Steps, ConfigOptions) ->
 
     T2 = erlang:now(),
     logger:stop(EndEnv),
-    agents:ending(EndEnv, Config),
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
     io:format("Time elapsed: ~p. Time per iteration: ~p s~n",

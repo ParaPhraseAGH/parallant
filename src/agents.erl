@@ -1,8 +1,11 @@
 -module(agents).
 
--export([create_agents/3, partition/4, get_agent/3, update_agent/4]).
--export([neighbourhood/3]).
--export([get_positions/3, ending/2]).
+-export([create_agents/3,
+         partition/4,
+         get_agent/3,
+         update_agent/4,
+         get_positions/3,
+         neighbourhood/3]).
 
 -export_type([tile/1, tile/0, agents/0, agents/1]).
 
@@ -32,9 +35,6 @@
 
 -callback get_positions(agents(), tile()) ->
     [position()].
-
--callback ending(environment()) ->
-    ok | error.
 
 
 -spec create_agents(PopulationSize :: pos_integer(),
@@ -93,8 +93,3 @@ torus_bounds(X, _Max) ->
 get_positions(Agents, Tile, Config) ->
     Impl = get_impl(Config),
     Impl:get_positions(Agents, Tile).
-
--spec ending(environment(), config()) -> ok | error.
-ending(Env, Config) ->
-    Impl = get_impl(Config),
-    Impl:ending(Env).
