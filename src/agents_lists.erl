@@ -5,7 +5,10 @@
          partition/3,
          get_agent/3,
          update_agent/4,
+         get_positions/2,
          group_by/1]).
+
+-export_type([agents/0]).
 
 -type agent_state() :: parallant:agent_state().
 -type agents() :: agents:agents([agent()]).
@@ -71,6 +74,10 @@ partition(Env, NColours, NParts) ->
     Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
+
+-spec get_positions(agents(), tile()) -> [position()].
+get_positions(Agents, _Tile) ->
+    [A#agent.pos || A <- Agents].
 
 -spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
 group_by(List) ->

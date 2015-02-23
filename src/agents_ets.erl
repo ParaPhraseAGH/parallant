@@ -8,10 +8,13 @@
 %%%-------------------------------------------------------------------
 -module(agents_ets).
 -author("Daniel").
-
+-behaviour(agents).
 %% API
--export([create_agents/3, partition/3, update_agent/4, get_agent/3]).
--export([get_positions/2, ending/1]).
+-export([create_agents/3,
+         partition/3,
+         update_agent/4,
+         get_agent/3,
+         get_positions/2]).
 
 -include("parallant.hrl").
 
@@ -19,14 +22,17 @@
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
 -type agent_state() :: parallant:agent_state().
+-type agents() :: agents:agents(ets:tid()).
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
                     config()) ->
-                           TableID :: ets:tid().
+                           TableID :: agents().
 create_agents(PopulationSize, World, Config) ->
-    TID = ets:new(agentsETS, [ordered_set, public, {keypos, #agent.pos}]),
+    TableName = agentsETS,
+    clean(TableName),
+    TID = ets:new(TableName, [ordered_set, public, {keypos, #agent.pos}]),
     Pop = model:initial_population(PopulationSize, World, Config),
     Agents = [#agent{pos = Pos, state = State} || {Pos, State} <- Pop],
     ets:insert(TID, Agents),
@@ -79,20 +85,24 @@ partition(Env, NColours, NParts) ->
     Colours.
 
 
--spec get_positions(agent:agents(), tile()) ->
-                           [position()].
+-spec get_positions(agents(), tile()) -> [position()].
 get_positions(Agents, Tile) ->
     {F, T} = Tile,
-    Positions=ets:select(Agents, [{{agent,{'$1','$2','$3'},'_'},
-                                   [{'and',
-                                     {'>=', '$1', F},
-                                     {'=<', '$1', T}}],
-                                   [{{'$1','$2','$3'}}]}]),
+    Positions = ets:select(Agents, [{explicit_ant_record(),
+                                     [{'and',
+                                       {'>=', '$1', F},
+                                       {'=<', '$1', T}}],
+                                     [{{'$1', '$2', '$3'}}]}]),
     Positions.
 
--spec ending(environment()) -> ok | error.
-ending(Env) ->
-    try ets:delete(Env#env.agents) of
+%% fool dialyzer in 17.0
+-spec explicit_ant_record() -> tuple().
+explicit_ant_record() ->
+    list_to_tuple([agent, {'$1', '$2', '$3'}, '_']).
+
+-spec clean(atom()) -> ok | error.
+clean(TableId) ->
+    try ets:delete(TableId) of
         true -> ok
     catch
         _:_ -> error
