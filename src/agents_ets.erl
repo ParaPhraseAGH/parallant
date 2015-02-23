@@ -8,9 +8,13 @@
 %%%-------------------------------------------------------------------
 -module(agents_ets).
 -author("Daniel").
-
+-behaviour(agents).
 %% API
--export([create_agents/3, partition/3, update_agent/4, get_agent/3]).
+-export([create_agents/3,
+         partition/3,
+         update_agent/4,
+         get_agent/3,
+         get_positions/2]).
 
 -include("parallant.hrl").
 
@@ -18,14 +22,17 @@
         Attribute = proplists:get_value(Attribute, Proplist, Default)).
 
 -type agent_state() :: parallant:agent_state().
+-type agents() :: agents:agents(ets:tid()).
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
                     config()) ->
-                           TableID :: ets:tid().
+                           TableID :: agents().
 create_agents(PopulationSize, World, Config) ->
-    TID = ets:new(agentsETS, [ordered_set, public, {keypos, #agent.pos}]),
+    TableName = agentsETS,
+    clean(TableName),
+    TID = ets:new(TableName, [ordered_set, public, {keypos, #agent.pos}]),
     Pop = model:initial_population(PopulationSize, World, Config),
     Agents = [#agent{pos = Pos, state = State} || {Pos, State} <- Pop],
     ets:insert(TID, Agents),
@@ -50,14 +57,6 @@ update_agent(Position, NewState, Env, _Config) ->
     ets:insert(Env#env.agents, #agent{pos = Position, state = NewState}),
     Env.
 
-
--spec group_by([{term(), [term()]}]) -> [{term(), [term()]}].
-group_by(List) ->
-    dict:to_list(
-      lists:foldl(fun({K, V}, D) ->
-                          dict:append_list(K, V, D)
-                  end, dict:new(), List)).
-
 -spec group_by_colour([[agent()]], pos_integer()) -> [[agent()]].
 group_by_colour(Tiles, N) ->
     N = 2,
@@ -79,13 +78,32 @@ partition(Env, NColours, NParts) ->
     W = (Env#env.world)#world.w,
     %% H = 5,
     D = round(W/(NParts*NColours)),
-    Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAgent = fun(A = #agent{pos = {X, _, _}}) ->
-                                ITile = trunc((X-1)/D)*D+1,
-                                {ITile, [A]}
-                        end,
-    TiledAgents = lists:map(AssignTileToAgent, ets:tab2list(Env#env.agents)),
-    TagTiles = group_by(TiledAgents ++ Zeros),
-    Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
-    Colours = group_by_colour(Tiles, NColours),
+
+    Zeros = [{I, Env#env.agents} || I <- lists:seq(1, W, D)],
+    TilesZero = [{{I, I+D-1}, T} || {I, T} <- Zeros],
+    Colours = group_by_colour(TilesZero, NColours),
     Colours.
+
+
+-spec get_positions(agents(), tile()) -> [position()].
+get_positions(Agents, Tile) ->
+    {F, T} = Tile,
+    Positions = ets:select(Agents, [{explicit_ant_record(),
+                                     [{'and',
+                                       {'>=', '$1', F},
+                                       {'=<', '$1', T}}],
+                                     [{{'$1', '$2', '$3'}}]}]),
+    Positions.
+
+%% fool dialyzer in 17.0
+-spec explicit_ant_record() -> tuple().
+explicit_ant_record() ->
+    list_to_tuple([agent, {'$1', '$2', '$3'}, '_']).
+
+-spec clean(atom()) -> ok | error.
+clean(TableId) ->
+    try ets:delete(TableId) of
+        true -> ok
+    catch
+        _:_ -> error
+    end.

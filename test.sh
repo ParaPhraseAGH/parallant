@@ -1,10 +1,10 @@
 #!/bin/bash
 
-DefaultWidth=20
-DefaultHeight=10
+DefaultWidth=100
+DefaultHeight=50
 DefaultDepth=3
-DefaultAgents=10
-DefaultSteps=100
+DefaultAgents=100
+DefaultSteps=10
 
 Width=${1:-$DefaultWidth}
 Height=${2:-$DefaultHeight}
