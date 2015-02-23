@@ -12,11 +12,12 @@
 
 %% API
 -export([create_agents/3,
-         partition/3,
          get_agent/3,
          update_agent/4,
          get_positions/2,
-         group_by/1]).
+         group_by/1,
+         get_list/1,
+         get_tiles/2]).
 
 -include("parallant.hrl").
 
@@ -60,25 +61,6 @@ update_agent(Position, NewState, Env, Config) ->
             Env#env{agents = NewAgents}
     end.
 
--spec partition(environment(), pos_integer(), pos_integer()) ->
-                       [[{tile(), [agent()]}]].
-partition(Env, 1, 1) ->
-    [[{unique, gb_trees:values(Env#env.agents)}]];
-partition(Env, NColours, NParts) ->
-    W = (Env#env.world)#world.w,
-    %% H = 5,
-    D = round(W/(NParts*NColours)),
-    Zeros = [{I, []} || I <- lists:seq(1, W, D)],
-    AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
-                                ITile = trunc((X-1)/D)*D+1,
-                                {ITile, [A]}
-                        end,
-    TiledAgents = lists:map(AssignTileToAgent, gb_trees:values(Env#env.agents)),
-    TagTiles = group_by(TiledAgents ++ Zeros),
-    Tiles = [{{I, I+D-1}, T} || {I, T} <- TagTiles],
-    Colours = group_by_colour(Tiles, NColours),
-    Colours.
-
 -spec get_positions(agents_lists:agents(), tile()) -> [position()].
 get_positions(Agents, _Tile) ->
     [A#agent.pos || A <- Agents].
@@ -90,12 +72,19 @@ group_by(List) ->
                           dict:append_list(K, V, D)
                   end, dict:new(), List)).
 
--spec group_by_colour([[agent()]], pos_integer()) -> [[agent()]].
-group_by_colour(Tiles, N) ->
-    N = 2, % dividing in stripes
-    EveryNth = fun (Rest) ->
-                       [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
-                                                 Tiles),
-                             I rem N == Rest]
-               end,
-    lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
+-spec get_list(agents()) ->
+                      [agent()].
+get_list(Agents) ->
+    gb_trees:to_list(Agents).
+
+-spec get_tiles(pos_integer(), environment()) -> [{dimension(), tile()}].
+get_tiles(Dist, Env) ->
+    W = (Env#env.world)#world.w,
+    Zeros = [{I, []} || I <- lists:seq(1, W, Dist)],
+    AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
+                                ITile = trunc((X-1)/Dist)*Dist+1,
+                                {ITile, [A]}
+                        end,
+    TiledAgents = lists:map(AssignTileToAgent, get_list(Env#env.agents)),
+    TagTiles = group_by(TiledAgents ++ Zeros),
+    TagTiles.

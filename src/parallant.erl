@@ -24,8 +24,6 @@
            NumberOfAgents :: pos_integer(), Steps :: pos_integer()) -> ok.
 test(Width, Height, NAgents, Steps) ->
     Seed = erlang:now(),
-
-
     Depth = 1,
     io:format("Algorithm_seq:~n"),
     test(algorithm_seq, Seed, Width, Height, Depth, NAgents, Steps, false),

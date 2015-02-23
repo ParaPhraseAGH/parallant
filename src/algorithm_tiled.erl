@@ -34,7 +34,7 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
-    Partitioned = agents:partition(Env, NColours, NParts, Config),
+    Partitioned = algorithm:partition(Env, NColours, NParts, Config),
     ProcessColour =
         fun(Colour, E) ->
                 SendToWork = fun(Agents) ->

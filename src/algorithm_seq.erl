@@ -28,7 +28,7 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [[{_Tile, Agents}]] = agents:partition(Env, NColours, NParts, Config),
+    [[{_Tile, Agents}]] = algorithm:partition(Env, NColours, NParts, Config),
 
     Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
     NewEnv = algorithm:move_all(Positions, Env, Config),

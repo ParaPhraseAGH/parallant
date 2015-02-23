@@ -13,7 +13,7 @@ Agents=${4:-$DefaultAgents}
 Steps=${5:-$DefaultSteps}
 
 algorithms="algorithm_seq algorithm_tiled"
-agents_impls="agents_lists agents_gbtree agents_ets"
+agents_impls="agents_ets" #"agents_lists agents_gbtree agents_ets"
 models="model_langton model_forams model_langton3d"
 
 tiles_per_colour=4

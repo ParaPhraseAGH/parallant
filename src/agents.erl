@@ -1,11 +1,12 @@
 -module(agents).
 
 -export([create_agents/3,
-         partition/4,
          get_agent/3,
          update_agent/4,
          get_positions/3,
-         neighbourhood/3]).
+         neighbourhood/3,
+         get_list/2,
+         get_tiles/3]).
 
 -export_type([tile/1, tile/0, agents/0, agents/1]).
 
@@ -28,14 +29,14 @@
 -callback update_agent(position(), agent_state(), environment(), config()) ->
     environment().
 
--callback partition(environment(),
-                    Colours :: pos_integer(),
-                    Parts :: pos_integer()) ->
-    [[{tile(), agents()}]].
-
 -callback get_positions(agents(), tile()) ->
     [position()].
 
+-callback get_list(agents()) ->
+    [agent()].
+
+-callback get_tiles(pos_integer(), environment()) ->
+  [{dimension(), tile()}].
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
@@ -54,15 +55,6 @@ get_agent(Position, Env, Config) ->
 update_agent(Position, NewState, Env, Config) ->
     Impl = Config#config.agents,
     Impl:update_agent(Position, NewState, Env, Config).
-
--spec partition(environment(),
-                NumberOfColours :: pos_integer(),
-                NumberOfParts :: pos_integer(),
-                config()) ->
-                       [[{tile(), agents()}]].
-partition(Env, NColours, NParts, Config) ->
-    Impl = get_impl(Config),
-    Impl:partition(Env, NColours, NParts).
 
 -spec neighbourhood(tile(), environment(), config()) -> [position()].
 neighbourhood(Tile, Env, _Config) ->
@@ -93,3 +85,13 @@ torus_bounds(X, _Max) ->
 get_positions(Agents, Tile, Config) ->
     Impl = get_impl(Config),
     Impl:get_positions(Agents, Tile).
+
+-spec get_list(agents(), config()) -> [agent()].
+get_list(Agents, Config) ->
+    Impl = get_impl(Config),
+    Impl:get_list(Agents).
+
+-spec get_tiles(pos_integer(), environment(), config()) -> [{dimension(), tile()}].
+get_tiles(Dist, Env, Config) ->
+    Impl = get_impl(Config),
+    Impl:get_tiles(Dist, Env).
