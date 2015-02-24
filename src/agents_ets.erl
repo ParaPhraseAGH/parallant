@@ -15,7 +15,8 @@
          get_agent/3,
          get_positions/2,
          get_list/1,
-         get_tiles/2]).
+         get_tiles/2,
+         update_tiles/3]).
 
 -include("parallant.hrl").
 
@@ -93,3 +94,7 @@ get_tiles(Dist, Env) ->
     W = (Env#env.world)#world.w,
     TagTiles = [{I, Env#env.agents} || I <- lists:seq(1, W, Dist)],
     TagTiles.
+
+-spec update_tiles({tile(), environment()}, environment(), config()) -> environment().
+update_tiles(_NewEnvs, Env, _Config) ->
+    Env.

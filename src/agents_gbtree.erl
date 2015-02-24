@@ -17,7 +17,8 @@
          get_positions/2,
          group_by/1,
          get_list/1,
-         get_tiles/2]).
+         get_tiles/2,
+         update_tiles/3]).
 
 -include("parallant.hrl").
 
@@ -75,7 +76,7 @@ group_by(List) ->
 -spec get_list(agents()) ->
                       [agent()].
 get_list(Agents) ->
-    gb_trees:to_list(Agents).
+    gb_trees:values(Agents).
 
 -spec get_tiles(pos_integer(), environment()) -> [{dimension(), tile()}].
 get_tiles(Dist, Env) ->
@@ -88,3 +89,19 @@ get_tiles(Dist, Env) ->
     TiledAgents = lists:map(AssignTileToAgent, get_list(Env#env.agents)),
     TagTiles = group_by(TiledAgents ++ Zeros),
     TagTiles.
+
+-spec update_tiles({tile(), environment()}, environment(), config()) -> environment().
+update_tiles(NewEnvs, Env, Config) ->
+    ApplyEnv = mk_apply_env(Config),
+    lists:foldl(ApplyEnv, Env, NewEnvs).
+
+mk_apply_env(Config) ->
+    fun({Tile, TileEnv}, EAcc) ->
+            UpdateAgent =
+                fun(Pos, EAcc2) ->
+                        NewState = get_agent(Pos, TileEnv, Config),
+                        update_agent(Pos, NewState, EAcc2, Config)
+                end,
+            Neighbours = agents:neighbourhood(Tile, TileEnv, Config),
+            lists:foldl(UpdateAgent, EAcc, Neighbours)
+    end.

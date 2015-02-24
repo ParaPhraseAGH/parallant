@@ -4,6 +4,10 @@
 
 -include("parallant.hrl").
 
+-type tile(Any) :: Any.
+-type tile() :: tile(any()).
+-type agents(Any) :: Any.
+-type agents() :: agents(any()).
 
 %% Callbacks
 
@@ -51,7 +55,7 @@ group_by_colour(Tiles, N) ->
                 Colours :: pos_integer(),
                 Parts :: pos_integer(),
                 config()) ->
-                       [[{tile(), [agent()]}]].
+                       [[{tile(), agents()}]].
 
 partition(Env, 1, 1, Config) ->
     [[{unique, agents:get_list(Env#env.agents, Config)}]];

@@ -6,7 +6,8 @@
          get_positions/3,
          neighbourhood/3,
          get_list/2,
-         get_tiles/3]).
+         get_tiles/3,
+         update_tiles/3]).
 
 -export_type([tile/1, tile/0, agents/0, agents/1]).
 
@@ -36,7 +37,10 @@
     [agent()].
 
 -callback get_tiles(pos_integer(), environment()) ->
-  [{dimension(), tile()}].
+    [{dimension(), tile()}].
+
+-callback update_tiles({tile(), environment()}, environment(), config()) ->  %% ???????????? tile() ??
+    environment().
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
@@ -68,7 +72,7 @@ get_impl(Config) ->
 
 -spec neighbourhood(tile(), environment()) -> [position()].
 neighbourhood(Tile, #env{world = #world{w = W, h = H, d = D}}) ->
-    {Start, End} = Tile,
+    {{Start,_,_}, {End,_,_}} = Tile,
     R = 1,
     Xs = lists:seq(Start, End) ++ [torus_bounds(Start - R, W),
                                    torus_bounds(End + R, W)],
@@ -95,3 +99,8 @@ get_list(Agents, Config) ->
 get_tiles(Dist, Env, Config) ->
     Impl = get_impl(Config),
     Impl:get_tiles(Dist, Env).
+
+-spec update_tiles({tile(), environment()}, environment(), config()) -> environment().
+update_tiles(NewEnvs, E, Config) ->
+    Impl = get_impl(Config),
+    Impl:update_tiles(NewEnvs, E, Config).
