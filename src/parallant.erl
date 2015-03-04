@@ -49,11 +49,11 @@ test(Algorithm) ->
            Steps :: pos_integer(),
            Log :: boolean()) -> ok.
 test(Algorithm, Seed, Width, Height, Depth, NAgents, Steps, Log) ->
-    %%         io:format("ListBasedAgentsImpl:~n"),
-    %%         random:seed(Seed),
-    %%         start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
-    %%                                                      {agents, agents},
-    %%                                                      {log, Log}]),
+    io:format("ListBasedAgentsImpl:~n"),
+    random:seed(Seed),
+    start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
+                                                 {agents, agents},
+                                                 {log, Log}]),
     io:format("Gb_treeBasedAgentsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},

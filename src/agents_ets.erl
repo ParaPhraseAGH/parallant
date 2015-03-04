@@ -62,7 +62,7 @@ update_agent(Position, NewState, Env, _Config) ->
 
 -spec get_positions(agents(), tile()) -> [position()].
 get_positions(Agents, Tile) ->
-    {{F,_,_}, {T,_,_}} = Tile,
+    {{F, _, _}, {T, _, _}} = Tile,
     Positions = ets:select(Agents, [{explicit_ant_record(),
                                      [{'and',
                                        {'>=', '$1', F},
@@ -89,12 +89,13 @@ get_list(Agents) ->
     ets:tab2list(Agents).
 
 
--spec get_tiles(pos_integer(), environment()) -> [{dimension(), tile()}].
+-spec get_tiles(TileWidth :: pos_integer(), environment()) ->
+                       [{dimension(), agents()}].
 get_tiles(Dist, Env) ->
     W = (Env#env.world)#world.w,
     TagTiles = [{I, Env#env.agents} || I <- lists:seq(1, W, Dist)],
     TagTiles.
 
--spec update_tiles({tile(), environment()}, environment(), config()) -> environment().
+-spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(_NewEnvs, Env, _Config) ->
     Env.

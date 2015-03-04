@@ -78,7 +78,8 @@ group_by(List) ->
 get_list(Agents) ->
     gb_trees:values(Agents).
 
--spec get_tiles(pos_integer(), environment()) -> [{dimension(), tile()}].
+-spec get_tiles(TileWidth :: pos_integer(), environment()) ->
+                       [{dimension(), agents_lists:agents()}].
 get_tiles(Dist, Env) ->
     W = (Env#env.world)#world.w,
     Zeros = [{I, []} || I <- lists:seq(1, W, Dist)],
@@ -90,7 +91,7 @@ get_tiles(Dist, Env) ->
     TagTiles = group_by(TiledAgents ++ Zeros),
     TagTiles.
 
--spec update_tiles({tile(), environment()}, environment(), config()) -> environment().
+-spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(NewEnvs, Env, Config) ->
     ApplyEnv = mk_apply_env(Config),
     lists:foldl(ApplyEnv, Env, NewEnvs).
