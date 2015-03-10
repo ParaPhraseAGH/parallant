@@ -6,7 +6,7 @@
          get_positions/3,
          neighbourhood/3,
          get_list/2,
-         get_tiles/3,
+         get_tile/3,
          update_tiles/3]).
 
 -export_type([tile/1, tile/0, agents/0, agents/1]).
@@ -17,6 +17,7 @@
 -type agents() :: agents(any()).
 -type tile(Any) :: Any.
 -type tile() :: tile(any()).
+-type range() :: {position(), position()}.
 
 -include("parallant.hrl").
 
@@ -36,8 +37,8 @@
 -callback get_list(agents()) ->
     [agent()].
 
--callback get_tiles(pos_integer(), environment()) ->
-    [{dimension(), tile()}].
+-callback get_tile(range(), environment()) ->
+    {range(), agents()}.
 
 -callback update_tiles([environment()], environment(), config()) ->
     environment().
@@ -95,11 +96,17 @@ get_list(Agents, Config) ->
     Impl = get_impl(Config),
     Impl:get_list(Agents).
 
--spec get_tiles(TileWidth :: pos_integer(), environment(), config()) ->
-                       [{dimension(), agents()}].
-get_tiles(Dist, Env, Config) ->
-    Impl = get_impl(Config),
-    Impl:get_tiles(Dist, Env).
+%% -spec get_tiles(TileWidth :: pos_integer(), environment(), config()) ->
+%%                        [{dimension(), agents()}].
+%% get_tiles(Dist, Env, Config) ->
+%%     Impl = get_impl(Config),
+%%     Impl:get_tiles(Dist, Env).
+
+-spec get_tile(range(), environment(), config()) ->
+  {range(), agents()}.
+get_tile(Range, Env, Config) ->
+  Impl = get_impl(Config),
+  Impl:get_tile(Range, Env).
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(NewEnvs, E, Config) ->

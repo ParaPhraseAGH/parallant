@@ -15,7 +15,7 @@
          get_agent/3,
          get_positions/2,
          get_list/1,
-         get_tiles/2,
+         get_tile/2,
          update_tiles/3]).
 
 -include("parallant.hrl").
@@ -26,6 +26,7 @@
 -type agent_state() :: parallant:agent_state().
 -type agents() :: agents:agents(ets:tid()).
 -type tile() :: agents:tile({Start :: position(), End :: position()}).
+-type range() :: {position(), position()}.
 
 -spec create_agents(PopulationSize :: pos_integer(),
                     World :: world(),
@@ -89,12 +90,17 @@ get_list(Agents) ->
     ets:tab2list(Agents).
 
 
--spec get_tiles(TileWidth :: pos_integer(), environment()) ->
-                       [{dimension(), agents()}].
-get_tiles(Dist, Env) ->
-    W = (Env#env.world)#world.w,
-    TagTiles = [{I, Env#env.agents} || I <- lists:seq(1, W, Dist)],
-    TagTiles.
+%% -spec get_tiles(TileWidth :: pos_integer(), environment()) ->
+%%                        [{dimension(), agents()}].
+%% get_tiles(Dist, Env) ->
+%%     W = (Env#env.world)#world.w,
+%%     TagTiles = [{I, Env#env.agents} || I <- lists:seq(1, W, Dist)],
+%%     TagTiles.
+
+-spec get_tile(range(), environment()) ->
+  {range(), agents()}.
+get_tile(Range, Env) ->
+  {Range, Env#env.agents}.
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(_NewEnvs, Env, _Config) ->

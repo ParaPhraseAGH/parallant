@@ -7,7 +7,7 @@
          get_positions/2,
          group_by/1,
          get_list/1,
-         get_tiles/2,
+         get_tile/2,
          update_tiles/3]).
 
 -export_type([agents/0]).
@@ -15,6 +15,7 @@
 -type agent_state() :: parallant:agent_state().
 -type agents() :: agents:agents([agent()]).
 -type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
+-type range() :: {position(), position()}.
 
 -include("parallant.hrl").
 
@@ -72,18 +73,40 @@ group_by(List) ->
 get_list(Agents) ->
     Agents.
 
--spec get_tiles(TileWidth :: pos_integer(), environment()) ->
-                       [{dimension(), agents()}].
-get_tiles(Dist, Env) ->
-    W = (Env#env.world)#world.w,
-    Zeros = [{I, []} || I <- lists:seq(1, W, Dist)],
-    AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
-                                ITile = trunc((X-1)/Dist)*Dist+1,
-                                {ITile, [A]}
-                        end,
-    TiledAgents = lists:map(AssignTileToAgent, Env#env.agents),
-    TagTiles = group_by(TiledAgents ++ Zeros),
-    TagTiles.
+%% -spec get_tiles(TileWidth :: pos_integer(), environment()) ->
+%%                        [{dimension(), agents()}].
+%% get_tiles(Dist, Env) ->
+%%     W = (Env#env.world)#world.w,
+%%     Zeros = [{I, []} || I <- lists:seq(1, W, Dist)],
+%%     AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
+%%                                 ITile = trunc((X-1)/Dist)*Dist+1,
+%%                                 {ITile, [A]}
+%%                         end,
+%%     TiledAgents = lists:map(AssignTileToAgent, Env#env.agents),
+%%     TagTiles = group_by(TiledAgents ++ Zeros),
+%%     TagTiles.
+
+-spec get_tile(range(), environment()) ->
+  {range(), agents()}.
+get_tile(Range, Env) ->
+  {{X1, Y1, Z1}, {X2, Y2, Z2}} = Range,
+  Positions = [{X,Y,Z} ||
+    X <- lists:seq(X1,X2),
+    Y <- lists:seq(Y1,Y2),
+    Z <- lists:seq(Z1,Z2),
+    X =< (Env#env.world)#world.w, Y =< (Env#env.world)#world.h, Z =< (Env#env.world)#world.d],
+  GetAgent = fun(Position) ->
+    Filtered = [A || A <- Env#env.agents,
+      A#agent.pos == Position],
+    case Filtered of
+      [] ->
+        error;
+      [Agent] ->
+        Agent
+    end
+  end,
+  Agents=lists:map(GetAgent, Positions),
+  {Range, Agents}.
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(NewEnvs, Env, Config) ->
