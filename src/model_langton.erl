@@ -155,4 +155,8 @@ cell_char({dead}) -> $..
 -spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
 log_custom(_Step, _Env, _Config) ->
     %% cast log_custom to logger
+    %% count number of ants
+    %% Agents = agents:get_list(_Env#env.agents, _Config),
+    %% Ants = [A || A = #agent{state = {S, _}} <- Agents, S /= empty],
+    %% io:format("Agents: ~p~n", [length(Ants)]),
     ok.
