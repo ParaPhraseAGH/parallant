@@ -21,7 +21,8 @@
 -record(config, {agents :: agents_impl(),
                  model :: model(),
                  algorithm  :: algorithm(),
-                 log :: boolean(),
+                 log_world :: boolean(),
+                 custom_log_interval :: pos_integer(),
                  animate :: boolean(),
                  tiles_per_colour :: pos_integer(),
                  workers_per_colour :: pos_integer()}).

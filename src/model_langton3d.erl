@@ -5,6 +5,7 @@
 
 -export([initial_population/3,
          move/3,
+         log_custom/3,
          get_agent_char/2]).
 
 -type cell_state() :: dead | alive.
@@ -157,3 +158,9 @@ agent_char(neg_z) -> $*.
 -spec cell_char(cell_state()) -> char().
 cell_char(dead) -> $.;
 cell_char(alive) -> $o.
+
+%% logging
+-spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
+log_custom(_Step, _Env, _Config) ->
+    %% cast log_custom to logger
+    ok.

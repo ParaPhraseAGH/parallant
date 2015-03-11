@@ -2,6 +2,7 @@
 
 -export([initial_population/3,
          get_agent_char/2,
+         log_custom/3,
          move/3]).
 
 -type agent_state() :: parallant:agent_state().
@@ -18,6 +19,9 @@
 
 -callback move(position(), environment(), config()) ->
     environment().
+
+-callback log_custom(Step :: pos_integer(), environment(), config()) ->
+    ok.
 
 -callback get_agent_char(agent_state(), config()) ->
     char().
@@ -41,6 +45,11 @@ move(Pos, E, Config) ->
 get_agent_char(State, Config) ->
     Model = get_model(Config),
     Model:get_agent_char(State, Config).
+
+-spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
+log_custom(Step, E, Config) ->
+    Model = get_model(Config),
+    Model:log_custom(Step, E, Config).
 
 %% internal
 

@@ -107,7 +107,8 @@ create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),
             ?LOAD(algorithm, ConfigProps, algorithm_seq),
             ?LOAD(agents, ConfigProps, agents_ets),
-            ?LOAD(log, ConfigProps, true),
+            ?LOAD(log_world, ConfigProps, true),
+            ?LOAD(custom_log_interval, ConfigProps, 10),
             ?LOAD(animate, ConfigProps, true),
             ?LOAD(tiles_per_colour, ConfigProps, 4),
             ?LOAD(workers_per_colour, ConfigProps, 4)}.

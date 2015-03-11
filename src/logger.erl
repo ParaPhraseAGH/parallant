@@ -16,7 +16,8 @@
                 env :: environment(),
                 step = 1 :: pos_integer(),
                 config :: config(),
-                log = false :: boolean(),
+                log_world = false :: boolean(),
+                custom_log_interval = 10 :: pos_integer(),
                 animate = true :: boolean()}).
 
 -define(LOG_DELAY, 0). % ms
@@ -63,7 +64,8 @@ stop(EndEnv) ->
 %%--------------------------------------------------------------------
 init([Env, Config]) ->
     print(Env, Config, 1),
-    {ok, #state{log = Config#config.log,
+    {ok, #state{log_world = Config#config.log_world,
+                custom_log_interval = Config#config.custom_log_interval,
                 config = Config,
                 animate = Config#config.animate,
                 env = Env}}.
@@ -99,7 +101,7 @@ handle_call(_Request, _From, State) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_cast({log, Env}, S = #state{log = false}) ->
+handle_cast({log, Env}, S = #state{log_world = false}) ->
     noreply_log(S#state{env = Env});
 handle_cast({log, Env}, S) ->
     log(Env, S#state.config, S#state.step, S#state.animate),
