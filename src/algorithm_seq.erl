@@ -32,13 +32,5 @@ step(T, MaxT, Env, Config) ->
     Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
     NewEnv = algorithm:move_all(Positions, Env, Config),
     logger:log(NewEnv),
-    log_custom(T, NewEnv, Config),
+    algorithm:log_custom(T, NewEnv, Config),
     step(T+1, MaxT, NewEnv, Config).
-
-
-%% custom log every custom_log_interval iterations
--spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
-log_custom(Step, Env, C) when Step rem C#config.custom_log_interval == 0 ->
-    model:log_custom(Step, Env, C);
-log_custom(_Step, _Env, _Config) ->
-    ok.

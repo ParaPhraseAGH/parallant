@@ -83,11 +83,13 @@ start(Width, Height, Depth, PopulationSize, Steps, ConfigOptions) ->
                world = World},
 
     logger:start(Env, Config),
+    algorithm:log_custom(starting, Env, Config),
     T1 = erlang:now(),
 
     EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
+    algorithm:log_custom(ending, Env, Config),
     logger:stop(EndEnv),
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
@@ -108,7 +110,7 @@ create_config(ConfigProps) ->
             ?LOAD(algorithm, ConfigProps, algorithm_seq),
             ?LOAD(agents, ConfigProps, agents_ets),
             ?LOAD(log_world, ConfigProps, true),
-            ?LOAD(custom_log_interval, ConfigProps, 10),
+            ?LOAD(custom_log_interval, ConfigProps, off),
             ?LOAD(animate, ConfigProps, true),
             ?LOAD(tiles_per_colour, ConfigProps, 4),
             ?LOAD(workers_per_colour, ConfigProps, 4)}.

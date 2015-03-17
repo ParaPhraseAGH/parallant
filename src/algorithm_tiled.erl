@@ -46,7 +46,7 @@ step(T, MaxT, Env, Pool, Config) ->
         end,
     NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
     logger:log(NewEnv),
-    log_custom(T, NewEnv, Config),
+    algorithm:log_custom(T, NewEnv, Config),
     step(T+1, MaxT, NewEnv, Pool, Config).
 
 
@@ -81,10 +81,3 @@ collect_results(Args) ->
                           {agents, R} -> R
                       end
               end, Args).
-
-%% custom log every custom_log_interval iterations
--spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
-log_custom(Step, Env, C) when Step rem C#config.custom_log_interval == 0 ->
-    model:log_custom(Step, Env, C);
-log_custom(_Step, _Env, _Config) ->
-    ok.

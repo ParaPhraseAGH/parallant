@@ -1,6 +1,6 @@
 -module(algorithm).
 
--export([test/1, run/3, shuffle/1, move_all/3, partition/4]).
+-export([test/1, run/3, shuffle/1, move_all/3, partition/4, log_custom/3]).
 
 -include("parallant.hrl").
 
@@ -69,3 +69,16 @@ partition(Env, NColours, NParts, Config) ->
     Tiles = [{{{I, 1, 1}, {I+Dist-1, H, D}}, T} || {I, T} <- TagTiles],
     Colours = group_by_colour(Tiles, NColours),
     Colours.
+
+
+%% custom log every custom_log_interval iterations
+-spec log_custom(log_step(), environment(), config()) -> ok.
+log_custom(_, _, C) when (C#config.custom_log_interval == 0) orelse
+                         (C#config.custom_log_interval == off) ->
+    ok;
+log_custom(Step, Env, C) when Step == starting orelse Step == ending ->
+    model:log_custom(Step, Env, C);
+log_custom(Step, Env, C) when Step rem C#config.custom_log_interval == 0 ->
+    model:log_custom(Step, Env, C);
+log_custom(_Step, _Env, _Config) ->
+    ok.

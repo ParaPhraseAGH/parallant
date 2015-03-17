@@ -63,7 +63,12 @@ stop(EndEnv) ->
 %% @end
 %%--------------------------------------------------------------------
 init([Env, Config]) ->
-    print(Env, Config, 1),
+    case Config#config.log_world of
+        true ->
+            print(Env, Config, 1);
+        _ ->
+            ok
+    end,
     {ok, #state{log_world = Config#config.log_world,
                 custom_log_interval = Config#config.custom_log_interval,
                 config = Config,
@@ -85,7 +90,12 @@ init([Env, Config]) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call({stop, Env}, _From, State) ->
-    print(Env, State#state.config, State#state.step),
+    case State#state.log_world of
+        true ->
+            print(Env, State#state.config, State#state.step);
+        _ ->
+            ok
+    end,
     {stop, normal, ok, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
