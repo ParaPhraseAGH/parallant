@@ -20,7 +20,7 @@
 -callback move(position(), environment(), config()) ->
     environment().
 
--callback log_custom(Step :: pos_integer(), environment(), config()) ->
+-callback log_custom(log_step(), environment(), config()) ->
     ok.
 
 -callback get_agent_char(agent_state(), config()) ->
@@ -46,7 +46,7 @@ get_agent_char(State, Config) ->
     Model = get_model(Config),
     Model:get_agent_char(State, Config).
 
--spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
+-spec log_custom(log_step(), environment(), config()) -> ok.
 log_custom(Step, E, Config) ->
     Model = get_model(Config),
     Model:log_custom(Step, E, Config).
