@@ -77,11 +77,13 @@ get_list(Agents) ->
                       {range(), agents()}.
 get_tile(Range, Env) ->
     {{X1, Y1, Z1}, {X2, Y2, Z2}} = Range,
-    Positions = [{X,Y,Z} ||
-                    X <- lists:seq(X1,X2),
-                    Y <- lists:seq(Y1,Y2),
-                    Z <- lists:seq(Z1,Z2),
-                    X =< (Env#env.world)#world.w, Y =< (Env#env.world)#world.h, Z =< (Env#env.world)#world.d],
+    Positions = [{X, Y, Z} ||
+                    X <- lists:seq(X1, X2),
+                    Y <- lists:seq(Y1, Y2),
+                    Z <- lists:seq(Z1, Z2),
+                    X =< (Env#env.world)#world.w,
+                    Y =< (Env#env.world)#world.h,
+                    Z =< (Env#env.world)#world.d],
     GetAgent = fun(Position) ->
                        Filtered = [A || A <- Env#env.agents,
                                         A#agent.pos == Position],

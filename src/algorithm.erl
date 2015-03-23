@@ -62,7 +62,7 @@ partition(Env, 1, 1, _Config) ->
     W = (Env#env.world)#world.w,
     H = (Env#env.world)#world.h,
     D = (Env#env.world)#world.d,
-    [[{{1,1,1},{W,H,D}}]];
+    [[{{1, 1, 1}, {W, H, D}}]];
 partition(Env, NColours, NParts, _Config) ->
     W = (Env#env.world)#world.w,
     H = (Env#env.world)#world.h,
