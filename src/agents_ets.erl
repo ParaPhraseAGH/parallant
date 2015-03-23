@@ -61,9 +61,9 @@ update_agent(Position, NewState, Env, _Config) ->
     Env.
 
 
--spec get_positions(agents(), tile()) -> [position()].
-get_positions(Agents, Tile) ->
-    {{F, _, _}, {T, _, _}} = Tile,
+-spec get_positions(agents(), range()) -> [position()].
+get_positions(Agents, Range) ->
+    {{F, _, _}, {T, _, _}} = Range,
     Positions = ets:select(Agents, [{explicit_ant_record(),
                                      [{'and',
                                        {'>=', '$1', F},
@@ -98,9 +98,9 @@ get_list(Agents) ->
 %%     TagTiles.
 
 -spec get_tile(range(), environment()) ->
-  {range(), agents()}.
+                      {range(), agents()}.
 get_tile(Range, Env) ->
-  {Range, Env#env.agents}.
+    {Range, Env#env.agents}.
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(_NewEnvs, Env, _Config) ->

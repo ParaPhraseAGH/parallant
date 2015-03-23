@@ -28,8 +28,10 @@ step(MaxT, MaxT, Env, _Config) ->
 step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
-    [[{_Tile, Agents}]] = algorithm:partition(Env, NColours, NParts, Config),
-    Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
-    NewEnv = algorithm:move_all(Positions, Env, Config),
+    [[Range]] = algorithm:partition(Env, NColours, NParts, Config),
+    {Range, Agents}=agents:get_tile(Range, Env, Config),
+    Positions = agents:get_positions(Agents, Range, Config),
+    Shuffled = algorithm:shuffle(Positions),
+    NewEnv = algorithm:move_all(Shuffled, Env, Config),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Config).
