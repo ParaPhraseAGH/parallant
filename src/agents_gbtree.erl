@@ -94,10 +94,10 @@ get_tile(Range, Env) ->
                            {value, A} ->
                                A;
                            none ->
-                               error
+                               empty
                        end
                end,
-    Agents=lists:map(GetAgent, Positions),
+    Agents = [A || A<- lists:map(GetAgent, Positions), A /= empty],
     {Range, Agents}.
 
 -spec update_tiles([environment()], environment(), config()) -> environment().

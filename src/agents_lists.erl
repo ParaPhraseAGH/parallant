@@ -87,12 +87,12 @@ get_tile(Range, Env) ->
                                         A#agent.pos == Position],
                        case Filtered of
                            [] ->
-                               error;
+                               empty;
                            [Agent] ->
                                Agent
                        end
                end,
-    Agents=lists:map(GetAgent, Positions),
+    Agents = [A || A<- lists:map(GetAgent, Positions), A /= empty],
     {Range, Agents}.
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
