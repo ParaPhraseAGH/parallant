@@ -31,7 +31,7 @@
 -callback update_agent(position(), agent_state(), environment(), config()) ->
     environment().
 
--callback get_positions(agents(), tile()) ->
+-callback get_positions(agents(), range()) ->
     [position()].
 
 -callback get_list(agents()) ->
@@ -86,10 +86,10 @@ torus_bounds(X, Max) when X < 1 ->
 torus_bounds(X, _Max) ->
     X.
 
--spec get_positions(agents(), tile(), config()) -> [position()].
-get_positions(Agents, Tile, Config) ->
+-spec get_positions(agents(), range(), config()) -> [position()].
+get_positions(Agents, Range, Config) ->
     Impl = get_impl(Config),
-    Impl:get_positions(Agents, Tile).
+    Impl:get_positions(Agents, Range).
 
 -spec get_list(agents(), config()) -> [agent()].
 get_list(Agents, Config) ->
