@@ -96,17 +96,11 @@ get_list(Agents, Config) ->
     Impl = get_impl(Config),
     Impl:get_list(Agents).
 
-%% -spec get_tiles(TileWidth :: pos_integer(), environment(), config()) ->
-%%                        [{dimension(), agents()}].
-%% get_tiles(Dist, Env, Config) ->
-%%     Impl = get_impl(Config),
-%%     Impl:get_tiles(Dist, Env).
-
 -spec get_tile(range(), environment(), config()) ->
-  {range(), agents()}.
+                      {range(), agents()}.
 get_tile(Range, Env, Config) ->
-  Impl = get_impl(Config),
-  Impl:get_tile(Range, Env).
+    Impl = get_impl(Config),
+    Impl:get_tile(Range, Env).
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(NewEnvs, E, Config) ->

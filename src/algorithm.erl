@@ -46,7 +46,7 @@ group_by_colour(Ranges, N) ->
     N = 2,
     EveryNth = fun (Rest) ->
                        [A || {I, A} <- lists:zip(lists:seq(1, length(Ranges)),
-                         Ranges),
+                                                 Ranges),
                              I rem N == Rest]
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
@@ -59,11 +59,10 @@ group_by_colour(Ranges, N) ->
                        [[range()]].
 
 partition(Env, 1, 1, _Config) ->
-    %[[{unique, agents:get_list(Env#env.agents, Config)}]];
-  W = (Env#env.world)#world.w,
-  H = (Env#env.world)#world.h,
-  D = (Env#env.world)#world.d,
-  [[{{1,1,1},{W,H,D}}]];
+    W = (Env#env.world)#world.w,
+    H = (Env#env.world)#world.h,
+    D = (Env#env.world)#world.d,
+    [[{{1,1,1},{W,H,D}}]];
 partition(Env, NColours, NParts, _Config) ->
     W = (Env#env.world)#world.w,
     H = (Env#env.world)#world.h,
@@ -71,10 +70,6 @@ partition(Env, NColours, NParts, _Config) ->
     %% H = 5,
     Dist = round(W/(NParts*NColours)),
 
-  Ranges = [{{I, 1, 1}, {I+Dist-1, H, D}} || I <- lists:seq(1, W, Dist)],
-  Colours=group_by_colour(Ranges, NColours),
-%%io:format("Colours: ~p~n", [Colours]),
-%%     TagTiles = agents:get_tiles(Dist, Env, Config),
-%%     Tiles = [{{{I, 1, 1}, {I+Dist-1, H, D}}, T} || {I, T} <- TagTiles],
-%%     Colours = group_by_colour(Tiles, NColours),
+    Ranges = [{{I, 1, 1}, {I+Dist-1, H, D}} || I <- lists:seq(1, W, Dist)],
+    Colours=group_by_colour(Ranges, NColours),
     Colours.

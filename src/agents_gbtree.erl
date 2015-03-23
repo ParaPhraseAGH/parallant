@@ -79,40 +79,26 @@ group_by(List) ->
 get_list(Agents) ->
     gb_trees:values(Agents).
 
-%% -spec get_tiles(TileWidth :: pos_integer(), environment()) ->
-%%                        [{dimension(), agents_lists:agents()}].
-%% get_tiles(Dist, Env) ->
-%%     W = (Env#env.world)#world.w,
-%%     Zeros = [{I, []} || I <- lists:seq(1, W, Dist)],
-%%     AssignTileToAgent = fun(A = #agent{pos={X, _, _}}) ->
-%%                                 ITile = trunc((X-1)/Dist)*Dist+1,
-%%                                 {ITile, [A]}
-%%                         end,
-%%     TiledAgents = lists:map(AssignTileToAgent, get_list(Env#env.agents)),
-%%     TagTiles = group_by(TiledAgents ++ Zeros),
-%%     TagTiles.
-
 -spec get_tile(range(), environment()) ->
-  {range(), agents()}.
+                      {range(), agents()}.
 get_tile(Range, Env) ->
-  {{X1, Y1, Z1}, {X2, Y2, Z2}} = Range,
-  Positions = [{X,Y,Z} ||
-    X <- lists:seq(X1,X2),
-    Y <- lists:seq(Y1,Y2),
-    Z <- lists:seq(Z1,Z2),
-  X =< (Env#env.world)#world.w, Y =< (Env#env.world)#world.h, Z =< (Env#env.world)#world.d],
-  GetAgent = fun(Position) ->
-    TreeRes = gb_trees:lookup(Position,  Env#env.agents),
-    case TreeRes of
-      {value, A} ->
-        A;
-      none ->
-        %%{ok, _Temp} = io:read("Break: "),
-        error
-    end
-    end,
-  Agents=lists:map(GetAgent, Positions),
-  {Range, Agents}.
+    {{X1, Y1, Z1}, {X2, Y2, Z2}} = Range,
+    Positions = [{X,Y,Z} ||
+                    X <- lists:seq(X1,X2),
+                    Y <- lists:seq(Y1,Y2),
+                    Z <- lists:seq(Z1,Z2),
+                    X =< (Env#env.world)#world.w, Y =< (Env#env.world)#world.h, Z =< (Env#env.world)#world.d],
+    GetAgent = fun(Position) ->
+                       TreeRes = gb_trees:lookup(Position,  Env#env.agents),
+                       case TreeRes of
+                           {value, A} ->
+                               A;
+                           none ->
+                               error
+                       end
+               end,
+    Agents=lists:map(GetAgent, Positions),
+    {Range, Agents}.
 
 -spec update_tiles([environment()], environment(), config()) -> environment().
 update_tiles(NewEnvs, Env, Config) ->

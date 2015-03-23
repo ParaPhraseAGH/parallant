@@ -89,14 +89,6 @@ clean(TableId) ->
 get_list(Agents) ->
     ets:tab2list(Agents).
 
-
-%% -spec get_tiles(TileWidth :: pos_integer(), environment()) ->
-%%                        [{dimension(), agents()}].
-%% get_tiles(Dist, Env) ->
-%%     W = (Env#env.world)#world.w,
-%%     TagTiles = [{I, Env#env.agents} || I <- lists:seq(1, W, Dist)],
-%%     TagTiles.
-
 -spec get_tile(range(), environment()) ->
                       {range(), agents()}.
 get_tile(Range, Env) ->

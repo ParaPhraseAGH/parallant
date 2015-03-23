@@ -33,9 +33,11 @@ test(Width, Height, NAgents, Steps) ->
 -spec test() -> ok.
 test() ->
     %%test(40, 40, 5, 500).
-    test(20, 10, 10, 3).
+    %%test(20, 10, 10, 3).
+    test(12, 8, 5, 10).
 
--spec test(algorithm()) -> ok.
+
+  -spec test(algorithm()) -> ok.
 test(Algorithm) ->
     Seed = erlang:now(),
     test(Algorithm, Seed, 50, 30, 1, 5, 500, false).

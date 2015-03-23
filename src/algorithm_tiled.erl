@@ -32,7 +32,6 @@ run(Steps, Env, Config) ->
 step(MaxT, MaxT, Env, _Pool, _Config) ->
     Env;
 step(T, MaxT, Env, Pool, Config) ->
-  %io:format("Step ~p~n", [T]),
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
     Partitioned = algorithm:partition(Env, NColours, NParts, Config),
@@ -44,18 +43,10 @@ step(T, MaxT, Env, Pool, Config) ->
                              end,
                 lists:map(SendToWork, Colour),
                 NewEnvs = collect_results(Colour),
-%%           NA = [{agent,Pos,{Dir,State}} || {agent,Pos,{Dir,State}} <- lists:flatten([Agents || {_, {env, Agents, _}} <- NewEnvs]), Dir=/=empty],
-%%           io:format("Step ~p After processing one color: ~p~n", [T, NA]),
-                NE = agents:update_tiles(NewEnvs, E, Config),
-%%           {env, Agents, _} = NE,
-%%           Test = [{agent,Pos,{Dir,State}} || {agent,Pos,{Dir,State}}  <- Agents, Dir=/=empty],
-%%           io:format("Step ~p Agents after update: ~p~n", [T, Test]),
-          NE
+                UpdateEnv = agents:update_tiles(NewEnvs, E, Config),
+                UpdateEnv
         end,
     NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
-%%   {env, Agents, _} = NewEnv,
-%%   Test = [{agent,Pos,{Dir,State}} || {agent,Pos,{Dir,State}}  <- Agents, Dir=/=empty],
-%%   io:format("Agents: ~p~n", [Test]),
     logger:log(NewEnv),
     step(T+1, MaxT, NewEnv, Pool, Config).
 
@@ -77,7 +68,6 @@ poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
 
 mk_worker(Caller, {Tile, Agents}, Env, Config) ->
     fun (Worker) ->
-            %% Result = Env
             Result = tile_worker:move_all(Worker,
                                           {Tile, Agents},
                                           Env,
