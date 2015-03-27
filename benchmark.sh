@@ -1,23 +1,22 @@
 #!/bin/sh
-models="mas_hybrid"
-cores="1"
-split_sizes="16"
-totaltime="600000"
-runs=10
 
-#models="mas_skel"
-#cores="64"
-#runs=1
-
-Width=100
-Height=50
-Depth=20
+Width=256
+Height=128
+Depth=64
 Steps=10
-# overall 100000
+# overall 2^21
 
 Cores="1"
 
-Populations="10 100 1000 10000 50000"
+Populations="128 1024 16384 131072 1048576"
+
+
+# Width=100
+# Height=20
+# Width=3
+# Steps=5
+# Populations="10"
+
 
 for agents in $Populations; do
     ./run_zeus.sh $Width $Height $Depth $agents $Steps $Cores

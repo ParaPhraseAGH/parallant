@@ -18,10 +18,11 @@ Height=${2:-$DefaultHeight}
 Depth=${3:-$DefaultDepth}
 Agents=${4:-$DefaultAgents}
 Steps=${5:-$DefaultSteps}
+# 6th argument - Cores list
 
 algorithms="algorithm_seq algorithm_tiled"
 agents_impl="agents_ets"
-models="model_langton model_forams model_langton3d"
+models="model_forams model_langton3d" # modle_langton
 
 tiles_per_colour=4
 workers_per_colour=4
@@ -41,7 +42,7 @@ OutputDir="output"
 ScriptOutputDir="$ScriptRoot/$OutputDir"
 
 Cores=${6:-$DefaultCores}
-Time="$(($Steps * 30))"
+Time="$(($Steps * 120))"
 
 # Common Zeus settings
 CommonSettings=""
@@ -62,15 +63,15 @@ for algorithm in $algorithms; do
         for core in $Cores; do
             Command="echo '#$Width,$Height,$Depth,$Agents,$Steps,$algorithm,$model,$agents_impl'"
             Command+="\n"
-            Command+=" ""erl -pa ebin -pa deps/*/ebin -eval 'parallant:start($Width,$Height,$Depth,$Agents,$Steps,[{algorithm,$algorithm},{model,$model},{agents,$agents_impl},{custom_log_interval,off},{log_world,false},{tiles_per_colour,$tiles_per_colour},{workers_per_colour,$workers_per_colour}]).' -run init stop -noshell"
+            Command+=" ""erl -pa $ScriptRoot/ebin -pa $ScriptRoot/deps/*/ebin -eval 'parallant:start($Width,$Height,$Depth,$Agents,$Steps,[{algorithm,$algorithm},{model,$model},{agents,$agents_impl},{custom_log_interval,off},{log_world,false},{tiles_per_colour,$tiles_per_colour},{workers_per_colour,$workers_per_colour}]).' -run init stop -noshell"
 
-            OutputFile="$ScriptOutputDir/$algorithm_$model_$Steps_$Width_$Height_$Depth_$Agents.out"
-            JobName="$algorithm_$model_$Agents"
+            OutputFile="$ScriptOutputDir/$algorithm"_"$model"_"$core"_"$Steps"_"$Width"_"$Height"_"$Depth"_"$Agents.out"
+            JobName="$algorithm"_"$model"_"$Agents"
 
             Settings=$CommonSettings
             Settings+=" ""-o $OutputFile"
             Settings+=" ""-N $JobName"
-            Settings+=" ""-l nodes=1:$CPU:ppn=$Core"
+            Settings+=" ""-l nodes=1:$CPU:ppn=$core"
 
             echo "## running $Command"
             echo "## with settings $Settings"
