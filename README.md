@@ -40,14 +40,15 @@ where:
 ### Writing your own model ###
 
 In order to run your own model, you should provide a module implementing a behaviour `model`.
-Therefore, you need to implement three callback functions:
+Therefore, you need to implement four callback functions:
 * `initial_population/3` - returns initial population in a form of a list of tuples of position and desired state
 * `move/3` - takes a position of a current agent and current environment and returns updated environment
 * `get_agent_char/2` - takes an agent state and returns a character that represents this agent on the displayed grid.
 * `log_custom/3` - this function is called every `custom_log_interval` (set in config), it may be used to log some custom statistics based on the config record and current environment
+
 Current agents' states can be fetched and updated by means of functions from the `agents` module:
-* `agents:get_agent/3` - returns current agent state on given position or `empty` if there is no agent on this position
-* `agents:update_agent/4` - updates given position with given agent state; pass empty as the agent_state to delete the agent; returns updated environment
+  * `agents:get_agent/3` - returns current agent state on given position or `empty` if there is no agent on this position
+  * `agents:update_agent/4` - updates given position with given agent state; pass empty as the agent_state to delete the agent; returns updated environment
 
 
 Examples of this behaviour: `model_langton`, `model_forams`
