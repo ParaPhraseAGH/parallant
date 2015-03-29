@@ -25,7 +25,6 @@
 
 -type agent_state() :: parallant:agent_state().
 -type agents() :: agents:agents(ets:tid()).
--type tile() :: agents:tile({Start :: position(), End :: position()}).
 -type range() :: {position(), position()}.
 
 -spec create_agents(PopulationSize :: pos_integer(),

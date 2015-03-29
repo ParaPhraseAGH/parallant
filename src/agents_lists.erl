@@ -14,7 +14,6 @@
 
 -type agent_state() :: parallant:agent_state().
 -type agents() :: agents:agents([agent()]).
--type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 -type range() :: {position(), position()}.
 
 -include("parallant.hrl").
@@ -57,7 +56,7 @@ update_agent(Position, NewState, Env, Config) ->
             Env#env{agents = lists:map(Update, Env#env.agents)}
     end.
 
--spec get_positions(agents(), tile()) -> [position()].
+-spec get_positions(agents(), range()) -> [position()].
 get_positions(Agents, _Tile) ->
     [A#agent.pos || A <- Agents].
 

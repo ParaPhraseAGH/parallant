@@ -22,7 +22,6 @@
 
 -include("parallant.hrl").
 
--type tile() :: agents:tile({Start :: dimension(), End :: dimension()}).
 -type agent_state() :: parallant:agent_state().
 -type agents() :: agents:agents(gb_trees:tree(position(), agent_state())).
 -type range() :: {position(), position()}.
@@ -63,7 +62,7 @@ update_agent(Position, NewState, Env, Config) ->
             Env#env{agents = NewAgents}
     end.
 
--spec get_positions(agents_lists:agents(), tile()) -> [position()].
+-spec get_positions(agents_lists:agents(), range()) -> [position()].
 get_positions(Agents, _Tile) ->
     [A#agent.pos || A <- Agents].
 
@@ -80,7 +79,7 @@ get_list(Agents) ->
     gb_trees:values(Agents).
 
 -spec get_tile(range(), environment()) ->
-                      {range(), agents()}.
+                      {range(), [any()]}.
 get_tile(Range, Env) ->
     {{X1, Y1, Z1}, {X2, Y2, Z2}} = Range,
     Positions = [{X, Y, Z} ||
