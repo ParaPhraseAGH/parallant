@@ -10,15 +10,13 @@
 
 -behaviour(algorithm).
 %% API
--export([test/0, run/3, poolboy_transaction/5]).
+-export([run/3,
+         poolboy_transaction/5]).
 -type tile() :: agents:tile().
 -type agents() :: agents:agents().
 
 -include("parallant.hrl").
 
--spec test() -> ok.
-test() ->
-    parallant:test(?MODULE).
 
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->

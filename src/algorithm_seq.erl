@@ -9,13 +9,10 @@
 -module(algorithm_seq).
 -behaviour(algorithm).
 %% API
--export([test/0, run/3]).
+-export([run/3]).
 
 -include("parallant.hrl").
 
--spec test() -> ok.
-test() ->
-    parallant:test(?MODULE).
 
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
 run(Steps, Env, Config) ->
