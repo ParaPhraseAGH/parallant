@@ -61,6 +61,8 @@ random_agent_state() ->
 
 -spec move(position(), environment(), config()) -> environment().
 move(Position, E, Config) ->
+    %% pretend we have some hevy computing here
+    work(Config),
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% langton's ant
@@ -136,6 +138,14 @@ direction_to_heading(pos_y) -> {0, 1, 0};
 direction_to_heading(neg_y) -> {0, -1, 0};
 direction_to_heading(pos_z) -> {0, 0, 1};
 direction_to_heading(neg_z) -> {0, 0, -1}.
+
+
+work(_Config = #config{} ) ->
+    work(10);
+work(N) ->
+    S = [random:uniform() || _ <- lists:seq(1,N)],
+    lists:foldl(fun(X, Sum) -> Sum + 10 + X*X - 10*math:cos(2*math:pi()*X) end, 0.0, S).
+
 
 %% displaying agents
 
