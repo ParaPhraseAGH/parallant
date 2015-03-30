@@ -22,9 +22,8 @@ run(Steps, Env, Config) ->
            environment(), config()) -> environment().
 step(Iteration, MaxIteration, Env, _Config) when Iteration =:= MaxIteration ->
     Env;
-    NColours = 1,
-    NParts = 1,
-    [[{_Tile, Agents}]] = algorithm:partition(Env, NColours, NParts, Config),
+step(Iteration, MaxIteration, Env, Config) ->
+    Agents = agents:get_list(Env#env.agents, Config),
     Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
     NewEnv = algorithm:move_all(Positions, Env, Config),
     logger:log(NewEnv),

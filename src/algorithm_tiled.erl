@@ -32,7 +32,7 @@ step(Iteration, MaxIteraions, Env, _Pool, _Config) when Iteration =:= MaxIteraio
 step(Iteration, MaxIteraions, Env, Pool, Config) ->
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
-    Partitioned = algorithm:partition(Env, NColours, NParts, Config),
+    Partitioned = partition(Env, NColours, NParts, Config),
     ProcessColour =
         fun(Colour, E) ->
                 SendToWork = fun(Agents) ->
@@ -47,6 +47,33 @@ step(Iteration, MaxIteraions, Env, Pool, Config) ->
     algorithm:log_custom(Iteration, NewEnv, Config),
     step(Iteration+1, MaxIteraions, NewEnv, Pool, Config).
 
+
+-spec partition(environment(),
+                Colours :: pos_integer(),
+                Parts :: pos_integer(),
+                config()) ->
+                       [[{tile(), agents()}]].
+
+partition(Env, NColours, NParts, Config) ->
+    W = (Env#env.world)#world.w,
+    H = (Env#env.world)#world.h,
+    D = (Env#env.world)#world.d,
+    %% H = 5,
+    Dist = round(W/(NParts*NColours)),
+    TagTiles = agents:get_tiles(Dist, Env, Config),
+    Tiles = [{{{I, 1, 1}, {I+Dist-1, H, D}}, T} || {I, T} <- TagTiles],
+    Colours = group_by_colour(Tiles, NColours),
+    Colours.
+
+-spec group_by_colour([[agent()]], pos_integer()) -> [[agent()]].
+group_by_colour(Tiles, N) ->
+    N = 2,
+    EveryNth = fun (Rest) ->
+                       [A || {I, A} <- lists:zip(lists:seq(1, length(Tiles)),
+                                                 Tiles),
+                             I rem N == Rest]
+               end,
+    lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
 
 send_to_work(Pool, Agents, Env, Config) ->
     proc_lib:spawn_link(?MODULE,
