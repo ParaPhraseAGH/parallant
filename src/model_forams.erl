@@ -31,6 +31,8 @@ initial_population(PopulationSize, World, _Config) ->
 
 -spec move(position(), environment(), config()) -> environment().
 move(Pos, E, Config) ->
+    %% pretend we have some hevy computing here
+    work(Config),
     %% based on agent state and its neighbourhood
     %% compute the new agent state and neighbourhood
     %% algae dispersion
@@ -71,6 +73,13 @@ neighbours_4({X, Y, Z}, #world{w = W, h = H, d = _D}) ->
 torus_bounds(Val, Max) when Val < 1 -> Max + Val;
 torus_bounds(Val, Max) when Val > Max -> Val - Max;
 torus_bounds(Val, _Max) -> Val.
+
+work(_Config = #config{}) ->
+    work(10);
+work(N) ->
+    %% based on Rastrigin function
+    S = [random:uniform() || _ <- lists:seq(1,N)],
+    lists:foldl(fun(X, Sum) -> Sum + 10 + X*X - 10*math:cos(2*math:pi()*X) end, 0.0, S).
 
 %% displaying agents
 
