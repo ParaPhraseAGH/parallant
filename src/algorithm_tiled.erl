@@ -25,11 +25,11 @@ run(Steps, Env, Config) ->
                                 {max_overflow, 4}]),
     step(1, Steps, Env, Pool, Config).
 
--spec step(T :: pos_integer(), MaxT :: pos_integer(),
+-spec step(T :: pos_integer(), MaxIteraions :: pos_integer(),
            environment(), poolboy:pool(), config()) -> environment().
-step(MaxT, MaxT, Env, _Pool, _Config) ->
+step(Iteration, MaxIteraions, Env, _Pool, _Config) when Iteration =:= MaxIteraions ->
     Env;
-step(T, MaxT, Env, Pool, Config) ->
+step(Iteration, MaxIteraions, Env, Pool, Config) ->
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
     Partitioned = algorithm:partition(Env, NColours, NParts, Config),
@@ -44,8 +44,8 @@ step(T, MaxT, Env, Pool, Config) ->
         end,
     NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
     logger:log(NewEnv),
-    algorithm:log_custom(T, NewEnv, Config),
-    step(T+1, MaxT, NewEnv, Pool, Config).
+    algorithm:log_custom(Iteration, NewEnv, Config),
+    step(Iteration+1, MaxIteraions, NewEnv, Pool, Config).
 
 
 send_to_work(Pool, Agents, Env, Config) ->

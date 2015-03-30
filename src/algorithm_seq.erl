@@ -18,16 +18,17 @@
 run(Steps, Env, Config) ->
     step(1, Steps, Env, Config).
 
--spec step(T :: pos_integer(), MaxT :: pos_integer(),
+-spec step(Iteration :: pos_integer(), MaxIteration :: pos_integer(),
            environment(), config()) -> environment().
-step(MaxT, MaxT, Env, _Config) ->
+step(Iteration, MaxIteration, Env, _Config) when Iteration =:= MaxIteration ->
     Env;
-step(T, MaxT, Env, Config) ->
     NColours = 1,
     NParts = 1,
     [[{_Tile, Agents}]] = algorithm:partition(Env, NColours, NParts, Config),
     Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
     NewEnv = algorithm:move_all(Positions, Env, Config),
     logger:log(NewEnv),
-    algorithm:log_custom(T, NewEnv, Config),
-    step(T+1, MaxT, NewEnv, Config).
+    algorithm:log_custom(Iteration, NewEnv, Config),
+    step(Iteration+1, MaxIteration, NewEnv, Config).
+
+
