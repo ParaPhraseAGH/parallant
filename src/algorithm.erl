@@ -32,12 +32,12 @@ shuffle(L) ->
 
 %% custom log every custom_log_interval iterations
 -spec log_custom(log_step(), environment(), config()) -> ok.
-log_custom(_, _, C) when (C#config.custom_log_interval == 0) orelse
-                         (C#config.custom_log_interval == off) ->
+log_custom(_, _, C) when (C#config.custom_log_interval =:= 0) orelse
+                         (C#config.custom_log_interval =:= off) ->
     ok;
-log_custom(Step, Env, C) when Step == starting orelse Step == ending ->
+log_custom(Step, Env, C) when Step =:= starting orelse Step =:= ending ->
     model:log_custom(Step, Env, C);
-log_custom(Step, Env, C) when Step rem C#config.custom_log_interval == 0 ->
+log_custom(Step, Env, C) when Step rem C#config.custom_log_interval =:= 0 ->
     model:log_custom(Step, Env, C);
 log_custom(_Step, _Env, _Config) ->
     ok.
