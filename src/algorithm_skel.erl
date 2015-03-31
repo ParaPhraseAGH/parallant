@@ -10,8 +10,7 @@
 
 -behaviour(algorithm).
 %% API
--export([run/3,
-         poolboy_transaction/5]).
+-export([run/3]).
 
 -export([test_temp/0]).
 
@@ -154,34 +153,4 @@ group_by_colour(Tiles, N) ->
                end,
     lists:map(EveryNth, [I rem N || I <- lists:seq(1, N)]).
 
-send_to_work(Pool, Agents, Env, Config) ->
-    proc_lib:spawn_link(?MODULE,
-                        poolboy_transaction,
-                        [Pool, Agents, _Caller = self(), Env, Config]).
-
--spec poolboy_transaction(poolboy:pool(),
-                          {tile(), agents()},
-                          pid(),
-                          environment(),
-                          config()) -> any().
-poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
-    %% TODO do we need transaction at this point?
-    poolboy:transaction(Pool, mk_worker(Caller, Agents, Env, Config)).
-
-
-mk_worker(Caller, {Tile, Agents}, Env, Config) ->
-    fun (Worker) ->
-            %% Result = Env
-            Result = tile_worker:move_all(Worker,
-                                          {Tile, Agents},
-                                          Env,
-                                          Config),
-            Caller ! {agents, {Tile, Result}}
-    end.
-
-collect_results(Args) ->
-    lists:map(fun (_) ->
-                      receive
-                          {agents, R} -> R
-                      end
-              end, Args).
+ 
