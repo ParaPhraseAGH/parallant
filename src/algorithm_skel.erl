@@ -13,40 +13,118 @@
 -export([run/3,
          poolboy_transaction/5]).
 
+-export([test_temp/0]).
+
 -type tile() :: agents:tile().
 -type agents() :: agents:agents().
 
 -include("parallant.hrl").
 
+test_temp() ->
+    parallant:start(104,100,1,100,40,
+                    [{algorithm,?MODULE},
+                     {model,model_langton},
+                     {agents,agents_ets},
+                     {custom_log_interval,10},
+                     {log_world,false},
+                     {tiles_per_colour,4},
+                     {workers_per_colour,4}]).
+
 
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
-run(Steps, Env, Config) ->
-    {ok, Pool} = poolboy:start([{worker_module, tile_worker},
-                                {size, Config#config.workers_per_colour},
-                                {max_overflow, 4}]),
-    step(1, Steps, Env, Pool, Config).
+run(Steps, Env, Config) when Config#config.agents =:= agents_ets ->
+    step(1, Steps, Env, Config).
 
--spec step(T :: pos_integer(), MaxIteraions :: pos_integer(),
-           environment(), poolboy:pool(), config()) -> environment().
-step(Iteration, MaxIteraions, Env, _Pool, _Config) when Iteration =:= MaxIteraions ->
+-spec step(Iteration :: pos_integer(),
+           MaxIteraions :: pos_integer(),
+           environment(),
+           config()) -> environment().
+step(Iteration, MaxIteraions, Env, _Config) when Iteration =:= MaxIteraions ->
     Env;
-step(Iteration, MaxIteraions, Env, Pool, Config) ->
-    NColours = 2,
-    NParts = Config#config.tiles_per_colour,
-    Partitioned = partition(Env, NColours, NParts, Config),
-    ProcessColour =
-        fun(Colour, E) ->
-                SendToWork = fun(Agents) ->
-                                     send_to_work(Pool, Agents, E, Config)
-                             end,
-                lists:map(SendToWork, Colour),
-                NewEnvs = collect_results(Colour),
-                agents:update_tiles(NewEnvs, E, Config)
-        end,
-    NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
+step(Iteration, MaxIteraions, Enviroment, Config) ->
+
+    Workers = Config#config.workers_per_colour,
+
+    FirstColour = {seq, fun (Env) ->
+                                first_colour(Env, Config)
+                        end},
+
+    SendToWork = {map, [{seq,
+                         fun ({Tile, Env}) ->
+                                 NewTile = process_tile(Tile, Env, Config),
+                                 {NewTile, Env}
+                         end}],
+                  Workers},
+
+    MergeToEnv = {seq, fun (Tiles) ->
+                               merge_tiles(Tiles, Config)
+                       end},
+    SecondColour = {seq, fun (Env) ->
+                                 second_colour(Env, Config)
+                         end},
+
+    [NewEnv] = skel:do(_Workflow = [FirstColour,
+                                    SendToWork,
+                                    MergeToEnv,
+                                    SecondColour,
+                                    SendToWork,
+                                    MergeToEnv],
+                       _Input = [Enviroment]),
+
     logger:log(NewEnv),
-    algorithm:log_custom(Iteration, NewEnv, Config),
-    step(Iteration+1, MaxIteraions, NewEnv, Pool, Config).
+
+    step(Iteration+1, MaxIteraions, NewEnv, Config).
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Skel work-functions
+
+
+-spec first_colour(environment(), config()) -> list({tile(), environment()}).
+first_colour(Env, C) ->
+    NCoulours = 2,
+    NParts = C#config.tiles_per_colour,
+    Colours = partition(Env, NCoulours, NParts, C),
+    [First, _Second] = Colours,
+    lists:map(fun(Tile) ->
+                      {Tile, Env}
+              end, First).
+
+-spec process_tile(tile(), environment(), config()) -> tile().
+process_tile(Tile, Env, Confing) ->
+    io:format("process Tile ~p,~n Env: ~p  ~n",[Tile, Env]),
+    %% TODO move all here
+    Tile.
+
+
+merge_tiles(Tiles, _Config) ->
+    %% no merging needed in ETS implementation
+    {_Tile, Env} = hd(Tiles),
+    Env.
+
+
+-spec second_colour(environment(), config()) -> list({tile(), environment()}).
+second_colour(Env, C) ->
+    NCoulours = 2,
+    NParts = C#config.tiles_per_colour,
+    Colours = partition(Env, NCoulours, NParts, C),
+    [_First, Second] = Colours,
+    lists:map(fun(Tile) ->
+                      {Tile, Env}
+              end, Second).
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Old Code to be thrown away ......
 
 
 -spec partition(environment(),
