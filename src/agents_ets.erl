@@ -34,7 +34,11 @@
 create_agents(PopulationSize, World, Config) ->
     TableName = agentsETS,
     clean(TableName),
-    TID = ets:new(TableName, [ordered_set, public, {keypos, #agent.pos}]),
+    TID = ets:new(TableName, [ordered_set,
+                              public,
+                              {keypos, #agent.pos},
+                              {write_concurrency, true},
+                              {read_concurrency, true}]),
     Pop = model:initial_population(PopulationSize, World, Config),
     Agents = [#agent{pos = Pos, state = State} || {Pos, State} <- Pop],
     ets:insert(TID, Agents),
