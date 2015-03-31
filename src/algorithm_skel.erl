@@ -12,26 +12,11 @@
 %% API
 -export([run/3]).
 
--export([test_temp/0]).
-
 -type tile() :: agents:tile().
 -type agents() :: agents:agents().
 
 -include("parallant.hrl").
 
-test_temp() ->
-    parallant:start(_Width = 64,
-                    _Hight = 40,
-                    _Depth = 1,
-                    _Agents = 100,
-                    _Iterations = 400,
-                    [{algorithm,?MODULE},
-                     {model,model_langton},
-                     {agents,agents_ets},
-                     {custom_log_interval,10},
-                     {log_world,false},
-                     {tiles_per_colour,4},
-                     {workers_per_colour,4}]).
 
 
 -spec run(Steps :: pos_integer(), environment(), config()) -> environment().
@@ -120,16 +105,6 @@ second_colour(Env, C) ->
 
 
 
-
-
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Old Code to be thrown away ......
-
-
 -spec partition(environment(),
                 Colours :: pos_integer(),
                 Parts :: pos_integer(),
@@ -147,7 +122,9 @@ partition(Env, NColours, NParts, Config) ->
     Colours = group_by_colour(Tiles, NColours),
     Colours.
 
--spec group_by_colour([[agent()]], pos_integer()) -> [[agent()]].
+
+-spec group_by_colour([[agent()]], pos_integer()) -> 
+                             [[agent()]].
 group_by_colour(Tiles, N) ->
     N = 2,
     EveryNth = fun (Rest) ->
