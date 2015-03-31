@@ -20,7 +20,11 @@
 -include("parallant.hrl").
 
 test_temp() ->
-    parallant:start(104,100,1,100,40,
+    parallant:start(_Width = 64,
+                    _Hight = 40,
+                    _Depth = 1,
+                    _Agents = 100,
+                    _Iterations = 400,
                     [{algorithm,?MODULE},
                      {model,model_langton},
                      {agents,agents_ets},
@@ -50,13 +54,12 @@ step(Iteration, MaxIteraions, Enviroment, Config) ->
 
     SendToWork = {map, [{seq,
                          fun ({Tile, Env}) ->
-                                 NewTile = process_tile(Tile, Env, Config),
-                                 {NewTile, Env}
+                                 process_tile(Tile, Env, Config)
                          end}],
                   Workers},
 
-    MergeToEnv = {seq, fun (Tiles) ->
-                               merge_tiles(Tiles, Config)
+    MergeToEnv = {seq, fun (NewEnvs) ->
+                               merge_tiles(NewEnvs, Config)
                        end},
     SecondColour = {seq, fun (Env) ->
                                  second_colour(Env, Config)
@@ -90,17 +93,18 @@ first_colour(Env, C) ->
                       {Tile, Env}
               end, First).
 
--spec process_tile(tile(), environment(), config()) -> tile().
-process_tile(Tile, Env, Confing) ->
-    io:format("process Tile ~p,~n Env: ~p  ~n",[Tile, Env]),
-    %% TODO move all here
-    Tile.
+-spec process_tile(tile(), environment(), config()) -> environment().
+process_tile(Tile, Env, Config) ->
+    {Coordinates, Tid} = Tile,
+    Positions = agents:get_positions(Tid, Coordinates, Config),
+    Shuffled = algorithm:shuffle(Positions),
+    NewEnv = algorithm:move_all(Shuffled, Env, Config),
+    NewEnv.
 
 
-merge_tiles(Tiles, _Config) ->
+merge_tiles(NewEnvs, _Config) ->
     %% no merging needed in ETS implementation
-    {_Tile, Env} = hd(Tiles),
-    Env.
+    hd(NewEnvs).
 
 
 -spec second_colour(environment(), config()) -> list({tile(), environment()}).
