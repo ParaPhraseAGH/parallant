@@ -75,11 +75,13 @@ torus_bounds(Val, Max) when Val > Max -> Val - Max;
 torus_bounds(Val, _Max) -> Val.
 
 work(_Config = #config{}) ->
-    work(10);
+    work(70);
 work(N) ->
     %% based on Rastrigin function
     S = [random:uniform() || _ <- lists:seq(1,N)],
-    lists:foldl(fun(X, Sum) -> Sum + 10 + X*X - 10*math:cos(2*math:pi()*X) end, 0.0, S).
+    lists:foldl(fun(X, Sum) ->
+                        Sum + 10 + X*X - 10*math:cos(2*math:pi()*X)
+                end, 0.0, S).
 
 %% displaying agents
 

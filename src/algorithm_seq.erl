@@ -24,10 +24,9 @@ step(Iteration, MaxIteration, Env, _Config) when Iteration =:= MaxIteration ->
     Env;
 step(Iteration, MaxIteration, Env, Config) ->
     Agents = agents:get_list(Env#env.agents, Config),
+
     Positions = algorithm:shuffle([A#agent.pos || A <- Agents]),
     NewEnv = algorithm:move_all(Positions, Env, Config),
     logger:log(NewEnv),
     algorithm:log_custom(Iteration, NewEnv, Config),
     step(Iteration+1, MaxIteration, NewEnv, Config).
-
-

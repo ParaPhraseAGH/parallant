@@ -141,7 +141,7 @@ direction_to_heading(neg_z) -> {0, 0, -1}.
 
 
 work(_Config = #config{}) ->
-    work(10);
+    work(20);
 work(N) ->
     %% based on Rastrigin function
     S = [random:uniform() || _ <- lists:seq(1,N)],

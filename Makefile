@@ -12,7 +12,6 @@ all: deps compile
 
 deps:
 	$(REBAR) get-deps
-	$(REBAR) compile
 
 update-deps:
 	$(REBAR) update-deps
@@ -32,7 +31,7 @@ dialyzer: $(DEPS_PLT)
 	dialyzer --fullpath --plt $(DEPS_PLT) -Wrace_conditions -r ./ebin -nn
 
 compile:
-	$(REBAR) skip_deps=true compile
+	$(REBAR) compile
 
 test: all
 	./test.sh

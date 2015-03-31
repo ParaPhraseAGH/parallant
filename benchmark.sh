@@ -1,23 +1,27 @@
 #!/bin/sh
 
-Width=256
-Height=128
-Depth=64
+# langton3d
+Width=216
+Height=100
+Depth=20
 Steps=10
-# overall 2^21
 
-Cores="1"
+#intel
+Cores="1 2 4 8 12"
 
-Populations="128 1024 16384 131072 1048576"
+#opteron
+Cores="1 4 8 16 32 48 64"
 
+Cores="1 4"
 
-# Width=100
-# Height=20
-# Width=3
-# Steps=5
-# Populations="10"
+Populations="200000"
+
+#forams
+# Width=768
+# Height=200
+# Depth=3
 
 
 for agents in $Populations; do
-    ./run_zeus.sh $Width $Height $Depth $agents $Steps $Cores
+    ./run_zeus.sh $Width $Height $Depth $agents $Steps "$Cores"
 done

@@ -86,9 +86,14 @@ start(Width, Height, Depth, PopulationSize, Steps, ConfigOptions) ->
     algorithm:log_custom(starting, Env, Config),
     T1 = erlang:now(),
 
+    io:format("# starting ~p~n", [T1]),
+
     EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
+
+    io:format("# ending ~p~n", [T2]),
+
     algorithm:log_custom(ending, Env, Config),
     logger:stop(EndEnv),
     Time = timer:now_diff(T2, T1),

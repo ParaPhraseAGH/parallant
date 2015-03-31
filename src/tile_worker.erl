@@ -35,6 +35,8 @@ handle_call(die, _From, State) ->
 
 handle_call({move_all, {Tile, Agents}, Env, Config}, _From, State) ->
     Moves = handle_move_all(Tile, Agents, Env, Config),
+
+    io:format("# ~p tile worker handled~n", [now()]),
     {reply, Moves, State}.
 
 handle_cast(Event, State) ->
@@ -46,6 +48,9 @@ handle_info(Info, State) ->
 
 
 terminate(_Reason, _State) ->
+
+    io:format("# tile worker temrianting ~p~n",[_Reason]),
+
     ok.
 
 

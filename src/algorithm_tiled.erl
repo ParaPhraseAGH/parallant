@@ -30,12 +30,18 @@ run(Steps, Env, Config) ->
 step(Iteration, MaxIteraions, Env, _Pool, _Config) when Iteration =:= MaxIteraions ->
     Env;
 step(Iteration, MaxIteraions, Env, Pool, Config) ->
+
+    io:format("# ~p starting ~p/~p iteration~n",[now(), Iteration, MaxIteraions]),
+
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
     Partitioned = partition(Env, NColours, NParts, Config),
     ProcessColour =
         fun(Colour, E) ->
                 SendToWork = fun(Agents) ->
+
+                                     io:format("# send_to_work~n"),
+
                                      send_to_work(Pool, Agents, E, Config)
                              end,
                 lists:map(SendToWork, Colour),
@@ -103,6 +109,10 @@ mk_worker(Caller, {Tile, Agents}, Env, Config) ->
 collect_results(Args) ->
     lists:map(fun (_) ->
                       receive
-                          {agents, R} -> R
+                          {agents, R} ->
+
+                              io:format("# received_result ~n"),
+
+                              R
                       end
               end, Args).
