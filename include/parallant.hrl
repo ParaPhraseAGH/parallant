@@ -21,7 +21,8 @@
 -record(config, {agents :: agents_impl(),
                  model :: model(),
                  algorithm  :: algorithm(),
-                 log :: boolean(),
+                 log_world :: boolean(),
+                 custom_log_interval :: pos_integer() | off,
                  animate :: boolean(),
                  tiles_per_colour :: pos_integer(),
                  workers_per_colour :: pos_integer()}).
@@ -37,3 +38,5 @@
 -type algorithm() :: algorithm_seq | algorithm_tiled.
 -type model() :: model_langton | model_forams.
 -type agents_impl() :: agents | agents_gbtree | agents_ets.
+
+-type log_step() :: starting | ending | pos_integer().

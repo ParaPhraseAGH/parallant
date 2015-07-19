@@ -5,6 +5,7 @@
 
 -export([initial_population/3,
          move/3,
+         log_custom/3,
          get_agent_char/2]).
 
 -type algae_level() :: non_neg_integer().
@@ -84,3 +85,9 @@ algae_char(Level) when Level > 9 ->
     $#;
 algae_char(Level) ->
     Level + $0.
+
+%% logging
+-spec log_custom(Step :: pos_integer(), environment(), config()) -> ok.
+log_custom(_Step, _Env, _Config) ->
+    %% cast log_custom to logger
+    ok.

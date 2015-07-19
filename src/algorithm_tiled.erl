@@ -34,18 +34,19 @@ step(MaxT, MaxT, Env, _Pool, _Config) ->
 step(T, MaxT, Env, Pool, Config) ->
     NColours = 2,
     NParts = Config#config.tiles_per_colour,
-    Partitioned = agents:partition(Env, NColours, NParts, Config),
+    Partitioned = algorithm:partition(Env, NColours, NParts, Config),
     ProcessColour =
         fun(Colour, E) ->
                 SendToWork = fun(Agents) ->
                                      send_to_work(Pool, Agents, E, Config)
                              end,
                 lists:map(SendToWork, Colour),
-                wait(Colour),
-                E
+                NewEnvs = collect_results(Colour),
+                agents:update_tiles(NewEnvs, E, Config)
         end,
     NewEnv = lists:foldl(ProcessColour, Env, Partitioned),
     logger:log(NewEnv),
+    algorithm:log_custom(T, NewEnv, Config),
     step(T+1, MaxT, NewEnv, Pool, Config).
 
 
@@ -67,16 +68,16 @@ poolboy_transaction(Pool, Agents, Caller, Env, Config) ->
 mk_worker(Caller, {Tile, Agents}, Env, Config) ->
     fun (Worker) ->
             %% Result = Env
-            _Result = tile_worker:move_all(Worker,
-                                           {Tile, Agents},
-                                           Env,
-                                           Config),
-            Caller ! done
+            Result = tile_worker:move_all(Worker,
+                                          {Tile, Agents},
+                                          Env,
+                                          Config),
+            Caller ! {agents, {Tile, Result}}
     end.
 
-wait(Args) ->
+collect_results(Args) ->
     lists:map(fun (_) ->
                       receive
-                          done -> ok
+                          {agents, R} -> R
                       end
               end, Args).

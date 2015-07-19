@@ -24,8 +24,6 @@
            NumberOfAgents :: pos_integer(), Steps :: pos_integer()) -> ok.
 test(Width, Height, NAgents, Steps) ->
     Seed = erlang:now(),
-
-
     Depth = 1,
     io:format("Algorithm_seq:~n"),
     test(algorithm_seq, Seed, Width, Height, Depth, NAgents, Steps, false),
@@ -51,16 +49,16 @@ test(Algorithm) ->
            Steps :: pos_integer(),
            Log :: boolean()) -> ok.
 test(Algorithm, Seed, Width, Height, Depth, NAgents, Steps, Log) ->
-    %%     io:format("ListBasedAgentsImpl:~n"),
-    %%     random:seed(Seed),
-    %%     start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
-    %%                                                  {agents, agents},
-    %%                                                  {log, Log}]),
-    %%     io:format("Gb_treeBasedAgentsImpl:~n"),
-    %%     random:seed(Seed),
-    %%     start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
-    %%                                                  {agents, agents_gbt},
-    %%                                                  {log, Log}]),
+    io:format("ListBasedAgentsImpl:~n"),
+    random:seed(Seed),
+    start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
+                                                 {agents, agents},
+                                                 {log, Log}]),
+    io:format("Gb_treeBasedAgentsImpl:~n"),
+    random:seed(Seed),
+    start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
+                                                 {agents, agents_gbtree},
+                                                 {log, Log}]),
     io:format("ETSBasedAgentsImpl:~n"),
     random:seed(Seed),
     start(Width, Height, Depth, NAgents, Steps, [{algorithm, Algorithm},
@@ -85,11 +83,13 @@ start(Width, Height, Depth, PopulationSize, Steps, ConfigOptions) ->
                world = World},
 
     logger:start(Env, Config),
+    algorithm:log_custom(starting, Env, Config),
     T1 = erlang:now(),
 
     EndEnv = algorithm:run(Steps, Env, Config),
 
     T2 = erlang:now(),
+    algorithm:log_custom(ending, Env, Config),
     logger:stop(EndEnv),
     Time = timer:now_diff(T2, T1),
     TimeInSecs = Time / 1000000,
@@ -109,7 +109,8 @@ create_config(ConfigProps) ->
     #config{?LOAD(model, ConfigProps, model_langton),
             ?LOAD(algorithm, ConfigProps, algorithm_seq),
             ?LOAD(agents, ConfigProps, agents_ets),
-            ?LOAD(log, ConfigProps, true),
+            ?LOAD(log_world, ConfigProps, true),
+            ?LOAD(custom_log_interval, ConfigProps, off),
             ?LOAD(animate, ConfigProps, true),
             ?LOAD(tiles_per_colour, ConfigProps, 4),
             ?LOAD(workers_per_colour, ConfigProps, 4)}.
